@@ -1,0 +1,44 @@
+<?php
+
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\RegistrationController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Authentication & Registration Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('auth')->group(function () {
+
+    // ─── Public (No auth required) ───────────────────────
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:5,1')
+        ->name('auth.login');
+
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])
+        ->middleware('throttle:3,1')
+        ->name('auth.forgot-password');
+
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])
+        ->middleware('throttle:5,1')
+        ->name('auth.reset-password');
+
+    // ─── Protected (JWT required) ────────────────────────
+    Route::middleware(['auth:api', 'account.status'])->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+        Route::post('/refresh', [AuthController::class, 'refresh'])->name('auth.refresh');
+        Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
+    });
+});
+
+// ─── Alumni Registration (Public, Phase 4) ───────────────
+Route::prefix('registration')->group(function () {
+    Route::get('/status', [RegistrationController::class, 'status'])
+        ->name('registration.status');
+
+    Route::post('/verify', [RegistrationController::class, 'verify'])
+        ->middleware('throttle:5,1') // SECURITY: 5 attempts per minute
+        ->name('registration.verify');
+});

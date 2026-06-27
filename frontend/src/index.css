@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Prevent white flash on dark-themed admin pages */
+html,
+body {
+    background-color: #0c1525;
+}

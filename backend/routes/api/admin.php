@@ -1,0 +1,231 @@
+<?php
+
+use App\Http\Controllers\Api\Admin\GraduateTracerController;
+use App\Http\Controllers\Api\Admin\AdminJobPostController;
+use App\Http\Controllers\Api\Admin\AlumniSearchController;
+use App\Http\Controllers\Api\Admin\AnalyticsController;
+use App\Http\Controllers\Api\Admin\CourseController;
+use App\Http\Controllers\Api\Admin\DashboardController;
+use App\Http\Controllers\Api\Admin\DepartmentController;
+use App\Http\Controllers\Api\Admin\GraduateController;
+use App\Http\Controllers\Api\Admin\LoginActivityLogController;
+use App\Http\Controllers\Api\Admin\NotificationController;
+use App\Http\Controllers\Api\Admin\ReportController;
+use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\Admin\VerificationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Admin Routes
+|--------------------------------------------------------------------------
+|
+| SECURITY: All routes protected by:
+| 1. auth:api — Must have valid JWT
+| 2. account.status — Account must be active
+| 3. role:admin — Must have admin role
+|
+*/
+
+Route::prefix('admin')
+    ->middleware(['auth:api', 'account.status', 'role:admin'])
+    ->name('admin.')
+    ->group(function () {
+
+        // ─── Dashboard (Aggregated Data) ─────────────────
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // ─── User Management ─────────────────────────────
+        Route::apiResource('users', UserController::class)
+            ->parameters(['users' => 'user'])
+            ->names('users');
+
+        Route::patch('/users/{user}/status', [UserController::class, 'updateStatus'])
+            ->name('users.update-status');
+
+        Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])
+            ->name('users.reset-password');
+
+        // ─── Login Activity Logs ─────────────────────────
+        Route::get('/login-logs', [LoginActivityLogController::class, 'index'])
+            ->name('login-logs.index');
+
+        // ─── Department Management (Phase 2) ─────────────
+        Route::get('/departments/all', [DepartmentController::class, 'all'])
+            ->name('departments.all');
+
+        Route::apiResource('departments', DepartmentController::class)
+            ->names('departments');
+
+        Route::patch('/departments/{department}/status', [DepartmentController::class, 'updateStatus'])
+            ->name('departments.update-status');
+
+        Route::get('/departments/{department}/stats', [DepartmentController::class, 'stats'])
+            ->name('departments.stats');
+
+        // ─── Course Management (Hybrid Restructure) ─────
+        Route::get('/courses/all', [CourseController::class, 'all'])
+            ->name('courses.all');
+
+        Route::get('/courses', [CourseController::class, 'index'])
+            ->name('courses.index');
+
+        Route::post('/courses', [CourseController::class, 'store'])
+            ->name('courses.store');
+
+        Route::put('/courses/{id}', [CourseController::class, 'update'])
+            ->name('courses.update');
+
+        Route::delete('/courses/{id}', [CourseController::class, 'destroy'])
+            ->name('courses.destroy');
+
+        Route::patch('/courses/{id}/status', [CourseController::class, 'updateStatus'])
+            ->name('courses.update-status');
+
+        // ─── Graduate Management (Phase 3) ───────────────
+        Route::get('/graduates/years', [GraduateController::class, 'graduationYears'])
+            ->name('graduates.years');
+
+        Route::post('/graduates/import', [GraduateController::class, 'import'])
+            ->name('graduates.import');
+
+        Route::get('/graduates/import-history', [GraduateController::class, 'importHistory'])
+            ->name('graduates.import-history');
+
+        Route::get('/graduates/import-history/{id}', [GraduateController::class, 'importDetail'])
+            ->name('graduates.import-detail');
+
+        Route::post('/graduates/check-duplicates', [GraduateController::class, 'checkDuplicates'])
+            ->name('graduates.check-duplicates');
+
+        Route::patch('/graduates/batch-update', [GraduateController::class, 'batchUpdate'])
+            ->name('graduates.batch-update');
+
+        Route::apiResource('graduates', GraduateController::class)
+            ->only(['index', 'show', 'update', 'destroy'])
+            ->names('graduates');
+
+        // ─── Verification & Registration (Phase 4) ───────
+        Route::get('/registration/settings', [VerificationController::class, 'getSettings'])
+            ->name('registration.settings.show');
+
+        Route::put('/registration/settings', [VerificationController::class, 'updateSettings'])
+            ->name('registration.settings.update');
+
+        Route::get('/verification/logs', [VerificationController::class, 'logs'])
+            ->name('verification.logs');
+
+        Route::get('/verification/verified', [VerificationController::class, 'verified'])
+            ->name('verification.verified');
+
+        Route::get('/verification/rejected', [VerificationController::class, 'rejected'])
+            ->name('verification.rejected');
+
+        Route::get('/verification/stats', [VerificationController::class, 'stats'])
+            ->name('verification.stats');
+
+        Route::get('/blacklist', [VerificationController::class, 'blacklist'])
+            ->name('blacklist.index');
+
+        Route::post('/blacklist', [VerificationController::class, 'addToBlacklist'])
+            ->name('blacklist.store');
+
+        Route::delete('/blacklist/{id}', [VerificationController::class, 'removeFromBlacklist'])
+            ->name('blacklist.destroy');
+
+
+
+    // ─── Graduate Tracer Analytics ───────────────────
+    Route::prefix('tracer')->name('tracer.')->group(function () {
+        Route::get('/summary', [GraduateTracerController::class, 'summary'])
+            ->name('summary');
+
+        Route::get('/by-course', [GraduateTracerController::class, 'byCourse'])
+            ->name('by-course');
+
+        Route::get('/employment-trend', [GraduateTracerController::class, 'employmentTrend'])
+            ->name('employment-trend');
+
+        Route::get('/export', [GraduateTracerController::class, 'export'])
+            ->name('export')
+            ->middleware('throttle:10,1'); // Rate limit: 10 exports per minute
+    });
+
+        // ─── Analytics Dashboard (Phase 5) ───────────────
+        Route::prefix('analytics')->name('analytics.')->group(function () {
+            Route::get('/overview', [AnalyticsController::class, 'overview'])->name('overview');
+            Route::get('/elementary', [AnalyticsController::class, 'elementary'])->name('elementary');
+            Route::get('/jhs', [AnalyticsController::class, 'jhs'])->name('jhs');
+            Route::get('/shs', [AnalyticsController::class, 'shs'])->name('shs');
+            Route::get('/college', [AnalyticsController::class, 'college'])->name('college');
+            Route::get('/college/board-exams', [AnalyticsController::class, 'boardExams'])->name('college.board-exams');
+            Route::get('/college/employment', [AnalyticsController::class, 'employment'])->name('college.employment');
+        });
+
+        // ─── Alumni Search Directory (Phase 6) ───────────
+        Route::get('/alumni/search', [AlumniSearchController::class, 'search'])
+            ->name('alumni.search');
+
+        Route::get('/alumni/{graduate_id}/profile', [AlumniSearchController::class, 'profile'])
+            ->name('alumni.profile');
+
+        // ─── Notifications (Phase 6) ─────────────────────
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->name('notifications.index');
+
+        Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])
+            ->name('notifications.unread-count');
+
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markRead'])
+            ->name('notifications.mark-read');
+
+        Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])
+            ->name('notifications.read-all');
+
+        // ─── Email Logs (Phase 6) ────────────────────────
+        Route::get('/email-logs', function (Request $request) {
+            $logs = \App\Models\EmailLog::with('user:id,uuid,first_name,last_name')
+                ->when($request->type, fn($q) => $q->where('type', $request->type))
+                ->when($request->status, fn($q) => $q->where('status', $request->status))
+                ->orderBy('created_at', 'desc')
+                ->paginate($request->integer('per_page', 20));
+            return response()->json(['success' => true, 'message' => 'Email logs.', 'data' => $logs->items(), 'meta' => [
+                'current_page' => $logs->currentPage(),
+                'last_page' => $logs->lastPage(),
+                'per_page' => $logs->perPage(),
+                'total' => $logs->total(),
+                'from' => $logs->firstItem(),
+                'to' => $logs->lastItem(),
+            ]]);
+        })->name('email-logs.index');
+
+        // ─── Reports & Export (Phase 6) ──────────────────
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/board-passing', [ReportController::class, 'boardPassing'])->name('board-passing');
+            Route::get('/employment', [ReportController::class, 'employment'])->name('employment');
+            Route::get('/department-summary', [ReportController::class, 'departmentSummary'])->name('department-summary');
+            Route::get('/alumni-master-list', [ReportController::class, 'alumniMasterList'])->name('alumni-master-list');
+            Route::get('/verification-logs', [ReportController::class, 'verificationLogs'])->name('verification-logs');
+            Route::get('/alumni-id-list', [ReportController::class, 'alumniIdList'])->name('alumni-id-list');
+        });
+
+        // ─── Job Post Moderation (Phase 6) ───────────────
+        Route::get('/job-posts/reported', [AdminJobPostController::class, 'reported'])
+            ->name('job-posts.reported');
+
+        Route::get('/job-posts', [AdminJobPostController::class, 'index'])
+            ->name('job-posts.index');
+
+        Route::get('/job-posts/{id}', [AdminJobPostController::class, 'show'])
+            ->name('job-posts.show');
+
+        Route::delete('/job-posts/{id}', [AdminJobPostController::class, 'destroy'])
+            ->name('job-posts.destroy');
+
+        Route::patch('/job-reports/{id}/review', [AdminJobPostController::class, 'reviewReport'])
+            ->name('job-reports.review');
+
+            
+    });
