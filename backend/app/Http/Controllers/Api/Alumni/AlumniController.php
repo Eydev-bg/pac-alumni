@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Alumni\UpdateProfileRequest;
 use App\Http\Requests\Alumni\UploadProfilePictureRequest;
 use App\Services\Alumni\AlumniService;
+use App\Services\Alumni\ProfileCompletionService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 
@@ -20,6 +21,7 @@ class AlumniController extends Controller
 
     public function __construct(
         protected AlumniService $alumniService,
+        protected ProfileCompletionService $completionService,
     ) {}
 
     /**
@@ -49,6 +51,27 @@ class AlumniController extends Controller
             $data = $this->alumniService->getProfile($user);
 
             return $this->success($data, 'Profile data retrieved.');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * GET /api/alumni/profile/completion
+     * Returns profile completion percentage + actionable missing items.
+     */
+    public function profileCompletion(): JsonResponse
+    {
+        try {
+            $profile = auth('api')->user()->alumniProfile;
+            if (!$profile) {
+                return $this->forbidden('Alumni profile not found.');
+            }
+
+            return $this->success(
+                $this->completionService->compute($profile),
+                'Profile completion retrieved.'
+            );
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);
         }

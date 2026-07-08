@@ -2,10 +2,13 @@
 
 namespace App\Services\Admin;
 
+use App\Enums\AuditAction;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\Audit\AuditLogService;
+use App\Services\Auth\PasswordResetService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
@@ -13,6 +16,8 @@ class UserService
 {
     public function __construct(
         protected UserRepositoryInterface $userRepo,
+        protected AuditLogService $auditLog,
+        protected PasswordResetService $passwordResetService,
     ) {}
 
     /**
@@ -72,7 +77,14 @@ class UserService
             $data['password'] = Str::random(16);
         }
 
-        return $this->userRepo->create($data);
+        $user = $this->userRepo->create($data);
+
+        $this->auditLog->record(AuditAction::USER_CREATED, $user, [
+            'email' => $user->email,
+            'role' => $user->role->value,
+        ]);
+
+        return $user;
     }
 
     /**
@@ -91,7 +103,15 @@ class UserService
             unset($data['password']);
         }
 
-        return $this->userRepo->update($user, $data);
+        $updated = $this->userRepo->update($user, $data);
+
+        // Record which fields were touched — never the values (avoids logging
+        // passwords or PII into the audit trail).
+        $this->auditLog->record(AuditAction::USER_UPDATED, $updated, [
+            'fields' => array_values(array_diff(array_keys($data), ['password'])),
+        ]);
+
+        return $updated;
     }
 
     /**
@@ -111,25 +131,32 @@ class UserService
             throw new \Exception('Cannot suspend or deactivate an admin account.', 403);
         }
 
-        return $this->userRepo->updateStatus($user, $newStatus);
+        $previousStatus = $user->status;
+        $updated = $this->userRepo->updateStatus($user, $newStatus);
+
+        $this->auditLog->record(AuditAction::USER_STATUS_CHANGED, $updated, [
+            'from' => $previousStatus->value,
+            'to' => $newStatus->value,
+        ]);
+
+        return $updated;
     }
 
     /**
      * Admin-initiated password reset.
+     *
+     * SECURITY: Emails the user a one-time reset link instead of returning a
+     * plaintext temporary password. The admin never sees the user's password.
      */
-    public function resetPassword(User $user): string
+    public function resetPassword(User $user): void
     {
         // SECURITY: Cannot reset your own password through this endpoint
         if ($user->id === auth()->id()) {
             throw new \Exception('Use the change password feature to update your own password.', 403);
         }
 
-        $newPassword = Str::random(12);
+        $this->passwordResetService->sendAdminResetLink($user);
 
-        $this->userRepo->update($user, [
-            'password' => $newPassword, // Model auto-hashes via cast
-        ]);
-
-        return $newPassword;
+        $this->auditLog->record(AuditAction::USER_PASSWORD_RESET, $user);
     }
 }

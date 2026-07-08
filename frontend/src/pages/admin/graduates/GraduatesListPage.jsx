@@ -68,7 +68,7 @@ function GraduateCard({ graduate }) {
 function CourseSection({ courseName, graduates }) {
   return (
     <div className="mb-8">
-      <div className="flex items-start justify-between mb-4">
+      <div className="flex items-start mb-4">
         <div>
           <h2 className="text-lg font-bold text-white leading-tight">
             {courseName}
@@ -77,13 +77,6 @@ function CourseSection({ courseName, graduates }) {
             <div className="w-8 h-[3px] bg-[#c8a84e] rounded-full" />
             <div className="w-1.5 h-1.5 bg-[#c8a84e] rounded-full" />
           </div>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.04] border border-white/[0.06] rounded-xl">
-          <HiOutlineAcademicCap className="w-4 h-4 text-slate-500" />
-          <span className="text-xs font-semibold text-slate-400">
-            {graduates.length}{" "}
-            {graduates.length === 1 ? "graduate" : "graduates"}
-          </span>
         </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1">
@@ -231,6 +224,63 @@ export default function GraduatesListPage() {
     a.courseName.localeCompare(b.courseName),
   );
 
+  const headerSubtitle = (() => {
+    if (loading) return "Loading...";
+
+    const hasAnyFilter =
+      deptFilter ||
+      yearFilter ||
+      courseFilter ||
+      boardFilter ||
+      empFilter ||
+      debouncedSearch;
+
+    // No filters — default view showing all graduates
+    if (!hasAnyFilter) return "All graduate records across education levels";
+
+    // Search without department
+    if (!deptFilter && debouncedSearch) {
+      return `Search results for "${debouncedSearch}"`;
+    }
+
+    // Filters applied — build contextual label (no count)
+    const parts = [];
+
+    // Primary label: course name (more specific) or department name
+    const selectedCourseName = courseFilter
+      ? filteredCourses.find((c) => String(c.id) === String(courseFilter))?.name
+      : null;
+    parts.push(selectedCourseName || selectedDept?.name || "");
+
+    // Batch year
+    if (yearFilter) parts.push(`Batch ${yearFilter}`);
+
+    // Qualifiers
+    const qualifiers = [];
+    if (boardFilter) {
+      const boardLabels = {
+        passer: "Board Passers",
+        failed: "Board Failed",
+        not_taken: "Not Yet Taken",
+      };
+      qualifiers.push(boardLabels[boardFilter] || boardFilter);
+    }
+    if (empFilter) {
+      const empLabels = {
+        employed: "Employed",
+        unemployed: "Unemployed",
+        unknown: "Unknown",
+      };
+      qualifiers.push(empLabels[empFilter] || empFilter);
+    }
+    if (debouncedSearch) qualifiers.push(`matching "${debouncedSearch}"`);
+
+    let label = parts.filter(Boolean).join(" · ");
+    if (qualifiers.length) label += ` · ${qualifiers.join(" · ")}`;
+
+    return label;
+  })();
+
   return (
     <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
       <div className="max-w-[1400px] mx-auto">
@@ -238,9 +288,7 @@ export default function GraduatesListPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-white">Graduates</h1>
-            <p className="text-sm text-slate-400 mt-1">
-              All graduate records across education levels
-            </p>
+            <p className="text-sm text-slate-400 mt-1">{headerSubtitle}</p>
           </div>
           <button
             onClick={() => navigate("/admin/graduates/import")}
@@ -311,7 +359,7 @@ export default function GraduatesListPage() {
                     <option value="">All Courses</option>
                     {filteredCourses.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.code} — {c.name}
+                        {c.name}
                       </option>
                     ))}
                   </select>
@@ -344,28 +392,6 @@ export default function GraduatesListPage() {
             )}
           </div>
         </div>
-
-        {/* Count */}
-        {!loading && meta && (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-4 mb-6 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#c8a84e]/15 text-[#c8a84e] flex items-center justify-center flex-shrink-0">
-              <HiOutlineAcademicCap className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{meta.total}</p>
-              <p className="text-xs text-slate-400">
-                {!deptFilter &&
-                !yearFilter &&
-                !courseFilter &&
-                !debouncedSearch &&
-                !boardFilter &&
-                !empFilter
-                  ? "Total Graduates"
-                  : `Graduates ${selectedDept ? `in ${selectedDept.name}` : ""}${courseFilter ? ` — ${filteredCourses.find((c) => String(c.id) === String(courseFilter))?.code || ""}` : ""}${yearFilter ? ` (${yearFilter})` : ""}${boardFilter ? ` · ${boardFilter.replace("_", " ")}` : ""}${empFilter ? ` · ${empFilter}` : ""}${debouncedSearch ? ` matching "${debouncedSearch}"` : ""}`}
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Content */}
         {loading ? (

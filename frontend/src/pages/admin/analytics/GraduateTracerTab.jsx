@@ -10,7 +10,6 @@ import adminApi from "../../../api/adminApi";
 import TracerBarChart from "./TracerBarChart";
 import {
   HiOutlineFunnel,
-  HiOutlineArrowDownTray,
   HiOutlineAcademicCap,
   HiOutlineChartBarSquare,
 } from "react-icons/hi2";
@@ -19,7 +18,7 @@ const selectClass =
   "px-3 py-2.5 bg-[#1a2e5a] border border-white/[0.1] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer min-w-[200px]";
 const optionClass = "bg-[#1a2e5a] text-slate-300";
 
-export default function GraduateTracerTab({ onOpenExport }) {
+export default function GraduateTracerTab() {
   // ─── Filter options (loaded once) ──────────────────────
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -86,32 +85,6 @@ export default function GraduateTracerTab({ onOpenExport }) {
     ? courses.filter((c) => String(c.department_id) === String(deptFilter))
     : courses;
 
-  // ─── Summary totals (across all years for selected course)
-  const totals =
-    chartData && chartData.length > 0
-      ? chartData.reduce(
-          (acc, row) => ({
-            graduates: acc.graduates + (row.total_graduates || 0),
-            registered: acc.registered + (row.registered || 0),
-            employed: acc.employed + (row.employed || 0),
-            boardPassers: acc.boardPassers + (row.board_passers || 0),
-          }),
-          { graduates: 0, registered: 0, employed: 0, boardPassers: 0 },
-        )
-      : null;
-
-  // ─── Handle export button click ────────────────────────
-  const handleExportClick = () => {
-    onOpenExport({
-      courseId: courseFilter,
-      batchYear: "",
-      departmentId: deptFilter,
-      departments,
-      courses,
-      years,
-    });
-  };
-
   return (
     <div className="space-y-6">
       {/* ═══ FILTERS ═══ */}
@@ -135,7 +108,7 @@ export default function GraduateTracerTab({ onOpenExport }) {
           </option>
           {departments.map((d) => (
             <option key={d.id} value={d.id} className={optionClass}>
-              {d.code} — {d.name}
+                {d.name}
             </option>
           ))}
         </select>
@@ -153,7 +126,7 @@ export default function GraduateTracerTab({ onOpenExport }) {
           </option>
           {filteredCourses.map((c) => (
             <option key={c.id} value={c.id} className={optionClass}>
-              {c.code} — {c.name}
+               {c.name}
             </option>
           ))}
         </select>
@@ -172,15 +145,6 @@ export default function GraduateTracerTab({ onOpenExport }) {
             Clear filters
           </button>
         )}
-
-        {/* Export button */}
-        <button
-          onClick={handleExportClick}
-          className="ml-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#c8a84e] bg-[#c8a84e]/10 border border-[#c8a84e]/20 rounded-xl hover:bg-[#c8a84e]/20 transition-colors"
-        >
-          <HiOutlineArrowDownTray className="w-4 h-4" />
-          Export
-        </button>
       </div>
 
       {/* ═══ CONTENT ═══ */}
@@ -207,7 +171,7 @@ export default function GraduateTracerTab({ onOpenExport }) {
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#c8a84e]/15 text-[#c8a84e] text-[12px] font-semibold rounded-full border border-[#c8a84e]/20">
               <HiOutlineAcademicCap className="w-3.5 h-3.5" />
-              {selectedCourse?.code} — {selectedCourse?.name}
+              {selectedCourse?.name}
               {selectedCourse?.is_board_program && (
                 <span className="ml-1 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[9px] rounded-md font-bold uppercase">
                   Board Program
@@ -215,61 +179,6 @@ export default function GraduateTracerTab({ onOpenExport }) {
               )}
             </span>
           </div>
-
-          {/* Summary totals across all years */}
-          {totals && (
-            <div
-              className={`grid gap-4 ${selectedCourse?.is_board_program ? "grid-cols-2 lg:grid-cols-4" : "grid-cols-3"}`}
-            >
-              <TotalCard
-                label="Total Graduates"
-                value={totals.graduates}
-                color="text-blue-400"
-                subColor="bg-blue-500/15"
-              />
-              <TotalCard
-                label="Total Registered"
-                value={totals.registered}
-                color="text-emerald-400"
-                subColor="bg-emerald-500/15"
-                rate={
-                  totals.graduates > 0
-                    ? ((totals.registered / totals.graduates) * 100).toFixed(1)
-                    : 0
-                }
-                rateLabel="of graduates"
-              />
-              {selectedCourse?.is_board_program && (
-                <TotalCard
-                  label="Total Board Passers"
-                  value={totals.boardPassers}
-                  color="text-amber-400"
-                  subColor="bg-amber-500/15"
-                  rate={
-                    totals.graduates > 0
-                      ? (
-                          (totals.boardPassers / totals.graduates) *
-                          100
-                        ).toFixed(1)
-                      : 0
-                  }
-                  rateLabel="passing rate"
-                />
-              )}
-              <TotalCard
-                label="Total Employed"
-                value={totals.employed}
-                color="text-[#c8a84e]"
-                subColor="bg-[#c8a84e]/15"
-                rate={
-                  totals.registered > 0
-                    ? ((totals.employed / totals.registered) * 100).toFixed(1)
-                    : 0
-                }
-                rateLabel="of registered"
-              />
-            </div>
-          )}
 
           {/* Bar Chart */}
           <TracerBarChart
@@ -300,30 +209,6 @@ function EmptyState({ icon: Icon, title, subtitle }) {
       <p className="text-[12px] text-slate-500 mt-1.5 max-w-sm text-center">
         {subtitle}
       </p>
-    </div>
-  );
-}
-
-// ─── Total Card Component ────────────────────────────────
-function TotalCard({ label, value, color, subColor, rate, rateLabel }) {
-  return (
-    <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4">
-      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-        {label}
-      </p>
-      <p className={`text-2xl font-bold mt-1.5 ${color}`}>
-        {value.toLocaleString()}
-      </p>
-      {rate !== undefined && (
-        <div className="flex items-center gap-1.5 mt-2">
-          <span
-            className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${subColor} ${color}`}
-          >
-            {rate}%
-          </span>
-          <span className="text-[10px] text-slate-500">{rateLabel}</span>
-        </div>
-      )}
     </div>
   );
 }

@@ -29,7 +29,7 @@ export default function UserDetailPage() {
     message: "",
   });
   const [actionLoading, setActionLoading] = useState(false);
-  const [tempPassword, setTempPassword] = useState(null);
+  const [resetNotice, setResetNotice] = useState(null);
 
   const fetchUser = async () => {
     try {
@@ -63,7 +63,10 @@ export default function UserDetailPage() {
     setActionLoading(true);
     try {
       const res = await adminApi.resetUserPassword(uuid);
-      setTempPassword(res.data.data.temporary_password);
+      setResetNotice(
+        res.data?.message ||
+          "A password reset link has been emailed to the user."
+      );
       setConfirm({ ...confirm, open: false });
     } catch (err) {
       alert(err.response?.data?.message || "Failed to reset password.");
@@ -93,7 +96,7 @@ export default function UserDetailPage() {
       resetPassword: {
         title: "Reset Password",
         message:
-          "A new temporary password will be generated. The user will need to change it on next login.",
+          "A password reset link will be emailed to the user. Their current password stays valid until they set a new one.",
         variant: "warning",
       },
     };
@@ -209,19 +212,13 @@ export default function UserDetailPage() {
             </div>
           </div>
 
-          {/* Temp password display */}
-          {tempPassword && (
-            <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-              <p className="text-sm font-semibold text-amber-400 mb-1">
-                Temporary Password Generated
+          {/* Reset-link confirmation */}
+          {resetNotice && (
+            <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+              <p className="text-sm font-semibold text-emerald-400 mb-1">
+                Reset Link Sent
               </p>
-              <code className="text-lg font-mono font-bold text-[#c8a84e] bg-[#c8a84e]/10 px-3 py-1 rounded-lg">
-                {tempPassword}
-              </code>
-              <p className="text-xs text-amber-500/70 mt-2">
-                Copy this password and share it securely. It will not be shown
-                again.
-              </p>
+              <p className="text-xs text-emerald-500/80">{resetNotice}</p>
             </div>
           )}
         </div>

@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminEmployerController;
+use App\Http\Controllers\Api\Admin\AdminJobController;
+use App\Http\Controllers\Api\Admin\AnnouncementController;
 use App\Http\Controllers\Api\Admin\GraduateTracerController;
-use App\Http\Controllers\Api\Admin\AdminJobPostController;
 use App\Http\Controllers\Api\Admin\AlumniSearchController;
 use App\Http\Controllers\Api\Admin\AnalyticsController;
 use App\Http\Controllers\Api\Admin\CourseController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\Api\Admin\DepartmentController;
 use App\Http\Controllers\Api\Admin\GraduateController;
 use App\Http\Controllers\Api\Admin\LoginActivityLogController;
 use App\Http\Controllers\Api\Admin\NotificationController;
+use App\Http\Controllers\Api\Admin\ReminderController;
 use App\Http\Controllers\Api\Admin\ReportController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VerificationController;
@@ -184,6 +187,10 @@ Route::prefix('admin')
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllRead'])
             ->name('notifications.read-all');
 
+        // ─── Reminder Stats (Phase 4.3) ──────────────────
+        Route::get('/reminders/stats', [ReminderController::class, 'stats'])
+            ->name('reminders.stats');
+
         // ─── Email Logs (Phase 6) ────────────────────────
         Route::get('/email-logs', function (Request $request) {
             $logs = \App\Models\EmailLog::with('user:id,uuid,first_name,last_name')
@@ -203,29 +210,55 @@ Route::prefix('admin')
 
         // ─── Reports & Export (Phase 6) ──────────────────
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/board-passing', [ReportController::class, 'boardPassing'])->name('board-passing');
-            Route::get('/employment', [ReportController::class, 'employment'])->name('employment');
-            Route::get('/department-summary', [ReportController::class, 'departmentSummary'])->name('department-summary');
-            Route::get('/alumni-master-list', [ReportController::class, 'alumniMasterList'])->name('alumni-master-list');
-            Route::get('/verification-logs', [ReportController::class, 'verificationLogs'])->name('verification-logs');
-            Route::get('/alumni-id-list', [ReportController::class, 'alumniIdList'])->name('alumni-id-list');
+            // ─── Consolidated exports (xlsx/csv/pdf) ─────────
+            Route::get('/board-passing/export', [ReportController::class, 'exportBoardPassing'])->name('board-passing.export')->middleware('throttle:10,1');
+            Route::get('/employment/export', [ReportController::class, 'exportEmployment'])->name('employment.export')->middleware('throttle:10,1');
+            Route::get('/alumni-id-list/export', [ReportController::class, 'exportAlumniIdList'])->name('alumni-id-list.export')->middleware('throttle:10,1');
         });
 
-        // ─── Job Post Moderation (Phase 6) ───────────────
-        Route::get('/job-posts/reported', [AdminJobPostController::class, 'reported'])
-            ->name('job-posts.reported');
+        // ─── Employer Management (Phase 1.5) ─────────────
+        Route::get('/employers', [AdminEmployerController::class, 'index'])
+            ->name('employers.index');
+        Route::get('/employers/{id}', [AdminEmployerController::class, 'show'])
+            ->whereNumber('id')->name('employers.show');
+        Route::patch('/employers/{id}/suspend', [AdminEmployerController::class, 'suspend'])
+            ->whereNumber('id')->name('employers.suspend');
+        Route::patch('/employers/{id}/activate', [AdminEmployerController::class, 'activate'])
+            ->whereNumber('id')->name('employers.activate');
+        Route::patch('/employers/{id}/deactivate', [AdminEmployerController::class, 'deactivate'])
+            ->whereNumber('id')->name('employers.deactivate');
+        Route::delete('/employers/{id}', [AdminEmployerController::class, 'destroy'])
+            ->whereNumber('id')->name('employers.destroy');
 
-        Route::get('/job-posts', [AdminJobPostController::class, 'index'])
+        // ─── Job Post Moderation (Phase 1.5) ─────────────
+        // Replaces the legacy user-posted job board (employer-centric module).
+        Route::get('/job-posts', [AdminJobController::class, 'index'])
             ->name('job-posts.index');
+        Route::get('/job-posts/{id}', [AdminJobController::class, 'show'])
+            ->whereNumber('id')->name('job-posts.show');
+        Route::patch('/job-posts/{id}/approve', [AdminJobController::class, 'approve'])
+            ->whereNumber('id')->name('job-posts.approve');
+        Route::patch('/job-posts/{id}/reject', [AdminJobController::class, 'reject'])
+            ->whereNumber('id')->name('job-posts.reject');
+        Route::delete('/job-posts/{id}', [AdminJobController::class, 'destroy'])
+            ->whereNumber('id')->name('job-posts.destroy');
 
-        Route::get('/job-posts/{id}', [AdminJobPostController::class, 'show'])
-            ->name('job-posts.show');
+        // ─── Announcement Module (Phase 2) ───────────────
+        Route::get('/announcements', [AnnouncementController::class, 'index'])
+            ->name('announcements.index');
+        Route::post('/announcements', [AnnouncementController::class, 'store'])
+            ->name('announcements.store');
+        Route::get('/announcements/{id}', [AnnouncementController::class, 'show'])
+            ->whereNumber('id')->name('announcements.show');
+        Route::put('/announcements/{id}', [AnnouncementController::class, 'update'])
+            ->whereNumber('id')->name('announcements.update');
+        Route::delete('/announcements/{id}', [AnnouncementController::class, 'destroy'])
+            ->whereNumber('id')->name('announcements.destroy');
+        Route::patch('/announcements/{id}/publish', [AnnouncementController::class, 'publish'])
+            ->whereNumber('id')->name('announcements.publish');
+        Route::patch('/announcements/{id}/archive', [AnnouncementController::class, 'archive'])
+            ->whereNumber('id')->name('announcements.archive');
+        Route::patch('/announcements/{id}/pin', [AnnouncementController::class, 'togglePin'])
+            ->whereNumber('id')->name('announcements.pin');
 
-        Route::delete('/job-posts/{id}', [AdminJobPostController::class, 'destroy'])
-            ->name('job-posts.destroy');
-
-        Route::patch('/job-reports/{id}/review', [AdminJobPostController::class, 'reviewReport'])
-            ->name('job-reports.review');
-
-            
     });

@@ -11,6 +11,7 @@ use App\Enums\EducationLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Graduate extends Model
 {
@@ -67,6 +68,11 @@ class Graduate extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function employmentRecords(): HasMany
+    {
+        return $this->hasMany(EmploymentRecord::class);
     }
 
     // ─── Accessors ───────────────────────────────────────

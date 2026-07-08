@@ -13,6 +13,7 @@ namespace App\Services\Alumni;
 use App\Enums\BoardExamStatus;
 use App\Enums\BoardStatus;
 use App\Enums\UserRole;
+use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\BoardExamRecord;
 use App\Models\Course;
@@ -146,8 +147,17 @@ class BoardExamService
                 ]
             );
 
+            // ─── Phase 4.1: Track profile activity for reminders ──
+            $user->update(['last_profile_update_at' => now()]);
+
             // ─── Feature 12: Auto-trigger Notifications ──────
             $this->notifyAdminAndDeptHead($user, $graduate, $course, $record);
+
+            // ─── Phase 3.1: Achievement feed entries ─────────
+            if ($data['status'] === 'passer') {
+                AchievementFeed::recordBoardPassed($profile, $record, $user->full_name);
+            }
+            AchievementFeed::maybeRecordProfileCompleted($profile);
 
             return [
                 'record' => [

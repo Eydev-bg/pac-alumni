@@ -7,12 +7,12 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Enums\EducationLevel;
+use App\Enums\EmploymentStatus;
 use App\Models\AlumniProfile;
 use App\Models\BoardExamRecord;
+use App\Models\Course;
 use App\Models\Graduate;
-use App\Models\LoginActivityLog;
 use App\Models\User;
-use App\Models\VerificationLog;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +31,7 @@ class DashboardController extends Controller
             'stats' => $this->getStatsCards(),
             'graduates_per_year' => $this->getGraduatesPerYear(),
             'alumni_registrations_per_month' => $this->getAlumniRegistrationsPerMonth(),
-            'latest_registered_alumni' => $this->getLatestRegisteredAlumni(),
-            'recent_activity' => $this->getRecentActivity(),
+            'participation' => $this->getParticipationStats(),
         ], 'Dashboard data retrieved.');
     }
 
@@ -46,8 +45,40 @@ class DashboardController extends Controller
         $registeredAlumni = User::where('role', 'alumni')->count();
         $activeAlumni = User::where('role', 'alumni')->where('status', 'active')->count();
 
+        // Alumni who logged in within the last 30 days
+        $activeRecently = User::where('role', 'alumni')
+            ->where('status', 'active')
+            ->where('last_login_at', '>=', now()->subDays(30))
+            ->count();
+
+        // Alumni who have NOT logged in for 30+ days (matches the SendLoginReminder threshold)
+        // Include those who never logged in (null last_login_at)
+        $inactiveAlumni = User::where('role', 'alumni')
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('last_login_at')
+                      ->orWhere('last_login_at', '<', now()->subDays(30));
+            })
+            ->count();
+
         // Board passers
         $boardPassers = BoardExamRecord::where('status', 'passer')->distinct('graduate_id')->count('graduate_id');
+
+        // Board exam failed (unique graduates). A graduate who has BOTH a passer
+        // and a failed record counts as a passer only, so exclude any graduate
+        // who also has a passer record.
+        $boardFailed = BoardExamRecord::where('status', 'failed')
+            ->whereNotIn('graduate_id',
+                BoardExamRecord::where('status', 'passer')->pluck('graduate_id')
+            )
+            ->distinct('graduate_id')
+            ->count('graduate_id');
+
+        // Graduates in board program courses who have NO board exam record at all
+        $boardProgramCourseIds = Course::boardPrograms()->pluck('id');
+        $graduatesInBoardPrograms = Graduate::whereIn('course_id', $boardProgramCourseIds)->count();
+        $graduatesWithBoardRecord = BoardExamRecord::distinct('graduate_id')->count('graduate_id');
+        $boardNotYetTaken = max(0, $graduatesInBoardPrograms - $graduatesWithBoardRecord);
 
         // Employment rate
         $totalProfiles = AlumniProfile::whereIn('employment_status', ['employed', 'unemployed'])->count();
@@ -71,7 +102,15 @@ class DashboardController extends Controller
             'total_college_graduates' => $totalCollegeGrads,
             'registered_alumni' => $registeredAlumni,
             'active_alumni' => $activeAlumni,
+            'active_recently' => $activeRecently,
+            'inactive_alumni' => $inactiveAlumni,
             'board_passers' => $boardPassers,
+            'board_failed' => $boardFailed,
+            'board_not_yet_taken' => $boardNotYetTaken,
+            'board_program_total' => $graduatesInBoardPrograms,
+            'board_passing_rate' => $graduatesInBoardPrograms > 0
+                ? round(($boardPassers / $graduatesInBoardPrograms) * 100, 1)
+                : 0,
             'employment_rate' => $employmentRate,
             'employed_count' => $employed,
             'new_alumni_this_month' => $thisMonthAlumni,
@@ -120,86 +159,44 @@ class DashboardController extends Controller
             ->groupBy('month_key')
             ->pluck('count', 'month_key');
 
-        // Active users (logged in within the month)
-        $activeUsers = LoginActivityLog::where('status', 'success')
-            ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key, COUNT(DISTINCT user_id) as count")
-            ->groupBy('month_key')
-            ->pluck('count', 'month_key');
-
         return $months->map(fn($m) => [
             'month' => $m['month'],
             'registrations' => $registrations[$m['month_key']] ?? 0,
-            'active_users' => $activeUsers[$m['month_key']] ?? 0,
         ])->toArray();
     }
 
     /**
-     * Latest Registered Alumni — like "Latest New Members"
+     * Alumni Participation — how well alumni are engaging / reporting data.
+     * Surfaces the "low alumni participation" problem highlighted in tracer-study
+     * literature. Computed entirely from existing tables/columns.
      */
-    private function getLatestRegisteredAlumni(): array
+    private function getParticipationStats(): array
     {
-        return User::where('role', 'alumni')
-            ->with(['alumniProfile.graduate.department:id,name,code'])
-            ->orderBy('created_at', 'desc')
-            ->limit(7)
-            ->get()
-            ->map(function ($user) {
-                $graduate = $user->alumniProfile?->graduate;
-                return [
-                    'uuid' => $user->uuid,
-                    'full_name' => $user->full_name,
-                    'email' => $user->email,
-                    'department' => $graduate?->department?->code,
-                    'graduation_year' => $graduate?->graduation_year,
-                    'registered_at' => $user->created_at?->toISOString(),
-                    'initials' => strtoupper(substr($user->first_name, 0, 1) . substr($user->last_name, 0, 1)),
-                ];
-            })
-            ->toArray();
-    }
+        $totalRegistered = User::where('role', 'alumni')->count();
 
-    /**
-     * Recent Activity — latest verification attempts + login attempts
-     */
-    private function getRecentActivity(): array
-    {
-        // Latest verification attempts
-        $verifications = VerificationLog::orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(fn($v) => [
-                'type' => 'verification',
-                'title' => $v->status?->value === 'verified'
-                    ? "{$v->name_input} registered successfully"
-                    : "Registration rejected: {$v->name_input}",
-                'status' => $v->status?->value ?? $v->attributes['status'] ?? 'unknown',
-                'detail' => $v->rejection_reason ?: 'Auto-verified against graduate list',
-                'ip' => $v->ip_address,
-                'time' => $v->created_at?->toISOString(),
-            ]);
+        // Alumni who have reported a definite employment status (not "unknown")
+        $employmentKnown = AlumniProfile::whereIn('employment_status', [
+            EmploymentStatus::EMPLOYED->value,
+            EmploymentStatus::UNEMPLOYED->value,
+        ])->count();
 
-        // Latest login attempts
-        $logins = LoginActivityLog::with('user:id,first_name,last_name,email')
-            ->orderBy('created_at', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(fn($l) => [
-                'type' => 'login',
-                'title' => $l->status->value === 'success'
-                    ? ($l->user?->full_name ?? $l->email_attempted) . ' logged in'
-                    : "Failed login: {$l->email_attempted}",
-                'status' => $l->status->value,
-                'detail' => $l->ip_address,
-                'ip' => $l->ip_address,
-                'time' => $l->created_at?->toISOString(),
-            ]);
+        // Profile considered "complete": has a location AND a reported employment status
+        $profileComplete = AlumniProfile::whereNotNull('current_location')
+            ->where('current_location', '!=', '')
+            ->where('employment_status', '!=', EmploymentStatus::UNKNOWN->value)
+            ->count();
 
-        // Merge and sort by time
-        return $verifications->concat($logins)
-            ->sortByDesc('time')
-            ->values()
-            ->take(8)
-            ->toArray();
+        // Divide-by-zero guarded percentage helper
+        $rate = fn (int $count): float => $totalRegistered > 0
+            ? round(($count / $totalRegistered) * 100, 1)
+            : 0;
+
+        return [
+            'total_registered' => $totalRegistered,
+            'employment_known' => $employmentKnown,
+            'employment_known_rate' => $rate($employmentKnown),
+            'profile_complete' => $profileComplete,
+            'profile_complete_rate' => $rate($profileComplete),
+        ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Enums\AuditAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreBlacklistRequest;
 use App\Http\Resources\Admin\BlacklistResource;
@@ -10,6 +11,7 @@ use App\Models\RegistrationBlacklist;
 use App\Models\RegistrationSetting;
 use App\Models\VerificationLog;
 use App\Services\Admin\VerificationService;
+use App\Services\Audit\AuditLogService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,7 @@ class VerificationController extends Controller
 
     public function __construct(
         protected VerificationService $verificationService,
+        protected AuditLogService $auditLog,
     ) {}
 
     // ═══════════════════════════════════════════════════════
@@ -176,6 +179,11 @@ class VerificationController extends Controller
             'created_at' => now(),
         ]);
 
+        $this->auditLog->record(AuditAction::BLACKLIST_ADDED, $item, [
+            'identifier' => $item->identifier,
+            'identifier_type' => $item->identifier_type->value,
+        ]);
+
         return $this->created(
             new BlacklistResource($item->load('blacklistedByUser:id,uuid,first_name,last_name')),
             'Added to blacklist.'
@@ -193,7 +201,15 @@ class VerificationController extends Controller
             return $this->notFound('Blacklist entry not found.');
         }
 
+        $identifier = $item->identifier;
+        $identifierType = $item->identifier_type->value;
+
         $item->delete();
+
+        $this->auditLog->record(AuditAction::BLACKLIST_REMOVED, $item, [
+            'identifier' => $identifier,
+            'identifier_type' => $identifierType,
+        ]);
 
         return $this->success(null, 'Removed from blacklist.');
     }

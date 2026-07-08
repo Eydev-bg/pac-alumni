@@ -34,9 +34,14 @@ export default function LoginPage() {
 
   const from = location.state?.from?.pathname;
 
+  // Dev-only seeded admin credentials (see backend AdminUserSeeder).
+  // Stripped from production builds via the import.meta.env.DEV guard below.
+  const DEV_CREDENTIALS = { email: "admin@pac.edu.ph", password: "P@cAdmin2026!" };
+
   const ROLE_DASHBOARDS = {
     admin: "/admin/dashboard",
     alumni: "/alumni/dashboard",
+    employer: "/employer/dashboard",
   };
 
   const handleSubmit = async (e) => {
@@ -224,6 +229,29 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Dev-only credentials hint — removed from production builds */}
+          {import.meta.env.DEV && (
+            <div className="mt-3 p-2.5 bg-amber-50 border border-dashed border-amber-300 rounded-lg">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-[0.62rem] font-bold uppercase tracking-wide text-amber-700">
+                  Dev — Seeded Admin
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setForm(DEV_CREDENTIALS)}
+                  className="text-[0.62rem] font-semibold text-amber-700 hover:text-amber-900 hover:underline"
+                >
+                  Autofill
+                </button>
+              </div>
+              <p className="text-[0.68rem] text-amber-800/90 font-mono leading-relaxed break-all">
+                {DEV_CREDENTIALS.email}
+                <br />
+                {DEV_CREDENTIALS.password}
+              </p>
+            </div>
+          )}
+
           {/* Divider */}
           <div className="flex items-center gap-3 my-3">
             <div className="flex-1 h-px bg-slate-200" />
@@ -239,6 +267,15 @@ export default function LoginPage() {
               className="font-bold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
             >
               Sign Up
+            </a>
+          </p>
+          <p className="text-center text-[0.72rem] text-slate-400 mt-1">
+            Hiring?{" "}
+            <a
+              href="/employer/register"
+              className="font-semibold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
+            >
+              Register as an Employer
             </a>
           </p>
         </div>

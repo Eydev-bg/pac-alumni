@@ -49,6 +49,15 @@ trait ApiResponse
             $response['errors'] = $errors;
         }
 
+        // SECURITY/ROBUSTNESS: Controllers often pass an exception's getCode()
+        // here. Exceptions from the DB driver, JWT, or other vendor libraries
+        // return codes that are NOT valid HTTP statuses (e.g. 1000, SQLSTATE),
+        // which would make response()->json() throw "HTTP status code X is not
+        // valid". Fall back to 500 for anything outside the valid range.
+        if ($code < 100 || $code > 599) {
+            $code = Response::HTTP_INTERNAL_SERVER_ERROR;
+        }
+
         return response()->json($response, $code);
     }
 

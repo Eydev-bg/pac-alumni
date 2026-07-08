@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE LOCATION: frontend/src/pages/admin/analytics/LevelAnalyticsTab.jsx
-//  SIMPLIFIED: Graduate trend by year — no continuation tracking
-//  Reusable for JHS and SHS analytics tabs
+//  Graduate trend by year
+//  Reusable for Elementary, JHS, and SHS analytics tabs
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";

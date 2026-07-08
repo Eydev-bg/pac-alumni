@@ -6,6 +6,7 @@ use App\Enums\BoardStatus;
 use App\Enums\EmploymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AlumniProfile extends Model
 {
@@ -33,5 +34,10 @@ class AlumniProfile extends Model
     public function graduate(): BelongsTo
     {
         return $this->belongsTo(Graduate::class);
+    }
+
+    public function jobApplications(): HasMany
+    {
+        return $this->hasMany(JobApplication::class);
     }
 }

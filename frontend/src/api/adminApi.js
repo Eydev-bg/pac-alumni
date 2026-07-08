@@ -9,6 +9,10 @@ const adminApi = {
   // ─── Dashboard ─────────────────────────────────────────
   getDashboardData: () => api.get('/admin/dashboard'),
 
+  // ─── Admin Account Settings ────────────────────────────
+  updateMyProfile: (data) => api.put('/auth/profile', data),
+  changePassword: (data) => api.put('/auth/change-password', data),
+
   // ─── Phase 1: User Management ──────────────────────────
   getUsers: (params = {}) => api.get('/admin/users', { params }),
   getUser: (uuid) => api.get(`/admin/users/${uuid}`),
@@ -73,7 +77,6 @@ const adminApi = {
   getCollegeAnalytics: (params = {}) => api.get('/admin/analytics/college', { params }),
   getBoardExamAnalytics: (params = {}) => api.get('/admin/analytics/college/board-exams', { params }),
   getEmploymentAnalytics: (params = {}) => api.get('/admin/analytics/college/employment', { params }),
-  getContinuationFlow: (params = {}) => api.get('/admin/analytics/continuation-flow', { params }),
 
   // ─── Phase 6: Alumni Search ────────────────────────────
   searchAlumni: (params = {}) => api.get('/admin/alumni/search', { params }),
@@ -85,24 +88,53 @@ const adminApi = {
   markNotificationRead: (id) => api.patch(`/admin/notifications/${id}/read`),
   markAllNotificationsRead: () => api.patch('/admin/notifications/read-all'),
 
+  // ─── Phase 4.3: Reminder Stats ─────────────────────────
+  getReminderStats: () => api.get('/admin/reminders/stats'),
+
   // ─── Phase 6: Email Logs ───────────────────────────────
   getEmailLogs: (params = {}) => api.get('/admin/email-logs', { params }),
 
-  // ─── Phase 6: Reports ──────────────────────────────────
-  getReportContinuation: (params = {}) => api.get('/admin/reports/continuation', { params }),
-  getReportBoardPassing: (params = {}) => api.get('/admin/reports/board-passing', { params }),
-  getReportEmployment: (params = {}) => api.get('/admin/reports/employment', { params }),
-  getReportDeptSummary: () => api.get('/admin/reports/department-summary'),
-  getReportAlumniMasterList: (params = {}) => api.get('/admin/reports/alumni-master-list', { params }),
-  getReportVerificationLogs: () => api.get('/admin/reports/verification-logs'),
-  getReportAlumniIdList: () => api.get('/admin/reports/alumni-id-list'),
+  // ─── Consolidated report exports (xlsx/csv/pdf blob) ───
+  exportBoardPassingReport: (params = {}) => api.get('/admin/reports/board-passing/export', { params, responseType: 'blob' }),
+  exportEmploymentReport:   (params = {}) => api.get('/admin/reports/employment/export', { params, responseType: 'blob' }),
+  exportAlumniIdListReport: (params = {}) => api.get('/admin/reports/alumni-id-list/export', { params, responseType: 'blob' }),
 
-  // ─── Phase 6: Job Post Moderation ──────────────────────
+  // ─── Phase 1: Employer Management ──────────────────────
+  getEmployers: (params = {}) => api.get('/admin/employers', { params }),
+  getEmployer: (id) => api.get(`/admin/employers/${id}`),
+  suspendEmployer: (id, adminNotes = '') => api.patch(`/admin/employers/${id}/suspend`, { admin_notes: adminNotes }),
+  activateEmployer: (id) => api.patch(`/admin/employers/${id}/activate`),
+  deactivateEmployer: (id, adminNotes = '') => api.patch(`/admin/employers/${id}/deactivate`, { admin_notes: adminNotes }),
+  deleteEmployer: (id) => api.delete(`/admin/employers/${id}`),
+
+  // ─── Phase 1: Job Post Moderation ──────────────────────
   getJobPosts: (params = {}) => api.get('/admin/job-posts', { params }),
   getJobPost: (id) => api.get(`/admin/job-posts/${id}`),
+  approveJobPost: (id) => api.patch(`/admin/job-posts/${id}/approve`),
+  rejectJobPost: (id, adminNotes) => api.patch(`/admin/job-posts/${id}/reject`, { admin_notes: adminNotes }),
   deleteJobPost: (id) => api.delete(`/admin/job-posts/${id}`),
-  getReportedJobPosts: (params = {}) => api.get('/admin/job-posts/reported', { params }),
-  reviewJobReport: (id, status) => api.patch(`/admin/job-reports/${id}/review`, { status }),
+
+  // ─── Phase 2: Announcements ────────────────────────────
+  getAnnouncements: (params = {}) => api.get('/admin/announcements', { params }),
+  getAnnouncement: (id) => api.get(`/admin/announcements/${id}`),
+  // Accepts FormData (title, content, target_type, target_value, is_pinned,
+  // is_published, optional image banner).
+  createAnnouncement: (formData) =>
+    api.post('/admin/announcements', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  // POST + method spoofing so the optional banner file is parsed correctly
+  // (PHP does not parse multipart PUT bodies).
+  updateAnnouncement: (id, formData) => {
+    formData.append('_method', 'PUT');
+    return api.post(`/admin/announcements/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deleteAnnouncement: (id) => api.delete(`/admin/announcements/${id}`),
+  publishAnnouncement: (id) => api.patch(`/admin/announcements/${id}/publish`),
+  archiveAnnouncement: (id) => api.patch(`/admin/announcements/${id}/archive`),
+  toggleAnnouncementPin: (id) => api.patch(`/admin/announcements/${id}/pin`),
 };
 
 export default adminApi;

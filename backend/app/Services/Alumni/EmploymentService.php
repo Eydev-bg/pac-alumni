@@ -13,6 +13,7 @@ namespace App\Services\Alumni;
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
 use App\Enums\UserRole;
+use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\EmploymentRecord;
 use App\Models\EmploymentStatusHistory;  // ← ADDED
@@ -90,6 +91,9 @@ class EmploymentService
             $graduate = $profile->graduate;
             $oldStatus = $profile->employment_status?->value;
 
+            // ─── Phase 4.1: Track profile activity for reminders ──
+            $user->update(['last_profile_update_at' => now()]);
+
             if ($data['employment_status'] === 'employed') {
                 // ─── Mark previous records as not current ────
                 EmploymentRecord::where('graduate_id', $graduate->id)
@@ -134,6 +138,10 @@ class EmploymentService
 
                 // ─── Feature 18: Auto-trigger notifications ──
                 $this->notifyAdminAndDeptHead($user, $graduate, $profile, 'employed', $record);
+
+                // ─── Phase 3.1: Achievement feed entries ─────
+                AchievementFeed::recordEmployment($profile, $record, $user->full_name);
+                AchievementFeed::maybeRecordProfileCompleted($profile);
 
                 return [
                     'employment_status' => 'employed',

@@ -1,159 +1,114 @@
 <?php
 // ═══════════════════════════════════════════════════════════
 //  FILE LOCATION: backend/app/Http/Controllers/Api/Admin/ReportController.php
-//  Features 40-46: All report exports
+//  Consolidated report exports (xlsx/csv/pdf) for the Analytics
+//  Dashboard header. See app/Exports/*Export.php for the queries.
 // ═══════════════════════════════════════════════════════════
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Exports\AlumniIdListExport;
+use App\Exports\BoardPassingExport;
+use App\Exports\EmploymentExport;
 use App\Http\Controllers\Controller;
-use App\Models\AlumniProfile;
-use App\Models\BoardExamRecord;
-use App\Models\Graduate;
-use App\Models\VerificationLog;
-use App\Traits\ApiResponse;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\ReportExportRequest;
+use App\Models\Course;
+use App\Models\Department;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
-    use ApiResponse;
-
     /**
-     * GET /api/admin/reports/board-passing
-     * Feature 41: Board passing report
+     * GET /api/admin/reports/board-passing/export
+     * Download the board passing report as Excel, CSV, or PDF.
      */
-    public function boardPassing(Request $request): JsonResponse
+    public function exportBoardPassing(ReportExportRequest $request)
     {
-        $data = BoardExamRecord::with(['graduate:id,alumni_id_number,first_name,last_name,department_id', 'graduate.department:id,name,code'])
-            ->when($request->department_id, fn($q) => $q->whereHas('graduate', fn($g) => $g->where('department_id', $request->department_id)))
-            ->when($request->year, fn($q) => $q->where('exam_year', $request->year))
-            ->orderBy('exam_year', 'desc')
-            ->get()
-            ->map(fn($r) => [
-                'alumni_id' => $r->graduate?->alumni_id_number,
-                'name' => $r->graduate?->full_name,
-                'department' => $r->graduate?->department?->code,
-                'exam_name' => $r->exam_name,
-                'exam_year' => $r->exam_year,
-                'status' => $r->status?->value,
-            ]);
+        [$departmentId, $courseId, $batchYear] = $this->exportFilters($request);
 
-        return $this->success($data, 'Board passing report data.');
+        $export = new BoardPassingExport($departmentId, $courseId, $batchYear);
+        $filename = $this->buildFilename('board-passing', $departmentId, $courseId, $batchYear);
+
+        return $this->downloadExport($export, $filename, $request->validated('format'));
     }
 
     /**
-     * GET /api/admin/reports/employment
-     * Feature 42: Employment report
+     * GET /api/admin/reports/employment/export
+     * Download the employment report as Excel, CSV, or PDF.
      */
-    public function employment(Request $request): JsonResponse
+    public function exportEmployment(ReportExportRequest $request)
     {
-        $data = AlumniProfile::with(['graduate:id,alumni_id_number,first_name,last_name,department_id,graduation_year', 'graduate.department:id,name,code'])
-            ->when($request->department_id, fn($q) => $q->whereHas('graduate', fn($g) => $g->where('department_id', $request->department_id)))
-            ->get()
-            ->map(fn($r) => [
-                'alumni_id' => $r->graduate?->alumni_id_number,
-                'name' => $r->graduate?->full_name,
-                'department' => $r->graduate?->department?->code,
-                'graduation_year' => $r->graduate?->graduation_year,
-                'employment_status' => $r->employment_status?->value,
-                'board_status' => $r->board_status?->value,
-            ]);
+        [$departmentId, $courseId, $batchYear] = $this->exportFilters($request);
 
-        return $this->success($data, 'Employment report data.');
+        $export = new EmploymentExport($departmentId, $courseId, $batchYear);
+        $filename = $this->buildFilename('employment', $departmentId, $courseId, $batchYear);
+
+        return $this->downloadExport($export, $filename, $request->validated('format'));
     }
 
     /**
-     * GET /api/admin/reports/department-summary
-     * Feature 43
+     * GET /api/admin/reports/alumni-id-list/export
+     * Download the alumni ID list as Excel, CSV, or PDF.
      */
-    public function departmentSummary(): JsonResponse
+    public function exportAlumniIdList(ReportExportRequest $request)
     {
-        $departments = \App\Models\Department::withCount('graduates')->get();
+        [$departmentId, $courseId, $batchYear] = $this->exportFilters($request);
 
-        $data = $departments->map(function ($dept) {
-            $boardPassers = BoardExamRecord::whereHas('graduate', fn($q) => $q->where('department_id', $dept->id))
-                ->where('status', 'passer')->count();
-            $employed = AlumniProfile::whereHas('graduate', fn($q) => $q->where('department_id', $dept->id))
-                ->where('employment_status', 'employed')->count();
+        $export = new AlumniIdListExport($departmentId, $courseId, $batchYear);
+        $filename = $this->buildFilename('alumni-id-list', $departmentId, $courseId, $batchYear);
 
-            return [
-                'department' => $dept->name,
-                'code' => $dept->code,
-                'total_graduates' => $dept->graduates_count,
-                'board_passers' => $boardPassers,
-                'employed' => $employed,
-                'is_board_program' => $dept->is_board_program,
-            ];
-        });
-
-        return $this->success($data, 'Department summary report.');
+        return $this->downloadExport($export, $filename, $request->validated('format'));
     }
 
     /**
-     * GET /api/admin/reports/alumni-master-list
-     * Feature 44
+     * Normalize the nullable export filters from the request.
+     *
+     * @return array{0: ?int, 1: ?int, 2: ?int} [departmentId, courseId, batchYear]
      */
-    public function alumniMasterList(Request $request): JsonResponse
+    private function exportFilters(ReportExportRequest $request): array
     {
-        $data = Graduate::with('department:id,name,code')
-            ->collegeOnly()
-            ->when($request->department_id, fn($q) => $q->where('department_id', $request->department_id))
-            ->when($request->year, fn($q) => $q->where('graduation_year', $request->year))
-            ->orderBy('last_name')
-            ->get()
-            ->map(fn($g) => [
-                'alumni_id' => $g->alumni_id_number,
-                'alumni_id' => $g->alumni_id_number,
-                'name' => $g->full_name,
-                'department' => $g->department?->code,
-                'graduation_year' => $g->graduation_year,
-                'has_account' => $g->user_id !== null,
-            ]);
-
-        return $this->success($data, 'Alumni master list.');
+        return [
+            $request->integer('department_id') ?: null,
+            $request->integer('course_id') ?: null,
+            $request->integer('batch_year') ?: null,
+        ];
     }
 
     /**
-     * GET /api/admin/reports/verification-logs
-     * Feature 45
+     * Build a descriptive filename from the active filters.
+     * Pattern: {prefix}-{dept-code?}-{course-code?}-batch-{year?}-{Y-m-d}
      */
-    public function verificationLogs(): JsonResponse
+    private function buildFilename(string $prefix, ?int $departmentId, ?int $courseId, ?int $batchYear): string
     {
-        $data = VerificationLog::orderBy('created_at', 'desc')
-            ->get()
-            ->map(fn($l) => [
-                'alumni_id' => $l->alumni_id_input,
-                'name' => $l->name_input,
-                'email' => $l->email_input,
-                'year' => $l->graduation_year_input,
-                'status' => $l->status?->value,
-                'rejection_reason' => $l->rejection_reason,
-                'ip' => $l->ip_address,
-                'date' => $l->created_at?->toISOString(),
-            ]);
+        $parts = [$prefix];
 
-        return $this->success($data, 'Verification logs report.');
+        if ($departmentId) {
+            $dept = Department::find($departmentId);
+            $parts[] = $dept ? strtolower($dept->code) : "dept-{$departmentId}";
+        }
+        if ($courseId) {
+            $course = Course::find($courseId);
+            $parts[] = $course ? strtolower($course->code) : "course-{$courseId}";
+        }
+        if ($batchYear) {
+            $parts[] = "batch-{$batchYear}";
+        }
+        $parts[] = now()->format('Y-m-d');
+
+        return implode('-', $parts);
     }
 
     /**
-     * GET /api/admin/reports/alumni-id-list
-     * Feature 46
+     * Stream the given export to the browser in the requested format.
      */
-    public function alumniIdList(): JsonResponse
+    private function downloadExport($export, string $filename, string $format)
     {
-        $data = Graduate::collegeOnly()
-            ->whereNotNull('alumni_id_number')
-            ->with('department:id,name,code')
-            ->orderBy('alumni_id_number')
-            ->get()
-            ->map(fn($g) => [
-                'alumni_id' => $g->alumni_id_number,
-                'name' => $g->full_name,
-                'department' => $g->department?->code,
-                'graduation_year' => $g->graduation_year,
-            ]);
+        $writerType = match ($format) {
+            'xlsx' => \Maatwebsite\Excel\Excel::XLSX,
+            'csv'  => \Maatwebsite\Excel\Excel::CSV,
+            'pdf'  => \Maatwebsite\Excel\Excel::DOMPDF,
+        };
 
-        return $this->success($data, 'Alumni ID list.');
+        return Excel::download($export, "{$filename}.{$format}", $writerType);
     }
 }

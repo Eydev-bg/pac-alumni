@@ -77,6 +77,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
+   * Re-fetch the current user from the server and update local state.
+   * Used after the admin edits their own profile so the UI (e.g. Header)
+   * reflects the new name/email without a full page reload.
+   */
+  const refreshUser = useCallback(async () => {
+    const response = await authApi.getMe();
+    setUser(response.data.data);
+    tokenStorage.setUser(response.data.data);
+    return response.data.data;
+  }, []);
+
+  /**
    * Check if user has a specific role.
    */
  const hasRole = useCallback(
@@ -96,6 +108,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     hasRole,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

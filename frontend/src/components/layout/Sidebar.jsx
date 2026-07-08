@@ -1,18 +1,14 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
   HiOutlineHome,
-  HiOutlineUsers,
-  HiOutlineShieldCheck,
   HiOutlineAcademicCap,
   HiOutlineDocumentArrowUp,
   HiOutlineUserGroup,
   HiOutlineCog6Tooth,
-  HiOutlineClipboardDocumentCheck,
-  HiOutlineNoSymbol,
   HiOutlinePresentationChartBar,
-  HiOutlineBell,
-  HiOutlineDocumentChartBar,
   HiOutlineBriefcase,
+  HiOutlineBuildingOffice2,
+  HiOutlineMegaphone,
   HiOutlineXMark,
 } from "react-icons/hi2";
 
@@ -24,17 +20,6 @@ const navItems = [
     ],
   },
   {
-    section: "User Management",
-    items: [
-      { name: "Users", path: "/admin/users", icon: HiOutlineUsers },
-      {
-        name: "Login Logs",
-        path: "/admin/login-logs",
-        icon: HiOutlineShieldCheck,
-      },
-    ],
-  },
-  {
     section: "Academic",
     items: [
       {
@@ -42,29 +27,12 @@ const navItems = [
         path: "/admin/departments",
         icon: HiOutlineAcademicCap,
       },
-      { name: "Courses", path: "/admin/courses", icon: HiOutlineAcademicCap },
       { name: "Graduates", path: "/admin/graduates", icon: HiOutlineUserGroup },
       {
         name: "Import Graduates",
         path: "/admin/graduates/import",
         icon: HiOutlineDocumentArrowUp,
       },
-    ],
-  },
-  {
-    section: "Verification",
-    items: [
-      {
-        name: "Registration Settings",
-        path: "/admin/registration/settings",
-        icon: HiOutlineCog6Tooth,
-      },
-      {
-        name: "Verification",
-        path: "/admin/verification/logs",
-        icon: HiOutlineClipboardDocumentCheck,
-      },
-      { name: "Blacklist", path: "/admin/blacklist", icon: HiOutlineNoSymbol },
     ],
   },
   {
@@ -78,22 +46,37 @@ const navItems = [
     ],
   },
   {
-    section: "Directory & Reports",
+    section: "Employers & Jobs",
     items: [
       {
-        name: "Reports & Export",
-        path: "/admin/reports",
-        icon: HiOutlineDocumentChartBar,
-      },
-      {
-        name: "Notifications",
-        path: "/admin/notifications",
-        icon: HiOutlineBell,
+        name: "Employers",
+        path: "/admin/employers",
+        icon: HiOutlineBuildingOffice2,
       },
       {
         name: "Job Moderation",
         path: "/admin/job-posts",
         icon: HiOutlineBriefcase,
+      },
+    ],
+  },
+  {
+    section: "Communication",
+    items: [
+      {
+        name: "Announcements",
+        path: "/admin/announcements",
+        icon: HiOutlineMegaphone,
+      },
+    ],
+  },
+  {
+    section: "Settings",
+    items: [
+      {
+        name: "Settings",
+        path: "/admin/settings",
+        icon: HiOutlineCog6Tooth,
       },
     ],
   },

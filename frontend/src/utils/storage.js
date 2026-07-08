@@ -12,8 +12,7 @@
  * NEVER use localStorage — it's accessible to any XSS attack.
  */
 
-const TOKEN_KEY = 'pac_auth_token';
-const USER_KEY = 'pac_auth_user';
+import { TOKEN_KEY, USER_KEY } from '../config/constants';
 
 // ─── In-memory fallback (most secure, but lost on refresh) ───
 let memoryToken = null;

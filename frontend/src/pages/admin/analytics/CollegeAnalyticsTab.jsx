@@ -125,7 +125,7 @@ export default function CollegeAnalyticsTab() {
               value={d.id}
               className="bg-[#1a2e5a] text-slate-300"
             >
-              {d.code} — {d.name}
+             {d.name}
             </option>
           ))}
         </select>

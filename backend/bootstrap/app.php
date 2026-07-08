@@ -23,6 +23,26 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
         ]);
+
+        // SECURITY: Trust the configured reverse proxy / load balancer so
+        // $request->ip() reflects the real client (accurate login logs +
+        // brute-force throttle keys). Driven by TRUSTED_PROXIES env — note the
+        // config service is not yet bound at this bootstrap stage, so env() is
+        // the correct source here. In production set TRUSTED_PROXIES as a real
+        // environment variable so it resolves even under `config:cache`.
+        $proxies = (string) env('TRUSTED_PROXIES', '');
+        if ($proxies !== '') {
+            $middleware->trustProxies(
+                at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)),
+            );
+        }
+
+        // SECURITY: Attach hardening headers to every response and reject JWTs
+        // whose password fingerprint is stale (invalidated after a password change).
+        $middleware->append([
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\EnsureTokenPasswordIsCurrent::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 

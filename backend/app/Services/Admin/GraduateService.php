@@ -2,14 +2,17 @@
 
 namespace App\Services\Admin;
 
+use App\Enums\AuditAction;
 use App\Models\Graduate;
 use App\Repositories\Contracts\GraduateRepositoryInterface;
+use App\Services\Audit\AuditLogService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class GraduateService
 {
     public function __construct(
         protected GraduateRepositoryInterface $graduateRepo,
+        protected AuditLogService $auditLog,
     ) {}
 
     public function list(
@@ -61,7 +64,15 @@ class GraduateService
             throw new \Exception('Cannot delete graduate with a linked alumni account. Deactivate the account first.', 422);
         }
 
+        // Snapshot identifying details before the row is gone.
+        $snapshot = [
+            'alumni_id_number' => $graduate->alumni_id_number,
+            'name' => trim($graduate->first_name . ' ' . $graduate->last_name),
+        ];
+
         $this->graduateRepo->delete($graduate);
+
+        $this->auditLog->record(AuditAction::GRADUATE_DELETED, $graduate, $snapshot);
     }
 
     /**
@@ -77,7 +88,15 @@ class GraduateService
             throw new \Exception('No valid fields provided for batch update.', 422);
         }
 
-        return $this->graduateRepo->batchUpdate($ids, $filteredData);
+        $count = $this->graduateRepo->batchUpdate($ids, $filteredData);
+
+        $this->auditLog->record(AuditAction::GRADUATE_BATCH_UPDATED, null, [
+            'ids' => array_values($ids),
+            'count' => $count,
+            'fields' => array_keys($filteredData),
+        ]);
+
+        return $count;
     }
 
     /**

@@ -1,13 +1,18 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/pages/admin/analytics/AnalyticsDashboardPage.jsx
-//  FIXED: Export modal rendered outside overflow-hidden container
+//  Consolidated report exports live in the header "Export Report"
+//  dropdown → ReportExportModal (rendered outside overflow-hidden).
 // ═══════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import adminApi from "../../../api/adminApi";
 import LevelAnalyticsTab from "./LevelAnalyticsTab";
 import GraduateTracerTab from "./GraduateTracerTab";
-import TracerExportModal from "./TracerExportModal";
+import ReportExportModal from "./ReportExportModal";
+import {
+  HiOutlineChevronDown,
+  HiOutlineArrowDownTray,
+} from "react-icons/hi2";
 
 const TABS = [
   { key: "tracer", label: "Graduate Tracer" },
@@ -16,35 +21,118 @@ const TABS = [
   { key: "shs", label: "SHS" },
 ];
 
+const REPORTS = [
+  { key: "board", title: "Board Passing Report", exportFn: adminApi.exportBoardPassingReport },
+  { key: "employment", title: "Employment Report", exportFn: adminApi.exportEmploymentReport },
+  { key: "alumni-ids", title: "Alumni ID List", exportFn: adminApi.exportAlumniIdListReport },
+];
+
 export default function AnalyticsDashboardPage() {
   const [activeTab, setActiveTab] = useState("tracer");
 
-  // ─── Export modal state (lifted from GraduateTracerTab) ──
-  const [exportOpen, setExportOpen] = useState(false);
-  const [exportDefaults, setExportDefaults] = useState({
-    courseId: "",
-    batchYear: "",
-    departmentId: "",
-    departments: [],
-    courses: [],
-    years: [],
-  });
+  // ─── Export dropdown + modal state ───────────────────────
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [activeReport, setActiveReport] = useState(null); // { title, exportFn }
+  const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [years, setYears] = useState([]);
+  const dropdownRef = useRef(null);
 
-  // Called by GraduateTracerTab to open the modal with current filters
-  const handleOpenExport = (defaults) => {
-    setExportDefaults(defaults);
-    setExportOpen(true);
+  // Load dropdown data once, for the modal filters
+  useEffect(() => {
+    Promise.all([
+      adminApi.getAllDepartments(),
+      adminApi.getAllCourses(),
+      adminApi.getGraduationYears("college"),
+    ]).then(([deptRes, courseRes, yearRes]) => {
+      const collegeDepts = (deptRes.data.data || []).filter(
+        (d) => !d.education_level || d.education_level === "college",
+      );
+      // Keep only courses that belong to a college department so elem/JHS/SHS
+      // courses can never appear in any export dropdown.
+      const collegeDeptIds = new Set(collegeDepts.map((d) => d.id));
+      const collegeCourses = (courseRes.data.data || []).filter((c) =>
+        collegeDeptIds.has(c.department_id),
+      );
+      setDepartments(collegeDepts);
+      setCourses(collegeCourses);
+      setYears(yearRes.data.data || []);
+    });
+  }, []);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectReport = (report) => {
+    // Default: all college departments + college courses.
+    let filteredDepts = departments;
+    let filteredCourses = courses;
+
+    // Board Passing Report is limited to board-program courses and the
+    // departments that offer at least one.
+    if (report.key === "board") {
+      filteredCourses = courses.filter((c) => c.is_board_program);
+      const boardDeptIds = new Set(filteredCourses.map((c) => c.department_id));
+      filteredDepts = departments.filter((d) => boardDeptIds.has(d.id));
+    }
+
+    setActiveReport({
+      ...report,
+      departments: filteredDepts,
+      courses: filteredCourses,
+    });
+    setDropdownOpen(false);
   };
 
   return (
     <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Analytics Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Graduate tracer analytics and institutional data
-          </p>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Analytics Dashboard</h1>
+            <p className="text-sm text-slate-400 mt-1">
+              Graduate tracer analytics and institutional data
+            </p>
+          </div>
+
+          {/* Export Report dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen((o) => !o)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#c8a84e] bg-[#c8a84e]/10 border border-[#c8a84e]/20 rounded-xl hover:bg-[#c8a84e]/20 transition-colors"
+            >
+              <HiOutlineArrowDownTray className="w-4 h-4" />
+              Export Report
+              <HiOutlineChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  dropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-[#0f172a] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-40">
+                {REPORTS.map((report) => (
+                  <button
+                    key={report.key}
+                    onClick={() => handleSelectReport(report)}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-300 hover:bg-[#c8a84e]/10 hover:text-[#c8a84e] transition-colors"
+                  >
+                    {report.title}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Tabs Container */}
@@ -69,9 +157,7 @@ export default function AnalyticsDashboardPage() {
           </div>
 
           <div className="p-6">
-            {activeTab === "tracer" && (
-              <GraduateTracerTab onOpenExport={handleOpenExport} />
-            )}
+            {activeTab === "tracer" && <GraduateTracerTab />}
             {activeTab === "elementary" && (
               <LevelAnalyticsTab
                 level="elementary"
@@ -98,15 +184,14 @@ export default function AnalyticsDashboardPage() {
       </div>
 
       {/* ═══ EXPORT MODAL — rendered OUTSIDE the overflow-hidden container ═══ */}
-      <TracerExportModal
-        isOpen={exportOpen}
-        onClose={() => setExportOpen(false)}
-        departments={exportDefaults.departments}
-        courses={exportDefaults.courses}
-        years={exportDefaults.years}
-        defaultCourseId={exportDefaults.courseId}
-        defaultBatchYear={exportDefaults.batchYear}
-        defaultDepartmentId={exportDefaults.departmentId}
+      <ReportExportModal
+        isOpen={!!activeReport}
+        onClose={() => setActiveReport(null)}
+        reportTitle={activeReport?.title || ""}
+        exportFn={activeReport?.exportFn}
+        departments={activeReport?.departments || []}
+        courses={activeReport?.courses || []}
+        years={years}
       />
     </div>
   );

@@ -1,5 +1,8 @@
 <?php
-// FILE: backend/database/migrations/0001_01_01_000016_create_job_posts_table.php
+// ═══════════════════════════════════════════════════════════
+//  FILE: backend/database/migrations/2026_03_17_151912_create_job_posts_table.php
+//  Phase 1.1 — HR / Employer Account Module
+// ═══════════════════════════════════════════════════════════
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,23 +14,28 @@ return new class extends Migration
     {
         Schema::create('job_posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('posted_by')->constrained('users');
-            $table->string('job_title', 200);
-            $table->string('company_name', 300);
-            $table->string('job_type', 20);
-            $table->string('industry', 200);
-            $table->string('location_type', 20);
-            $table->string('location_detail', 300)->nullable();
+            $table->foreignId('employer_id')->constrained('employers')->cascadeOnDelete();
+            $table->string('title', 200);
             $table->text('description');
-            $table->text('how_to_apply');
-            $table->foreignId('department_id')->nullable()->constrained('departments')->nullOnDelete();
-            $table->string('status', 20)->default('active');
+            $table->string('company_name', 300); // denormalized from employer for display
+            $table->string('location', 300);
+            $table->string('job_type', 20); // full_time, part_time, contract, freelance, internship
+            $table->decimal('salary_range_min', 12, 2)->nullable();
+            $table->decimal('salary_range_max', 12, 2)->nullable();
+            $table->text('qualifications')->nullable();
+            $table->boolean('is_open')->default(true);
+            $table->string('status', 20)->default('approved'); // pending, approved, rejected
+            $table->text('admin_notes')->nullable();
+            $table->dateTime('expires_at')->nullable();
             $table->timestamps();
+            $table->softDeletes();
+
+            $table->index('employer_id');
             $table->index(['status', 'job_type']);
-            $table->index('industry');
-            $table->index('department_id');
+            $table->index('is_open');
         });
     }
+
     public function down(): void
     {
         Schema::dropIfExists('job_posts');

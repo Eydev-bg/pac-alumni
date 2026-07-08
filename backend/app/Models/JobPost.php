@@ -8,45 +8,70 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JobPost extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
-        'posted_by',
-        'job_title',
-        'company_name',
-        'job_type',
-        'industry',
-        'location_type',
-        'location_detail',
+        'employer_id',
+        'title',
         'description',
-        'how_to_apply',
-        'department_id',
+        'company_name',
+        'location',
+        'job_type',
+        'salary_range_min',
+        'salary_range_max',
+        'qualifications',
+        'is_open',
         'status',
+        'admin_notes',
+        'expires_at',
     ];
 
-    public function postedBy(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(User::class, 'posted_by');
+        return [
+            'is_open' => 'boolean',
+            'salary_range_min' => 'decimal:2',
+            'salary_range_max' => 'decimal:2',
+            'expires_at' => 'datetime',
+        ];
     }
 
-    public function department(): BelongsTo
+    // ─── Relationships ───────────────────────────────────────
+    public function employer(): BelongsTo
     {
-        return $this->belongsTo(Department::class);
+        return $this->belongsTo(Employer::class);
     }
 
-    public function reports(): HasMany
+    public function applications(): HasMany
     {
-        return $this->hasMany(JobReport::class);
+        return $this->hasMany(JobApplication::class);
     }
 
-    public function scopeActive($query)
+    // ─── Query Scopes ────────────────────────────────────────
+    public function scopeOpen($query)
     {
-        return $query->where('status', 'active');
+        return $query->where('is_open', true);
     }
-    public function scopeSearch($query, ?string $s)
+
+    public function scopeApproved($query)
     {
-        if (empty($s)) return $query;
-        return $query->where(fn($q) => $q->where('job_title', 'LIKE', "%{$s}%")->orWhere('company_name', 'LIKE', "%{$s}%"));
+        return $query->where('status', 'approved');
+    }
+
+    public function scopeSearch($query, ?string $search)
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
+            $q->where('title', 'LIKE', "%{$search}%")
+                ->orWhere('company_name', 'LIKE', "%{$search}%")
+                ->orWhere('location', 'LIKE', "%{$search}%");
+        });
     }
 }

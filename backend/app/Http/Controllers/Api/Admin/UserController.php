@@ -118,11 +118,11 @@ class UserController extends Controller
     {
         try {
             $user = $this->userService->findByUuid($uuid);
-            $newPassword = $this->userService->resetPassword($user);
+            $this->userService->resetPassword($user);
 
             return $this->success(
-                ['temporary_password' => $newPassword],
-                'Password has been reset. Please share the temporary password securely.'
+                null,
+                'A password reset link has been emailed to the user.'
             );
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 500);

@@ -1,9 +1,11 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { USER_KEY } from "../config/constants";
 
 const ROLE_DASHBOARDS = {
   admin: "/admin/dashboard",
   alumni: "/alumni/dashboard",
+  employer: "/employer/dashboard",
 };
 
 function LoadingScreen() {
@@ -42,7 +44,7 @@ export function RoleGuard({ roles = [] }) {
   let userRole = user?.role;
   if (!userRole) {
     try {
-      const stored = sessionStorage.getItem("pac_auth_user");
+      const stored = sessionStorage.getItem(USER_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         userRole = parsed.role;
@@ -83,7 +85,7 @@ export function GuestRoute() {
   let role = user?.role;
   if (!role) {
     try {
-      const stored = sessionStorage.getItem("pac_auth_user");
+      const stored = sessionStorage.getItem(USER_KEY);
       if (stored) role = JSON.parse(stored).role;
     } catch (e) {
       // ignore

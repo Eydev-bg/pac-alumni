@@ -31,6 +31,7 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at',
         'last_login_at',
         'last_login_ip',
+        'last_profile_update_at',
     ];
 
     // ─── Hidden from JSON/Array ──────────────────────────────
@@ -49,6 +50,7 @@ class User extends Authenticatable implements JWTSubject
             'status' => UserStatus::class,
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
+            'last_profile_update_at' => 'datetime',
             'password' => 'hashed', // Auto-hash on set (Laravel 10+)
         ];
     }
@@ -83,7 +85,20 @@ class User extends Authenticatable implements JWTSubject
         return [
             'uuid' => $this->uuid,
             'role' => $this->role->value,
+            // SECURITY: Binds the token to the current password. When the password
+            // changes this fingerprint changes, so tokens issued beforehand no
+            // longer validate (see EnsureTokenPasswordIsCurrent middleware).
+            'pwf' => $this->passwordFingerprint(),
         ];
+    }
+
+    /**
+     * Short, non-reversible fingerprint of the current (hashed) password.
+     * Used as a JWT claim to invalidate stale tokens after a password change.
+     */
+    public function passwordFingerprint(): string
+    {
+        return substr(hash('sha256', (string) $this->password), 0, 16);
     }
 
     // ─── Relationships ───────────────────────────────────────
@@ -92,9 +107,19 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(LoginActivityLog::class);
     }
 
+    public function emailReminderLogs(): HasMany
+    {
+        return $this->hasMany(EmailReminderLog::class);
+    }
+
     public function alumniProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(AlumniProfile::class);
+    }
+
+    public function employer(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Employer::class);
     }
 
     // ─── Accessors ───────────────────────────────────────────

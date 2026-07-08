@@ -9,6 +9,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl } from "../../../utils/formatters";
+import AchievementFeed from "./AchievementFeed";
+import ProfileCompletion from "./ProfileCompletion";
 import {
   HiOutlineAcademicCap,
   HiOutlineBuildingOffice2,
@@ -154,6 +156,9 @@ export default function AlumniDashboardPage() {
         </div>
       </div>
 
+      {/* ━━━━ Profile Completion (Phase 3.2) ━━━━ */}
+      <ProfileCompletion />
+
       {/* ━━━━ Info Cards Grid ━━━━ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Alumni ID Card */}
@@ -275,6 +280,9 @@ export default function AlumniDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* ━━━━ Achievement Feed (Phase 3.1) ━━━━ */}
+      <AchievementFeed />
 
       {/* ━━━━ Quick Actions (Future Phases) ━━━━ */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">

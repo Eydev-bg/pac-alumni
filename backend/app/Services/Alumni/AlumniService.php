@@ -8,6 +8,7 @@
 
 namespace App\Services\Alumni;
 
+use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
@@ -177,6 +178,12 @@ class AlumniService
                         $changes
                     );
                 }
+
+                // ─── Phase 4.1: Track profile activity for reminders ──
+                $user->update(['last_profile_update_at' => now()]);
+
+                // ─── Phase 3.1: Profile-completion achievement ──
+                AchievementFeed::maybeRecordProfileCompleted($profile);
             }
 
             return [
@@ -203,8 +210,11 @@ class AlumniService
             // Store the file
             $path = $file->storeAs('', $filename, 'public');
 
-            // Update user record
-            $user->update(['profile_picture' => '/storage/' . $path]);
+            // Update user record (+ track profile activity for reminders)
+            $user->update([
+                'profile_picture' => '/storage/' . $path,
+                'last_profile_update_at' => now(),
+            ]);
 
             // Log activity
             $profile = AlumniProfile::where('user_id', $user->id)->first();
@@ -216,6 +226,9 @@ class AlumniService
                     'Alumni uploaded a new profile picture.',
                     null
                 );
+
+                // ─── Phase 3.1: Profile-completion achievement ──
+                AchievementFeed::maybeRecordProfileCompleted($profile);
             }
 
             return [

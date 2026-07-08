@@ -13,12 +13,18 @@ import {
   HiOutlineUser,
   HiOutlineClipboardDocumentCheck,
   HiOutlineBriefcase,
+  HiOutlineNewspaper,
+  HiOutlineClipboardDocumentList,
+  HiOutlineMegaphone,
+  HiOutlineChatBubbleLeftRight,
 } from "react-icons/hi2";
 
 export default function AlumniLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isBoardProgram, setIsBoardProgram] = useState(false);
+  const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   // Check if alumni's course is a board program
   useEffect(() => {
@@ -31,6 +37,34 @@ export default function AlumniLayout() {
         }
       })
       .catch(() => {});
+  }, []);
+
+  // Unread announcement count for the sidebar badge. Polls periodically so
+  // the badge stays roughly in sync while the alumni navigates around.
+  useEffect(() => {
+    const fetchUnread = () =>
+      alumniApi
+        .getAnnouncementsUnreadCount()
+        .then((res) => setUnreadAnnouncements(res.data.data.unread_count))
+        .catch(() => {});
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Unread message count for the sidebar badge (Phase 3.3). Polls every 30s to
+  // stay in sync with the inbox's own auto-refresh.
+  useEffect(() => {
+    const fetchUnread = () =>
+      alumniApi
+        .getMessagesUnreadCount()
+        .then((res) => setUnreadMessages(res.data.data.unread_count))
+        .catch(() => {});
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const navItems = [
@@ -69,15 +103,43 @@ export default function AlumniLayout() {
         },
       ],
     },
-    // ── Future Phase Nav Items ──────────────────────────
-    // {
-    //   section: "Community",
-    //   items: [
-    //     { name: "Job Board", path: "/alumni/jobs", icon: HiOutlineNewspaper },
-    //     { name: "Alumni Directory", path: "/alumni/directory", icon: HiOutlineMagnifyingGlass },
-    //     { name: "Messages", path: "/alumni/messages", icon: HiOutlineChatBubbleLeftRight },
-    //   ],
-    // },
+    {
+      section: "Careers",
+      items: [
+        {
+          name: "Job Board",
+          path: "/alumni/jobs",
+          icon: HiOutlineNewspaper,
+        },
+        {
+          name: "My Applications",
+          path: "/alumni/my-applications",
+          icon: HiOutlineClipboardDocumentList,
+        },
+      ],
+    },
+    {
+      section: "Community",
+      items: [
+        {
+          name: "Messages",
+          path: "/alumni/messages",
+          icon: HiOutlineChatBubbleLeftRight,
+          badge: unreadMessages,
+        },
+      ],
+    },
+    {
+      section: "Updates",
+      items: [
+        {
+          name: "Announcements",
+          path: "/alumni/announcements",
+          icon: HiOutlineMegaphone,
+          badge: unreadAnnouncements,
+        },
+      ],
+    },
   ];
 
   const linkClasses = (isActive) =>
@@ -141,8 +203,19 @@ export default function AlumniLayout() {
                     className={({ isActive }) => linkClasses(isActive)}
                     title={!sidebarOpen ? item.name : undefined}
                   >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                    {sidebarOpen && <span>{item.name}</span>}
+                    <span className="relative flex-shrink-0">
+                      <item.icon className="w-5 h-5" />
+                      {/* Collapsed sidebar: show a dot indicator on the icon. */}
+                      {!sidebarOpen && item.badge > 0 && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#c8a84e] ring-2 ring-white" />
+                      )}
+                    </span>
+                    {sidebarOpen && <span className="flex-1">{item.name}</span>}
+                    {sidebarOpen && item.badge > 0 && (
+                      <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[0.65rem] font-bold text-white rounded-full bg-[#c8a84e]">
+                        {item.badge > 99 ? "99+" : item.badge}
+                      </span>
+                    )}
                   </NavLink>
                 </li>
               ))}

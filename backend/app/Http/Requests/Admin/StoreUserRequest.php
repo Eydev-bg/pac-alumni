@@ -48,7 +48,7 @@ class StoreUserRequest extends FormRequest
     {
         return [
             'email.unique' => 'This email address is already registered.',
-            'role.in' => 'Invalid role. Allowed: dept_head, elem_principal, jhs_shs_principal.',
+            'role.in' => 'Invalid role. Admins may only assign the alumni role here.',
         ];
     }
 }

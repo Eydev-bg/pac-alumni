@@ -20,3 +20,6 @@ require __DIR__ . '/api/admin.php';
 
 // ─── Alumni Routes (Protected: auth + role:alumni) ───────
 require __DIR__ . '/api/alumni.php';
+
+// ─── Employer Routes (Public register/login + role:employer) ──
+require __DIR__ . '/api/employer.php';

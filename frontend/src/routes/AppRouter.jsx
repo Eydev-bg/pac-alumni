@@ -10,8 +10,6 @@ import ResetPasswordPage from "../pages/auth/ResetPasswordPage";
 import AlumniRegisterPage from "../pages/auth/AlumniRegisterPage";
 
 import DashboardPage from "../pages/admin/dashboard/DashboardPage";
-import UsersListPage from "../pages/admin/users/UsersListPage";
-import UserDetailPage from "../pages/admin/users/UserDetailPage";
 import LoginLogsPage from "../pages/admin/login-logs/LoginLogsPage";
 import DepartmentsListPage from "../pages/admin/departments/DepartmentsListPage";
 import DepartmentDetailPage from "../pages/admin/departments/DepartmentDetailPage";
@@ -19,20 +17,36 @@ import GraduateImportPage from "../pages/admin/graduates/GraduateImportPage";
 import GraduatesListPage from "../pages/admin/graduates/GraduatesListPage";
 import GraduateDetailPage from "../pages/admin/graduates/GraduateDetailPage";
 import ImportHistoryPage from "../pages/admin/graduates/ImportHistoryPage";
-import RegistrationSettingsPage from "../pages/admin/verification/RegistrationSettingsPage";
 import VerificationLogsPage from "../pages/admin/verification/VerificationLogsPage";
-import BlacklistPage from "../pages/admin/verification/BlacklistPage";
 import AnalyticsDashboardPage from "../pages/admin/analytics/AnalyticsDashboardPage";
 import NotificationsPage from "../pages/admin/notifications/NotificationsPage";
-import ReportsPage from "../pages/admin/reports/ReportsPage";
-import JobPostsPage from "../pages/admin/job-posts/JobPostsPage";
-import CoursesListPage from "../pages/admin/courses/CoursesListPage";
+import EmployerListPage from "../pages/admin/employers/EmployerListPage";
+import EmployerDetailPage from "../pages/admin/employers/EmployerDetailPage";
+import JobModerationListPage from "../pages/admin/job-moderation/JobModerationListPage";
+import JobModerationDetailPage from "../pages/admin/job-moderation/JobModerationDetailPage";
+import AnnouncementListPage from "../pages/admin/announcements/AnnouncementListPage";
+import AnnouncementFormPage from "../pages/admin/announcements/AnnouncementFormPage";
+import SettingsPage from "../pages/admin/settings/SettingsPage";
 
 import AlumniLayout from "../components/layout/AlumniLayout";
 import AlumniDashboardPage from "../pages/alumni/dashboard/AlumniDashboardPage";
 import AlumniProfilePageView from "../pages/alumni/profile/AlumniProfilePage";
 import AlumniEmploymentPage from "../pages/alumni/employment/AlumniEmploymentPage";
 import AlumniBoardExamPage from "../pages/alumni/board-exam/AlumniBoardExamPage";
+import AlumniJobBoardPage from "../pages/alumni/jobs/AlumniJobBoardPage";
+import AlumniJobDetailPage from "../pages/alumni/jobs/AlumniJobDetailPage";
+import AlumniMyApplicationsPage from "../pages/alumni/jobs/AlumniMyApplicationsPage";
+import AlumniAnnouncementsPage from "../pages/alumni/announcements/AlumniAnnouncementsPage";
+import AlumniInboxPage from "../pages/alumni/messages/AlumniInboxPage";
+import AlumniConversationPage from "../pages/alumni/messages/AlumniConversationPage";
+
+import EmployerLayout from "../components/layout/EmployerLayout";
+import EmployerRegisterPage from "../pages/employer/auth/EmployerRegisterPage";
+import EmployerDashboardPage from "../pages/employer/dashboard/EmployerDashboardPage";
+import EmployerProfilePage from "../pages/employer/profile/EmployerProfilePage";
+import EmployerJobListPage from "../pages/employer/jobs/EmployerJobListPage";
+import EmployerJobCreatePage from "../pages/employer/jobs/EmployerJobCreatePage";
+import EmployerJobApplicantsPage from "../pages/employer/jobs/EmployerJobApplicantsPage";
 
 export default function AppRouter() {
   return (
@@ -49,6 +63,8 @@ export default function AppRouter() {
             />
             <Route path="/register" element={<AlumniRegisterPage />} />
           </Route>
+          {/* Employer registration is a standalone full-page form */}
+          <Route path="/employer/register" element={<EmployerRegisterPage />} />
         </Route>
 
         {/* ─── Admin Routes ──────────────────────────── */}
@@ -57,15 +73,12 @@ export default function AppRouter() {
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="users" element={<UsersListPage />} />
-              <Route path="users/:uuid" element={<UserDetailPage />} />
               <Route path="login-logs" element={<LoginLogsPage />} />
               <Route path="departments" element={<DepartmentsListPage />} />
               <Route
                 path="departments/:id"
                 element={<DepartmentDetailPage />}
               />
-              <Route path="courses" element={<CoursesListPage />} />
               <Route path="graduates" element={<GraduatesListPage />} />
               <Route path="graduates/import" element={<GraduateImportPage />} />
               <Route
@@ -74,18 +87,19 @@ export default function AppRouter() {
               />
               <Route path="graduates/:id" element={<GraduateDetailPage />} />
               <Route
-                path="registration/settings"
-                element={<RegistrationSettingsPage />}
-              />
-              <Route
                 path="verification/logs"
                 element={<VerificationLogsPage />}
               />
-              <Route path="blacklist" element={<BlacklistPage />} />
               <Route path="analytics" element={<AnalyticsDashboardPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
-              <Route path="reports" element={<ReportsPage />} />
-              <Route path="job-posts" element={<JobPostsPage />} />
+              <Route path="employers" element={<EmployerListPage />} />
+              <Route path="employers/:id" element={<EmployerDetailPage />} />
+              <Route path="job-posts" element={<JobModerationListPage />} />
+              <Route path="job-posts/:id" element={<JobModerationDetailPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="announcements" element={<AnnouncementListPage />} />
+              <Route path="announcements/new" element={<AnnouncementFormPage />} />
+              <Route path="announcements/:id/edit" element={<AnnouncementFormPage />} />
             </Route>
           </Route>
         </Route>
@@ -99,6 +113,27 @@ export default function AppRouter() {
               <Route path="profile" element={<AlumniProfilePageView />} />
               <Route path="employment" element={<AlumniEmploymentPage />} />
               <Route path="board-exam" element={<AlumniBoardExamPage />} />
+              <Route path="jobs" element={<AlumniJobBoardPage />} />
+              <Route path="jobs/:id" element={<AlumniJobDetailPage />} />
+              <Route path="my-applications" element={<AlumniMyApplicationsPage />} />
+              <Route path="announcements" element={<AlumniAnnouncementsPage />} />
+              <Route path="messages" element={<AlumniInboxPage />} />
+              <Route path="messages/:id" element={<AlumniConversationPage />} />
+            </Route>
+          </Route>
+        </Route>
+
+        {/* ─── Employer Routes ───────────────────────── */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<RoleGuard roles={["employer"]} />}>
+            <Route path="/employer" element={<EmployerLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<EmployerDashboardPage />} />
+              <Route path="profile" element={<EmployerProfilePage />} />
+              <Route path="jobs" element={<EmployerJobListPage />} />
+              <Route path="jobs/new" element={<EmployerJobCreatePage />} />
+              <Route path="jobs/:id/edit" element={<EmployerJobCreatePage />} />
+              <Route path="jobs/:id/applicants" element={<EmployerJobApplicantsPage />} />
             </Route>
           </Route>
         </Route>

@@ -97,7 +97,7 @@ export default function GraduateDetailPage() {
     [
       "Department",
       graduate.department
-        ? `${graduate.department.code} — ${graduate.department.name}`
+        ? `${graduate.department.name}`
         : "—",
     ],
   ];
@@ -107,7 +107,7 @@ export default function GraduateDetailPage() {
       [
         "Course",
         graduate.course
-          ? `${graduate.course.code} — ${graduate.course.name}`
+          ? `${graduate.course.name}`
           : "—",
       ],
       ["Has Alumni Account", hasAlumniAccount ? "Yes" : "No"],
@@ -263,7 +263,7 @@ export default function GraduateDetailPage() {
                       </div>
                       {(r.start_date || r.end_date) && (
                         <p className="text-xs text-slate-500 mt-2">
-                          {r.start_date || "?"} —{" "}
+                          {r.start_date || "?"} - {" "}
                           {r.is_current ? "Present" : r.end_date || "?"}
                         </p>
                       )}

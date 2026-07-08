@@ -10,10 +10,14 @@ use App\Http\Resources\Admin\UserResource;
 use App\Models\PasswordReset;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\AuthService;
+use App\Services\Auth\PasswordResetService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
@@ -22,6 +26,7 @@ class AuthController extends Controller
     public function __construct(
         protected AuthService $authService,
         protected UserRepositoryInterface $userRepo,
+        protected PasswordResetService $passwordResetService,
     ) {}
 
     /**
@@ -86,6 +91,66 @@ class AuthController extends Controller
     }
 
     /**
+     * PUT /api/auth/profile
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:100',
+            'last_name'  => 'required|string|max:100',
+            'email'      => [
+                'required', 'email', 'max:150',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+        ]);
+
+        $user->update($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'data'    => $user->fresh(),
+        ]);
+    }
+
+    /**
+     * PUT /api/auth/change-password
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => 'required|string',
+            'password'         => 'required|string|min:8|confirmed',
+        ]);
+
+        if (!Hash::check($validated['current_password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The current password is incorrect.'],
+            ]);
+        }
+
+        $user->update(['password' => Hash::make($validated['password'])]);
+
+        // SECURITY: Changing the password rotates the user's password fingerprint,
+        // which invalidates every previously-issued JWT (see EnsureTokenPasswordIsCurrent).
+        // Issue a fresh token so the CURRENT session stays logged in while all other
+        // active sessions are forced to re-authenticate.
+        $token = JWTAuth::fromUser($user);
+
+        return response()->json([
+            'message' => 'Password changed successfully.',
+            'data' => [
+                'token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            ],
+        ]);
+    }
+
+    /**
      * POST /api/auth/forgot-password
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
@@ -96,19 +161,9 @@ class AuthController extends Controller
         // SECURITY: Always return success message regardless of whether email exists
         // This prevents email enumeration attacks
         if ($user) {
-            // Delete old tokens
-            PasswordReset::where('email', $email)->delete();
-
-            // Create new token
-            $token = Str::random(64);
-            PasswordReset::create([
-                'email' => $email,
-                'token' => Hash::make($token),
-                'created_at' => now(),
-            ]);
-
-            // TODO: Send email with reset link containing $token
-            // Mail::to($email)->queue(new PasswordResetMail($token));
+            // Token creation + queued email are owned by PasswordResetService so
+            // the public and admin-initiated flows share one implementation.
+            $this->passwordResetService->sendResetLink($user);
         }
 
         return $this->success(null, 'If your email exists in our system, you will receive a password reset link.');
