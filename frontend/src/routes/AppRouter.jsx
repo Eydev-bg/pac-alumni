@@ -19,7 +19,6 @@ const AlumniRegisterPage = lazy(() => import("../pages/auth/AlumniRegisterPage")
 
 // ─── Admin pages ─────────────────────────────────────────
 const DashboardPage = lazy(() => import("../pages/admin/dashboard/DashboardPage"));
-const LoginLogsPage = lazy(() => import("../pages/admin/login-logs/LoginLogsPage"));
 const DepartmentsListPage = lazy(() => import("../pages/admin/departments/DepartmentsListPage"));
 const DepartmentDetailPage = lazy(() => import("../pages/admin/departments/DepartmentDetailPage"));
 const GraduateImportPage = lazy(() => import("../pages/admin/graduates/GraduateImportPage"));
@@ -85,7 +84,6 @@ export default function AppRouter() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="login-logs" element={<LoginLogsPage />} />
                 <Route path="departments" element={<DepartmentsListPage />} />
                 <Route
                   path="departments/:id"
