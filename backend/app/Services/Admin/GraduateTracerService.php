@@ -10,6 +10,7 @@ namespace App\Services\Admin;
 use App\Enums\BoardExamStatus;
 use App\Enums\EducationLevel;
 use App\Models\Graduate;
+use App\Support\SqlExpression;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -203,13 +204,15 @@ class GraduateTracerService
                 $query->where('g.course_id', $courseId);
             }
 
+            $monthKey = SqlExpression::monthKey('esh.changed_at');
+
             $results = $query
                 ->selectRaw("
-                    DATE_FORMAT(esh.changed_at, '%Y-%m') as month_key,
+                    {$monthKey} as month_key,
                     SUM(CASE WHEN esh.new_status = 'employed' THEN 1 ELSE 0 END) as became_employed,
                     SUM(CASE WHEN esh.new_status = 'unemployed' THEN 1 ELSE 0 END) as became_unemployed
                 ")
-                ->groupByRaw("DATE_FORMAT(esh.changed_at, '%Y-%m')")
+                ->groupByRaw($monthKey)
                 ->orderBy('month_key')
                 ->get();
 

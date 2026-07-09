@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import {
@@ -16,6 +16,10 @@ const EDUCATION_LEVELS = [
   { value: "college", label: "College" },
 ];
 
+// Import now runs on the server queue; poll the batch until it finishes.
+const POLL_INTERVAL_MS = 2000;
+const FINAL_STATUSES = ["completed", "failed"];
+
 export default function GraduateImportPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -26,6 +30,33 @@ export default function GraduateImportPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const pollRef = useRef(null);
+
+  const stopPolling = () => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  };
+
+  // Stop polling if the user navigates away mid-import.
+  useEffect(() => stopPolling, []);
+
+  const startPolling = (batchId) => {
+    stopPolling();
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await adminApi.getImportDetail(batchId);
+        const batch = res.data.data;
+        setResult(batch);
+        if (FINAL_STATUSES.includes(batch.status)) {
+          stopPolling();
+        }
+      } catch {
+        // Transient polling error — keep trying until a final status arrives.
+      }
+    }, POLL_INTERVAL_MS);
+  };
 
   const handleFileSelect = (selectedFile) => {
     const allowed = ["xlsx", "xls", "csv"];
@@ -66,7 +97,14 @@ export default function GraduateImportPage() {
       formData.append("education_level", educationLevel);
 
       const res = await adminApi.importGraduates(formData);
-      setResult(res.data.data);
+      const batch = res.data.data;
+      setResult(batch);
+
+      // The endpoint returns immediately with a queued/processing batch;
+      // poll import-detail until it reaches a final status.
+      if (!FINAL_STATUSES.includes(batch.status)) {
+        startPolling(batch.id);
+      }
     } catch (err) {
       if (err.response?.status === 422) {
         const errs = err.response.data.errors;
@@ -80,11 +118,14 @@ export default function GraduateImportPage() {
   };
 
   const resetForm = () => {
+    stopPolling();
     setFile(null);
     setEducationLevel("");
     setResult(null);
     setError("");
   };
+
+  const isProcessing = result && !FINAL_STATUSES.includes(result.status);
 
   return (
     <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
@@ -101,7 +142,29 @@ export default function GraduateImportPage() {
         {result && (
           <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-6">
             <div className="flex items-center gap-3 mb-5">
-              {result.status === "completed" ? (
+              {isProcessing ? (
+                <div className="w-12 h-12 rounded-2xl bg-[#c8a84e]/15 flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-7 w-7 text-[#c8a84e]"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                </div>
+              ) : result.status === "completed" ? (
                 <div className="w-12 h-12 rounded-2xl bg-emerald-500/15 flex items-center justify-center">
                   <HiOutlineCheckCircle className="w-7 h-7 text-emerald-400" />
                 </div>
@@ -113,9 +176,17 @@ export default function GraduateImportPage() {
               <div>
                 <h2 className="text-lg font-bold text-white">
                   Import{" "}
-                  {result.status === "completed" ? "Completed" : "Failed"}
+                  {isProcessing
+                    ? "Processing…"
+                    : result.status === "completed"
+                      ? "Completed"
+                      : "Failed"}
                 </h2>
-                <p className="text-sm text-slate-400">{result.file_name}</p>
+                <p className="text-sm text-slate-400">
+                  {isProcessing
+                    ? "Your file is being processed. This can take a moment for large files."
+                    : result.file_name}
+                </p>
               </div>
             </div>
 
@@ -123,7 +194,7 @@ export default function GraduateImportPage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
               <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-white">
-                  {result.total_records}
+                  {result.total_records ?? 0}
                 </p>
                 <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-1 font-semibold">
                   Total Rows
@@ -131,7 +202,7 @@ export default function GraduateImportPage() {
               </div>
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-emerald-400">
-                  {result.imported_count}
+                  {result.imported_count ?? 0}
                 </p>
                 <p className="text-[10px] text-emerald-500 uppercase tracking-wider mt-1 font-semibold">
                   Imported
@@ -139,7 +210,7 @@ export default function GraduateImportPage() {
               </div>
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-amber-400">
-                  {result.duplicate_count}
+                  {result.duplicate_count ?? 0}
                 </p>
                 <p className="text-[10px] text-amber-500 uppercase tracking-wider mt-1 font-semibold">
                   Duplicates
@@ -147,7 +218,7 @@ export default function GraduateImportPage() {
               </div>
               <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-center">
                 <p className="text-2xl font-bold text-red-400">
-                  {result.error_count}
+                  {result.error_count ?? 0}
                 </p>
                 <p className="text-[10px] text-red-500 uppercase tracking-wider mt-1 font-semibold">
                   Errors
@@ -169,26 +240,28 @@ export default function GraduateImportPage() {
               </div>
             )}
 
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={resetForm}
-                className="px-4 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
-              >
-                Import Another
-              </button>
-              <button
-                onClick={() => navigate("/admin/graduates")}
-                className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] rounded-xl hover:from-[#d4b85e] hover:to-[#b89848] transition-all shadow-lg shadow-[#c8a84e]/20"
-              >
-                View Graduates
-              </button>
-              <button
-                onClick={() => navigate("/admin/graduates/import-history")}
-                className="px-4 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
-              >
-                Import History
-              </button>
-            </div>
+            {!isProcessing && (
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={resetForm}
+                  className="px-4 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+                >
+                  Import Another
+                </button>
+                <button
+                  onClick={() => navigate("/admin/graduates")}
+                  className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] rounded-xl hover:from-[#d4b85e] hover:to-[#b89848] transition-all shadow-lg shadow-[#c8a84e]/20"
+                >
+                  View Graduates
+                </button>
+                <button
+                  onClick={() => navigate("/admin/graduates/import-history")}
+                  className="px-4 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+                >
+                  Import History
+                </button>
+              </div>
+            )}
           </div>
         )}
 

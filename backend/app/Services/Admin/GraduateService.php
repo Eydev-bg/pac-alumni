@@ -13,6 +13,7 @@ class GraduateService
     public function __construct(
         protected GraduateRepositoryInterface $graduateRepo,
         protected AuditLogService $auditLog,
+        protected DashboardCacheService $dashboardCache,
     ) {}
 
     public function list(
@@ -54,7 +55,11 @@ class GraduateService
 
     public function update(Graduate $graduate, array $data): Graduate
     {
-        return $this->graduateRepo->update($graduate, $data);
+        $updated = $this->graduateRepo->update($graduate, $data);
+
+        $this->dashboardCache->flush();
+
+        return $updated;
     }
 
     public function delete(Graduate $graduate): void
@@ -73,6 +78,8 @@ class GraduateService
         $this->graduateRepo->delete($graduate);
 
         $this->auditLog->record(AuditAction::GRADUATE_DELETED, $graduate, $snapshot);
+
+        $this->dashboardCache->flush();
     }
 
     /**
@@ -95,6 +102,8 @@ class GraduateService
             'count' => $count,
             'fields' => array_keys($filteredData),
         ]);
+
+        $this->dashboardCache->flush();
 
         return $count;
     }

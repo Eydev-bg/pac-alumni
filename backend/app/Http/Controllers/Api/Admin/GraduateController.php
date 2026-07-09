@@ -116,7 +116,7 @@ class GraduateController extends Controller
      */
     public function import(ImportGraduatesRequest $request): JsonResponse
     {
-        $batch = $this->importService->import(
+        $batch = $this->importService->queue(
             $request->file('file'),
             $request->validated('education_level'),
             auth('api')->id()
@@ -124,7 +124,7 @@ class GraduateController extends Controller
 
         return $this->success(
             new ImportBatchResource($batch),
-            "Import completed. {$batch->imported_count} imported, {$batch->duplicate_count} duplicates, {$batch->error_count} errors."
+            'Import queued. Track its progress in import history.'
         );
     }
 

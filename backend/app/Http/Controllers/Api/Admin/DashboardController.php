@@ -6,6 +6,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Enums\BoardExamStatus;
 use App\Enums\EducationLevel;
 use App\Enums\EmploymentStatus;
 use App\Models\AlumniProfile;
@@ -13,7 +14,10 @@ use App\Models\BoardExamRecord;
 use App\Models\Course;
 use App\Models\Graduate;
 use App\Models\User;
+use App\Services\Admin\DashboardCacheService;
+use App\Support\SqlExpression;
 use App\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -21,18 +25,25 @@ class DashboardController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(
+        protected DashboardCacheService $dashboardCache,
+    ) {}
+
     /**
      * GET /api/admin/dashboard
      * Aggregated dashboard data — single API call for the entire dashboard.
+     * Served from a short-TTL cache; invalidated on graduate imports/edits.
      */
     public function index(): JsonResponse
     {
-        return $this->success([
+        $data = $this->dashboardCache->remember(fn () => [
             'stats' => $this->getStatsCards(),
             'graduates_per_year' => $this->getGraduatesPerYear(),
             'alumni_registrations_per_month' => $this->getAlumniRegistrationsPerMonth(),
             'participation' => $this->getParticipationStats(),
-        ], 'Dashboard data retrieved.');
+        ]);
+
+        return $this->success($data, 'Dashboard data retrieved.');
     }
 
     /**
@@ -61,23 +72,29 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Board passers
-        $boardPassers = BoardExamRecord::where('status', 'passer')->distinct('graduate_id')->count('graduate_id');
+        // Board passers (unique graduates)
+        $boardPassers = $this->distinctGraduateCount(
+            BoardExamRecord::where('status', BoardExamStatus::PASSER->value)
+        );
 
         // Board exam failed (unique graduates). A graduate who has BOTH a passer
         // and a failed record counts as a passer only, so exclude any graduate
-        // who also has a passer record.
-        $boardFailed = BoardExamRecord::where('status', 'failed')
-            ->whereNotIn('graduate_id',
-                BoardExamRecord::where('status', 'passer')->pluck('graduate_id')
-            )
-            ->distinct('graduate_id')
-            ->count('graduate_id');
+        // who also has a passer record. A correlated whereNotExists keeps the
+        // passer ids in SQL instead of materialising them into PHP.
+        $boardFailed = $this->distinctGraduateCount(
+            BoardExamRecord::where('status', BoardExamStatus::FAILED->value)
+                ->whereNotExists(function ($sub) {
+                    $sub->select(DB::raw(1))
+                        ->from('board_exam_records as passers')
+                        ->whereColumn('passers.graduate_id', 'board_exam_records.graduate_id')
+                        ->where('passers.status', BoardExamStatus::PASSER->value);
+                })
+        );
 
         // Graduates in board program courses who have NO board exam record at all
         $boardProgramCourseIds = Course::boardPrograms()->pluck('id');
         $graduatesInBoardPrograms = Graduate::whereIn('course_id', $boardProgramCourseIds)->count();
-        $graduatesWithBoardRecord = BoardExamRecord::distinct('graduate_id')->count('graduate_id');
+        $graduatesWithBoardRecord = $this->distinctGraduateCount(BoardExamRecord::query());
         $boardNotYetTaken = max(0, $graduatesInBoardPrograms - $graduatesWithBoardRecord);
 
         // Employment rate
@@ -153,9 +170,11 @@ class DashboardController extends Controller
             ]);
         }
 
+        $monthKey = SqlExpression::monthKey('created_at');
+
         $registrations = User::where('role', 'alumni')
             ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
-            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as month_key, COUNT(*) as count")
+            ->selectRaw("{$monthKey} as month_key, COUNT(*) as count")
             ->groupBy('month_key')
             ->pluck('count', 'month_key');
 
@@ -198,5 +217,17 @@ class DashboardController extends Controller
             'profile_complete' => $profileComplete,
             'profile_complete_rate' => $rate($profileComplete),
         ];
+    }
+
+    /**
+     * Count distinct graduates for a board-exam-record query using an explicit
+     * COUNT(DISTINCT graduate_id). This is correct across driver versions,
+     * unlike the fragile distinct('graduate_id')->count('graduate_id') form.
+     */
+    private function distinctGraduateCount(Builder $query): int
+    {
+        return (int) $query
+            ->selectRaw('COUNT(DISTINCT graduate_id) as aggregate')
+            ->value('aggregate');
     }
 }
