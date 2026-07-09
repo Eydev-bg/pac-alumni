@@ -51,6 +51,10 @@ const adminApi = {
   getImportHistory: (params = {}) => api.get('/admin/graduates/import-history', { params }),
   getImportDetail: (id) => api.get(`/admin/graduates/import-history/${id}`),
   checkDuplicates: (alumniIds, level) => api.post('/admin/graduates/check-duplicates', { alumni_ids: alumniIds, education_level: level }),
+  // ─── Phase 5: Graduate Trash / Soft-delete ─────────────
+  getTrashedGraduates: (params = {}) => api.get('/admin/graduates/trashed', { params }),
+  restoreGraduate: (id) => api.post(`/admin/graduates/${id}/restore`),
+  forceDeleteGraduate: (id) => api.delete(`/admin/graduates/${id}/force`),
 
   // ─── Phase 4: Verification & Registration ─────────────
   getRegistrationSettings: () => api.get('/admin/registration/settings'),

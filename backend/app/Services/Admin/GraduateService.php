@@ -53,6 +53,42 @@ class GraduateService
         return $graduate;
     }
 
+    /**
+     * Paginated list of soft-deleted (trashed) graduates for the Trash screen.
+     */
+    public function listTrashed(
+        int $perPage = 15,
+        ?string $search = null,
+        ?string $educationLevel = null,
+        ?int $graduationYear = null,
+        ?int $departmentId = null,
+        ?int $courseId = null,
+        string $sortBy = 'deleted_at',
+        string $sortDir = 'desc'
+    ): LengthAwarePaginator {
+        return $this->graduateRepo->paginateTrashed(
+            $perPage,
+            $search,
+            $educationLevel,
+            $graduationYear,
+            $departmentId,
+            $sortBy,
+            $sortDir,
+            $courseId
+        );
+    }
+
+    public function findTrashedById(int $id): Graduate
+    {
+        $graduate = $this->graduateRepo->findTrashedById($id);
+
+        if (!$graduate) {
+            throw new \Exception('Trashed graduate not found.', 404);
+        }
+
+        return $graduate;
+    }
+
     public function update(Graduate $graduate, array $data): Graduate
     {
         $updated = $this->graduateRepo->update($graduate, $data);
@@ -78,6 +114,43 @@ class GraduateService
         $this->graduateRepo->delete($graduate);
 
         $this->auditLog->record(AuditAction::GRADUATE_DELETED, $graduate, $snapshot);
+
+        $this->dashboardCache->flush();
+    }
+
+    /**
+     * Restore a trashed graduate back into the active records.
+     */
+    public function restore(Graduate $graduate): Graduate
+    {
+        $snapshot = [
+            'alumni_id_number' => $graduate->alumni_id_number,
+            'name' => trim($graduate->first_name . ' ' . $graduate->last_name),
+        ];
+
+        $restored = $this->graduateRepo->restore($graduate);
+
+        $this->auditLog->record(AuditAction::GRADUATE_RESTORED, $restored, $snapshot);
+
+        $this->dashboardCache->flush();
+
+        return $restored;
+    }
+
+    /**
+     * Permanently delete a trashed graduate. Irreversible.
+     */
+    public function forceDelete(Graduate $graduate): void
+    {
+        // Snapshot identifying details before the row is gone for good.
+        $snapshot = [
+            'alumni_id_number' => $graduate->alumni_id_number,
+            'name' => trim($graduate->first_name . ' ' . $graduate->last_name),
+        ];
+
+        $this->graduateRepo->forceDelete($graduate);
+
+        $this->auditLog->record(AuditAction::GRADUATE_FORCE_DELETED, $graduate, $snapshot);
 
         $this->dashboardCache->flush();
     }

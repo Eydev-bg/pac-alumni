@@ -24,6 +24,7 @@ const DepartmentDetailPage = lazy(() => import("../pages/admin/departments/Depar
 const GraduateImportPage = lazy(() => import("../pages/admin/graduates/GraduateImportPage"));
 const GraduatesListPage = lazy(() => import("../pages/admin/graduates/GraduatesListPage"));
 const GraduateDetailPage = lazy(() => import("../pages/admin/graduates/GraduateDetailPage"));
+const GraduateTrashPage = lazy(() => import("../pages/admin/graduates/GraduateTrashPage"));
 const ImportHistoryPage = lazy(() => import("../pages/admin/graduates/ImportHistoryPage"));
 const VerificationLogsPage = lazy(() => import("../pages/admin/verification/VerificationLogsPage"));
 const AnalyticsDashboardPage = lazy(() => import("../pages/admin/analytics/AnalyticsDashboardPage"));
@@ -90,6 +91,7 @@ export default function AppRouter() {
                   element={<DepartmentDetailPage />}
                 />
                 <Route path="graduates" element={<GraduatesListPage />} />
+                <Route path="graduates/trash" element={<GraduateTrashPage />} />
                 <Route path="graduates/import" element={<GraduateImportPage />} />
                 <Route
                   path="graduates/import-history"

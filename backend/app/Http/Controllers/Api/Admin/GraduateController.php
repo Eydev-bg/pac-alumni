@@ -92,6 +92,58 @@ class GraduateController extends Controller
     }
 
     /**
+     * GET /api/admin/graduates/trashed
+     */
+    public function trashed(Request $request): JsonResponse
+    {
+        $graduates = $this->graduateService->listTrashed(
+            perPage: $request->integer('per_page', 15),
+            search: $request->string('search')->toString() ?: null,
+            educationLevel: $request->string('education_level')->toString() ?: null,
+            graduationYear: $request->integer('graduation_year') ?: null,
+            departmentId: $request->integer('department_id') ?: null,
+            courseId: $request->integer('course_id') ?: null,
+            sortBy: $request->string('sort_by', 'deleted_at')->toString(),
+            sortDir: $request->string('sort_dir', 'desc')->toString(),
+        );
+
+        return $this->paginated(
+            $graduates->through(fn($g) => new GraduateResource($g)),
+            'Trashed graduates retrieved successfully.'
+        );
+    }
+
+    /**
+     * POST /api/admin/graduates/{id}/restore
+     */
+    public function restore(int $id): JsonResponse
+    {
+        try {
+            $graduate = $this->graduateService->findTrashedById($id);
+            $restored = $this->graduateService->restore($graduate);
+
+            return $this->success(new GraduateResource($restored), 'Graduate restored successfully.');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    /**
+     * DELETE /api/admin/graduates/{id}/force
+     */
+    public function forceDelete(int $id): JsonResponse
+    {
+        try {
+            $graduate = $this->graduateService->findTrashedById($id);
+            $this->graduateService->forceDelete($graduate);
+
+            return $this->success(null, 'Graduate permanently deleted.');
+        } catch (\Exception $e) {
+            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        }
+    }
+
+    /**
      * PATCH /api/admin/graduates/batch-update
      */
     public function batchUpdate(BatchUpdateGraduatesRequest $request): JsonResponse

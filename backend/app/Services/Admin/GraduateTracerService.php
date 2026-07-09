@@ -37,6 +37,7 @@ class GraduateTracerService
                     $join->on('ber.graduate_id', '=', 'g.id')
                         ->where('ber.status', '=', BoardExamStatus::PASSER->value);
                 })
+                ->whereNull('g.deleted_at')
                 ->where('g.education_level', EducationLevel::COLLEGE->value)
                 ->where('g.course_id', $courseId)
                 ->where('g.graduation_year', $batchYear)
@@ -107,6 +108,7 @@ class GraduateTracerService
                     $join->on('ber.graduate_id', '=', 'g.id')
                         ->where('ber.status', '=', BoardExamStatus::PASSER->value);
                 })
+                ->whereNull('g.deleted_at')
                 ->where('g.education_level', EducationLevel::COLLEGE->value);
 
             if ($departmentId) {
@@ -198,6 +200,7 @@ class GraduateTracerService
         try {
             $query = DB::table('employment_status_history as esh')
                 ->join('graduates as g', 'g.id', '=', 'esh.graduate_id')
+                ->whereNull('g.deleted_at')
                 ->where('esh.changed_at', '>=', now()->subMonths($months)->startOfMonth());
 
             if ($courseId) {
@@ -254,6 +257,7 @@ class GraduateTracerService
                 $join->on('er.graduate_id', '=', 'g.id')
                     ->where('er.is_current', true);
             })
+            ->whereNull('g.deleted_at')
             ->where('g.education_level', EducationLevel::COLLEGE->value)
             ->select([
                 'g.alumni_id_number',

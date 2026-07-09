@@ -9,6 +9,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
   HiOutlineMegaphone,
+  HiOutlineTrash,
   HiOutlineXMark,
 } from "react-icons/hi2";
 
@@ -32,6 +33,11 @@ const navItems = [
         name: "Import Graduates",
         path: "/admin/graduates/import",
         icon: HiOutlineDocumentArrowUp,
+      },
+      {
+        name: "Graduate Trash",
+        path: "/admin/graduates/trash",
+        icon: HiOutlineTrash,
       },
     ],
   },

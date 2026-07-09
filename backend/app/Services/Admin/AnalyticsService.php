@@ -111,7 +111,9 @@ class AnalyticsService
     public function boardExams(?int $yearFrom = null, ?int $yearTo = null, ?int $departmentId = null): array
     {
         $query = BoardExamRecord::query()
-            ->join('graduates', 'board_exam_records.graduate_id', '=', 'graduates.id');
+            ->join('graduates', 'board_exam_records.graduate_id', '=', 'graduates.id')
+            // Exclude board records of soft-deleted graduates from analytics.
+            ->whereNull('graduates.deleted_at');
 
         if ($yearFrom) $query->where('board_exam_records.exam_year', '>=', $yearFrom);
         if ($yearTo) $query->where('board_exam_records.exam_year', '<=', $yearTo);
@@ -126,6 +128,7 @@ class AnalyticsService
         $byDepartment = BoardExamRecord::query()
             ->join('graduates', 'board_exam_records.graduate_id', '=', 'graduates.id')
             ->join('departments', 'graduates.department_id', '=', 'departments.id')
+            ->whereNull('graduates.deleted_at')
             ->when($yearFrom, fn($q) => $q->where('board_exam_records.exam_year', '>=', $yearFrom))
             ->when($yearTo, fn($q) => $q->where('board_exam_records.exam_year', '<=', $yearTo))
             ->selectRaw("
@@ -147,9 +150,12 @@ class AnalyticsService
                 'passing_rate' => $row->total_takers > 0 ? round(($row->passers / $row->total_takers) * 100, 1) : 0,
             ]);
 
-        // By year
+        // By year — always join graduates so soft-deleted records are excluded
+        // (the department filter is applied on that same join when present).
         $byYear = BoardExamRecord::query()
-            ->when($departmentId, fn($q) => $q->join('graduates', 'board_exam_records.graduate_id', '=', 'graduates.id')->where('graduates.department_id', $departmentId))
+            ->join('graduates', 'board_exam_records.graduate_id', '=', 'graduates.id')
+            ->whereNull('graduates.deleted_at')
+            ->when($departmentId, fn($q) => $q->where('graduates.department_id', $departmentId))
             ->selectRaw("
                 exam_year,
                 COUNT(*) as total_takers,
@@ -177,6 +183,7 @@ class AnalyticsService
     {
         $query = AlumniProfile::query()
             ->join('graduates', 'alumni_profiles.graduate_id', '=', 'graduates.id')
+            ->whereNull('graduates.deleted_at')
             ->where('graduates.education_level', EducationLevel::COLLEGE);
 
         if ($yearFrom) $query->where('graduates.graduation_year', '>=', $yearFrom);
@@ -192,6 +199,7 @@ class AnalyticsService
         // Employment type breakdown (from employment_records)
         $byType = EmploymentRecord::query()
             ->join('graduates', 'employment_records.graduate_id', '=', 'graduates.id')
+            ->whereNull('graduates.deleted_at')
             ->where('employment_records.is_current', true)
             ->when($yearFrom, fn($q) => $q->where('graduates.graduation_year', '>=', $yearFrom))
             ->when($yearTo, fn($q) => $q->where('graduates.graduation_year', '<=', $yearTo))
@@ -203,6 +211,7 @@ class AnalyticsService
         // By industry
         $byIndustry = EmploymentRecord::query()
             ->join('graduates', 'employment_records.graduate_id', '=', 'graduates.id')
+            ->whereNull('graduates.deleted_at')
             ->where('employment_records.is_current', true)
             ->when($yearFrom, fn($q) => $q->where('graduates.graduation_year', '>=', $yearFrom))
             ->when($yearTo, fn($q) => $q->where('graduates.graduation_year', '<=', $yearTo))

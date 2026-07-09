@@ -18,6 +18,8 @@ enum AuditAction: string
 
     // ─── Graduate records ────────────────────────────────────
     case GRADUATE_DELETED = 'graduate.deleted';
+    case GRADUATE_RESTORED = 'graduate.restored';
+    case GRADUATE_FORCE_DELETED = 'graduate.force_deleted';
     case GRADUATE_BATCH_UPDATED = 'graduate.batch_updated';
 
     // ─── Registration blacklist ──────────────────────────────
@@ -32,6 +34,8 @@ enum AuditAction: string
             self::USER_STATUS_CHANGED => 'User status changed',
             self::USER_PASSWORD_RESET => 'User password reset',
             self::GRADUATE_DELETED => 'Graduate deleted',
+            self::GRADUATE_RESTORED => 'Graduate restored',
+            self::GRADUATE_FORCE_DELETED => 'Graduate permanently deleted',
             self::GRADUATE_BATCH_UPDATED => 'Graduates batch updated',
             self::BLACKLIST_ADDED => 'Added to blacklist',
             self::BLACKLIST_REMOVED => 'Removed from blacklist',

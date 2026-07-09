@@ -106,6 +106,16 @@ Route::prefix('admin')
         Route::patch('/graduates/batch-update', [GraduateController::class, 'batchUpdate'])
             ->name('graduates.batch-update');
 
+        // ─── Graduate Trash / Soft-delete (Phase 5) ──────
+        Route::get('/graduates/trashed', [GraduateController::class, 'trashed'])
+            ->name('graduates.trashed');
+
+        Route::post('/graduates/{id}/restore', [GraduateController::class, 'restore'])
+            ->whereNumber('id')->name('graduates.restore');
+
+        Route::delete('/graduates/{id}/force', [GraduateController::class, 'forceDelete'])
+            ->whereNumber('id')->name('graduates.force-delete');
+
         Route::apiResource('graduates', GraduateController::class)
             ->only(['index', 'show', 'update', 'destroy'])
             ->names('graduates');

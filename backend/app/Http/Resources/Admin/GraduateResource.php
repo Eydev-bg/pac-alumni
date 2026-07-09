@@ -39,6 +39,8 @@ class GraduateResource extends JsonResource
             'profile_picture' => $this->user?->profile_picture,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
+            // Null for active records; set for trashed records (Trash screen).
+            'deleted_at' => $this->deleted_at?->toISOString(),
         ];
     }
 }
