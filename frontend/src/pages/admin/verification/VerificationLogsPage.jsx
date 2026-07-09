@@ -7,9 +7,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import adminApi from "../../../api/adminApi";
 import Pagination from "../../../components/common/Pagination";
-import { useDebounce } from "../../../hooks/useDebounce";
+import { useToast } from "../../../hooks/useToast";
+import { periodToDateParams, PERIOD_OPTIONS } from "../../../utils/dateFilters";
+import { PAGINATION } from "../../../config/constants";
+import Select from "../../../ui/Select";
+import SearchInput from "../../../ui/SearchInput";
+import Card from "../../../ui/Card";
 import {
-  HiOutlineMagnifyingGlass,
   HiOutlineClipboardDocumentCheck,
   HiOutlineCheckCircle,
   HiOutlineXCircle,
@@ -18,6 +22,11 @@ import {
   HiOutlineIdentification,
   HiOutlineGlobeAlt,
 } from "react-icons/hi2";
+
+const STATUS_OPTIONS = [
+  { value: "verified", label: "Verified" },
+  { value: "rejected", label: "Rejected" },
+];
 
 // ─── Date Helpers ───────────────────────────────────────
 function getDateKey(dateStr) {
@@ -157,6 +166,7 @@ function FeedItem({ log }) {
 
 // ─── Main Page Component ────────────────────────────────
 export default function VerificationLogsPage() {
+  const toast = useToast();
   const [logs, setLogs] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -166,49 +176,28 @@ export default function VerificationLogsPage() {
   const [periodFilter, setPeriodFilter] = useState("");
   const [page, setPage] = useState(1);
 
-  const debouncedSearch = useDebounce(search, 400);
-
-  // ─── Period → Date Params ────────────────────────────
-  const getDateParams = () => {
-    if (!periodFilter) return {};
-    const now = new Date();
-    let dateFrom = "";
-    if (periodFilter === "today") {
-      dateFrom = now.toISOString().slice(0, 10);
-    } else if (periodFilter === "7days") {
-      const d = new Date(now);
-      d.setDate(d.getDate() - 7);
-      dateFrom = d.toISOString().slice(0, 10);
-    } else if (periodFilter === "30days") {
-      const d = new Date(now);
-      d.setDate(d.getDate() - 30);
-      dateFrom = d.toISOString().slice(0, 10);
-    } else if (periodFilter === "thismonth") {
-      dateFrom = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
-    }
-    return dateFrom ? { date_from: dateFrom } : {};
-  };
-
   // ─── Fetch Logs ──────────────────────────────────────
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
       const params = {
         page,
-        per_page: 20,
-        ...(debouncedSearch && { search: debouncedSearch }),
+        per_page: PAGINATION.LOGS_PER_PAGE,
+        ...(search && { search }),
         ...(statusFilter && { status: statusFilter }),
-        ...getDateParams(),
+        ...periodToDateParams(periodFilter),
       };
       const res = await adminApi.getVerificationLogs(params);
       setLogs(res.data.data);
       setMeta(res.data.meta);
     } catch (err) {
-      console.error("Failed to fetch verification logs:", err);
+      toast.error(
+        err.response?.data?.message || "Failed to load verification logs.",
+      );
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter, periodFilter]);
+  }, [page, search, statusFilter, periodFilter, toast]);
 
   useEffect(() => {
     fetchLogs();
@@ -216,7 +205,7 @@ export default function VerificationLogsPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter, periodFilter]);
+  }, [search, statusFilter, periodFilter]);
 
   // ─── Group Logs by Date ──────────────────────────────
   const groupedLogs = useMemo(() => {
@@ -241,7 +230,7 @@ export default function VerificationLogsPage() {
   }, [logs]);
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[900px] mx-auto">
         {/* ─── Page Header ───────────────────────────── */}
         <div className="mb-6">
@@ -252,69 +241,41 @@ export default function VerificationLogsPage() {
         </div>
 
         {/* ─── Filters ──────────────────────────────── */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-4 mb-5">
+        <Card padding={false} className="p-4 mb-5">
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="flex-1 relative">
-              <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by name or email..."
-                className="w-full pl-10 pr-4 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 focus:border-[#c8a84e]/30 transition-colors"
-              />
-            </div>
-            <select
+            <SearchInput
+              className="flex-1"
+              onDebouncedChange={setSearch}
+              placeholder="Search by name or email..."
+            />
+            <Select
+              tone="dark"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer"
-              style={{ colorScheme: "dark" }}
-            >
-              <option value="" className="bg-[#1a2e5a] text-slate-300">
-                All Status
-              </option>
-              <option value="verified" className="bg-[#1a2e5a] text-slate-300">
-                Verified
-              </option>
-              <option value="rejected" className="bg-[#1a2e5a] text-slate-300">
-                Rejected
-              </option>
-            </select>
-            <select
+              placeholder="All Status"
+              options={STATUS_OPTIONS}
+            />
+            <Select
+              tone="dark"
+              className="min-w-[140px]"
               value={periodFilter}
               onChange={(e) => setPeriodFilter(e.target.value)}
-              className="px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer min-w-[140px]"
-              style={{ colorScheme: "dark" }}
-            >
-              <option value="" className="bg-[#1a2e5a] text-slate-300">
-                All Time
-              </option>
-              <option value="today" className="bg-[#1a2e5a] text-slate-300">
-                Today
-              </option>
-              <option value="7days" className="bg-[#1a2e5a] text-slate-300">
-                Last 7 Days
-              </option>
-              <option value="30days" className="bg-[#1a2e5a] text-slate-300">
-                Last 30 Days
-              </option>
-              <option value="thismonth" className="bg-[#1a2e5a] text-slate-300">
-                This Month
-              </option>
-            </select>
+              placeholder="All Time"
+              options={PERIOD_OPTIONS}
+            />
           </div>
-        </div>
+        </Card>
 
         {/* ─── Activity Feed ────────────────────────── */}
         {loading ? (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-16">
+          <Card className="p-16">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
               <p className="text-sm text-slate-500">Loading activity...</p>
             </div>
-          </div>
+          </Card>
         ) : logs.length === 0 ? (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-16">
+          <Card className="p-16">
             <div className="flex flex-col items-center justify-center text-center">
               <HiOutlineClipboardDocumentCheck className="w-12 h-12 text-slate-600 mb-4" />
               <h3 className="text-sm font-semibold text-slate-300 mb-1">
@@ -326,14 +287,11 @@ export default function VerificationLogsPage() {
                   : "No registration attempts have been recorded yet."}
               </p>
             </div>
-          </div>
+          </Card>
         ) : (
           <div className="space-y-4">
             {groupedLogs.map((group) => (
-              <div
-                key={group.dateKey}
-                className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] overflow-hidden"
-              >
+              <Card key={group.dateKey} padding={false} className="overflow-hidden">
                 {/* Date Header */}
                 <div className="px-4 sm:px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
@@ -373,18 +331,18 @@ export default function VerificationLogsPage() {
                     <FeedItem key={log.id} log={log} />
                   ))}
                 </div>
-              </div>
+              </Card>
             ))}
 
             {/* Pagination */}
             {meta && (
-              <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] px-4 py-3">
+              <Card padding={false} className="px-4 py-3">
                 <Pagination meta={meta} onPageChange={setPage} />
-              </div>
+              </Card>
             )}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

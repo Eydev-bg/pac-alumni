@@ -3,7 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import StatusBadge from "../../../components/common/StatusBadge";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
+import { useToast } from "../../../hooks/useToast";
 import { formatDate, storageUrl } from "../../../utils/formatters";
+import Card from "../../../ui/Card";
+import Modal from "../../../ui/Modal";
+import Button from "../../../ui/Button";
 import {
   HiOutlineArrowLeft,
   HiOutlineBuildingOffice2,
@@ -19,19 +23,27 @@ import {
 // ─── Action modal with optional reason field ─────────────
 function ActionModal({ config, loading, onConfirm, onCancel }) {
   const [notes, setNotes] = useState("");
-  if (!config) return null;
+
+  // Reset the reason whenever a new action opens the modal.
+  useEffect(() => {
+    if (config) setNotes("");
+  }, [config]);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-          <h3 className="text-lg font-semibold text-slate-900">{config.title}</h3>
-          <p className="mt-2 text-sm text-slate-500">{config.message}</p>
+    <Modal
+      open={!!config}
+      onClose={onCancel}
+      title={config?.title}
+      size="sm"
+      closeOnBackdrop={!loading}
+    >
+      {config && (
+        <>
+          <p className="mt-1 text-sm text-slate-400">{config.message}</p>
 
           {config.withNotes && (
             <div className="mt-4">
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
                 Reason {config.notesRequired ? "(required)" : "(optional)"}
               </label>
               <textarea
@@ -39,36 +51,33 @@ function ActionModal({ config, loading, onConfirm, onCancel }) {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="This note is recorded on the employer account."
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500"
+                className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30"
               />
             </div>
           )}
 
           <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={onCancel}
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-            >
+            <Button variant="secondary" onClick={onCancel} disabled={loading}>
               Cancel
-            </button>
+            </Button>
             <button
               onClick={() => onConfirm(notes)}
               disabled={loading || (config.notesRequired && !notes.trim())}
-              className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition disabled:opacity-50 ${config.confirmClass}`}
+              className={`px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-50 ${config.confirmClass}`}
             >
               {loading ? "Processing..." : config.confirmLabel}
             </button>
           </div>
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </Modal>
   );
 }
 
 export default function EmployerDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [employer, setEmployer] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +90,7 @@ export default function EmployerDetailPage() {
       const res = await adminApi.getEmployer(id);
       setEmployer(res.data.data);
     } catch {
+      toast.error("Employer not found.");
       navigate("/admin/employers");
     } finally {
       setLoading(false);
@@ -96,13 +106,17 @@ export default function EmployerDetailPage() {
     setActionLoading(true);
     try {
       let res;
-      if (action.key === "suspend") res = await adminApi.suspendEmployer(id, notes);
-      else if (action.key === "deactivate") res = await adminApi.deactivateEmployer(id, notes);
-      else if (action.key === "activate") res = await adminApi.activateEmployer(id);
+      if (action.key === "suspend")
+        res = await adminApi.suspendEmployer(id, notes);
+      else if (action.key === "deactivate")
+        res = await adminApi.deactivateEmployer(id, notes);
+      else if (action.key === "activate")
+        res = await adminApi.activateEmployer(id);
       setEmployer(res.data.data);
       setAction(null);
+      toast.success("Employer updated.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update employer.");
+      toast.error(err.response?.data?.message || "Failed to update employer.");
     } finally {
       setActionLoading(false);
     }
@@ -112,9 +126,10 @@ export default function EmployerDetailPage() {
     setActionLoading(true);
     try {
       await adminApi.deleteEmployer(id);
+      toast.success("Employer deleted.");
       navigate("/admin/employers");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete employer.");
+      toast.error(err.response?.data?.message || "Failed to delete employer.");
       setActionLoading(false);
     }
   };
@@ -123,7 +138,8 @@ export default function EmployerDetailPage() {
     suspend: {
       key: "suspend",
       title: "Suspend Employer",
-      message: "This employer will immediately lose access. Their job posts stay visible only while active.",
+      message:
+        "This employer will immediately lose access. Their job posts stay visible only while active.",
       confirmLabel: "Suspend",
       confirmClass: "bg-amber-600 hover:bg-amber-700",
       withNotes: true,
@@ -146,13 +162,14 @@ export default function EmployerDetailPage() {
     },
   };
 
+  const actionBtn =
+    "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors border";
+
   if (loading) {
     return (
-      <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
-          <p className="text-sm text-slate-500">Loading employer...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <p className="text-sm text-slate-500">Loading employer...</p>
       </div>
     );
   }
@@ -164,17 +181,17 @@ export default function EmployerDetailPage() {
     : null;
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[1100px] mx-auto">
         <button
           onClick={() => navigate("/admin/employers")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#c8a84e] mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Employers
         </button>
 
         {/* Profile Card */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-6">
+        <Card className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center border border-white/[0.08] overflow-hidden flex-shrink-0">
@@ -185,14 +202,16 @@ export default function EmployerDetailPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <HiOutlineBuildingOffice2 className="w-7 h-7 text-[#c8a84e]" />
+                  <HiOutlineBuildingOffice2 className="w-7 h-7 text-gold-500" />
                 )}
               </div>
               <div>
                 <h1 className="text-xl font-bold text-white">
                   {employer.company_name}
                 </h1>
-                <p className="text-sm text-slate-400">{employer.company_email}</p>
+                <p className="text-sm text-slate-400">
+                  {employer.company_email}
+                </p>
                 <div className="flex items-center gap-2 mt-2">
                   <StatusBadge status={employer.status} label={employer.status} />
                   {employer.is_verified && (
@@ -209,7 +228,7 @@ export default function EmployerDetailPage() {
               {employer.status === "active" && (
                 <button
                   onClick={() => setAction(ACTIONS.suspend)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-colors"
+                  className={`${actionBtn} text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20`}
                 >
                   <HiOutlineNoSymbol className="w-4 h-4" /> Suspend
                 </button>
@@ -217,7 +236,7 @@ export default function EmployerDetailPage() {
               {employer.status !== "active" && (
                 <button
                   onClick={() => setAction(ACTIONS.activate)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 transition-colors"
+                  className={`${actionBtn} text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20`}
                 >
                   <HiOutlineCheckCircle className="w-4 h-4" /> Activate
                 </button>
@@ -225,14 +244,14 @@ export default function EmployerDetailPage() {
               {employer.status !== "deactivated" && (
                 <button
                   onClick={() => setAction(ACTIONS.deactivate)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-colors"
+                  className={`${actionBtn} text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20`}
                 >
                   <HiOutlineXCircle className="w-4 h-4" /> Deactivate
                 </button>
               )}
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+                className={`${actionBtn} text-slate-300 bg-white/[0.06] border-white/[0.08] hover:bg-white/[0.1]`}
               >
                 <HiOutlineTrash className="w-4 h-4" /> Delete
               </button>
@@ -247,11 +266,11 @@ export default function EmployerDetailPage() {
               <p className="text-sm text-amber-100/90">{employer.admin_notes}</p>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Details */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
-          <h2 className="text-sm font-semibold text-[#c8a84e] mb-5 uppercase tracking-wider">
+        <Card>
+          <h2 className="text-sm font-semibold text-gold-500 mb-5 uppercase tracking-wider">
             Company Details
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -264,11 +283,16 @@ export default function EmployerDetailPage() {
               ["Account Email", employer.user?.email || employer.company_email],
               ["Registered", formatDate(employer.created_at)],
             ].map(([label, value]) => (
-              <div key={label} className="py-2 border-b border-white/[0.04] last:border-0">
+              <div
+                key={label}
+                className="py-2 border-b border-white/[0.04] last:border-0"
+              >
                 <dt className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   {label}
                 </dt>
-                <dd className="mt-1 text-sm text-slate-200 font-medium">{value}</dd>
+                <dd className="mt-1 text-sm text-slate-200 font-medium">
+                  {value}
+                </dd>
               </div>
             ))}
           </dl>
@@ -280,7 +304,7 @@ export default function EmployerDetailPage() {
                 href={employer.company_website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-[#c8a84e] bg-[#c8a84e]/10 border border-[#c8a84e]/20 rounded-xl hover:bg-[#c8a84e]/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm text-gold-500 bg-gold-500/10 border border-gold-500/20 rounded-xl hover:bg-gold-500/20 transition-colors"
               >
                 <HiOutlineGlobeAlt className="w-4 h-4" /> Company Website
               </a>
@@ -296,7 +320,7 @@ export default function EmployerDetailPage() {
               </a>
             )}
           </div>
-        </div>
+        </Card>
 
         <ActionModal
           config={action}
@@ -316,6 +340,6 @@ export default function EmployerDetailPage() {
           onCancel={() => setConfirmDelete(false)}
         />
       </div>
-    </div>
+    </>
   );
 }

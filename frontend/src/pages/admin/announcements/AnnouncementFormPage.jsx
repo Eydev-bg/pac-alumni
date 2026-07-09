@@ -4,12 +4,15 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import adminApi from "../../../api/adminApi";
 import { storageUrl } from "../../../utils/formatters";
-import { TARGET_TYPES, EDUCATION_LEVELS } from "../../../config/announcementOptions";
+import { useToast } from "../../../hooks/useToast";
 import {
-  HiOutlineArrowLeft,
-  HiOutlinePhoto,
-  HiOutlineXMark,
-} from "react-icons/hi2";
+  TARGET_TYPES,
+  EDUCATION_LEVELS,
+} from "../../../config/announcementOptions";
+import Card from "../../../ui/Card";
+import Button from "../../../ui/Button";
+import Alert from "../../../ui/Alert";
+import { HiOutlineArrowLeft, HiOutlinePhoto, HiOutlineXMark } from "react-icons/hi2";
 
 const QUILL_MODULES = {
   toolbar: [
@@ -43,10 +46,88 @@ const emptyForm = {
   is_pinned: false,
 };
 
+const labelCls =
+  "block text-[0.72rem] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider";
+const inputCls =
+  "w-full px-3 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors";
+
+function TargetValueSelect({
+  type,
+  value,
+  onChange,
+  className,
+  departments,
+  courses,
+  years,
+}) {
+  if (type === "education_level") {
+    return (
+      <select value={value} onChange={onChange} className={className}>
+        <option value="" className="bg-navy-800">
+          Select level…
+        </option>
+        {EDUCATION_LEVELS.map((l) => (
+          <option key={l.value} value={l.value} className="bg-navy-800">
+            {l.label}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (type === "department") {
+    return (
+      <select value={value} onChange={onChange} className={className}>
+        <option value="" className="bg-navy-800">
+          Select department…
+        </option>
+        {departments.map((d) => (
+          <option key={d.id} value={String(d.id)} className="bg-navy-800">
+            {d.name}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (type === "course") {
+    return (
+      <select value={value} onChange={onChange} className={className}>
+        <option value="" className="bg-navy-800">
+          Select course…
+        </option>
+        {courses.map((c) => (
+          <option key={c.id} value={String(c.id)} className="bg-navy-800">
+            {c.name}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (type === "batch") {
+    return (
+      <select value={value} onChange={onChange} className={className}>
+        <option value="" className="bg-navy-800">
+          Select graduation year…
+        </option>
+        {years.map((y) => (
+          <option key={y} value={String(y)} className="bg-navy-800">
+            {y}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  return null;
+}
+
 export default function AnnouncementFormPage() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
@@ -64,9 +145,18 @@ export default function AnnouncementFormPage() {
 
   // ── Load reference data for the target selector ──
   useEffect(() => {
-    adminApi.getAllDepartments().then((res) => setDepartments(res.data.data)).catch(() => {});
-    adminApi.getAllCourses().then((res) => setCourses(res.data.data)).catch(() => {});
-    adminApi.getGraduationYears().then((res) => setYears(res.data.data)).catch(() => {});
+    adminApi
+      .getAllDepartments()
+      .then((res) => setDepartments(res.data.data))
+      .catch(() => {});
+    adminApi
+      .getAllCourses()
+      .then((res) => setCourses(res.data.data))
+      .catch(() => {});
+    adminApi
+      .getGraduationYears()
+      .then((res) => setYears(res.data.data))
+      .catch(() => {});
   }, []);
 
   // ── Load existing announcement when editing ──
@@ -110,7 +200,10 @@ export default function AnnouncementFormPage() {
 
   // Strip HTML to check whether the editor actually has content.
   const contentIsEmpty = useMemo(() => {
-    const text = form.content.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
+    const text = form.content
+      .replace(/<[^>]*>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
     return text.length === 0;
   }, [form.content]);
 
@@ -154,6 +247,7 @@ export default function AnnouncementFormPage() {
       } else {
         await adminApi.createAnnouncement(buildPayload(publish));
       }
+      toast.success(isEdit ? "Announcement updated." : "Announcement created.");
       navigate("/admin/announcements");
     } catch (err) {
       if (err.response?.status === 422 && err.response.data?.errors) {
@@ -168,31 +262,28 @@ export default function AnnouncementFormPage() {
   };
 
   const errFor = (n) =>
-    fieldErrors[n] && <p className="mt-1 text-[0.72rem] text-red-400">{fieldErrors[n][0]}</p>;
-
-  const labelCls = "block text-[0.72rem] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider";
-  const inputCls =
-    "w-full px-3 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 focus:border-[#c8a84e]/30 transition-colors";
+    fieldErrors[n] && (
+      <p className="mt-1 text-[0.72rem] text-red-400">{fieldErrors[n][0]}</p>
+    );
 
   if (loading) {
     return (
-      <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
-          <p className="text-sm text-slate-500">Loading announcement...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <p className="text-sm text-slate-500">Loading announcement...</p>
       </div>
     );
   }
 
-  const previewSrc = imagePreview || (existingImage ? storageUrl(existingImage) : null);
+  const previewSrc =
+    imagePreview || (existingImage ? storageUrl(existingImage) : null);
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[900px] mx-auto">
         <button
           onClick={() => navigate("/admin/announcements")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#c8a84e] mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Announcements
         </button>
@@ -209,12 +300,12 @@ export default function AnnouncementFormPage() {
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-300">
+          <Alert variant="error" className="mb-4">
             {error}
-          </div>
+          </Alert>
         )}
 
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 space-y-6">
+        <Card className="space-y-6">
           {/* Title */}
           <div>
             <label className={labelCls}>
@@ -239,7 +330,7 @@ export default function AnnouncementFormPage() {
                 className={inputCls}
               >
                 {TARGET_TYPES.map((t) => (
-                  <option key={t.value} value={t.value} className="bg-[#1a2e5a]">
+                  <option key={t.value} value={t.value} className="bg-navy-800">
                     {t.label}
                   </option>
                 ))}
@@ -287,18 +378,28 @@ export default function AnnouncementFormPage() {
                 )}
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-[#c8a84e]/40 transition-colors">
+              <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-gold-500/40 transition-colors">
                 <HiOutlinePhoto className="w-8 h-8 text-slate-500" />
                 <span className="text-xs text-slate-400">
                   Click to upload (JPG, PNG, WEBP — max 4MB)
                 </span>
-                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
               </label>
             )}
             {previewSrc && (
-              <label className="inline-block mt-2 text-xs font-semibold text-[#c8a84e] cursor-pointer hover:text-[#e0c76a]">
+              <label className="inline-block mt-2 text-xs font-semibold text-gold-500 cursor-pointer hover:text-gold-300">
                 Change image
-                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
               </label>
             )}
             {errFor("image")}
@@ -327,8 +428,10 @@ export default function AnnouncementFormPage() {
             <input
               type="checkbox"
               checked={form.is_pinned}
-              onChange={(e) => setForm((f) => ({ ...f, is_pinned: e.target.checked }))}
-              className="w-4 h-4 rounded accent-[#c8a84e]"
+              onChange={(e) =>
+                setForm((f) => ({ ...f, is_pinned: e.target.checked }))
+              }
+              className="w-4 h-4 rounded accent-gold-500"
             />
             <span className="text-sm text-slate-300">
               Pin this announcement (shows at the top of the alumni feed)
@@ -337,14 +440,13 @@ export default function AnnouncementFormPage() {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2 border-t border-white/[0.06]">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => navigate("/admin/announcements")}
               disabled={saving}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors disabled:opacity-60"
             >
               Cancel
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => submit(false)}
@@ -353,77 +455,16 @@ export default function AnnouncementFormPage() {
             >
               {saving ? "Saving..." : "Save as Draft"}
             </button>
-            <button
-              type="button"
-              onClick={() => submit(true)}
-              disabled={saving}
-              className="px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] shadow-lg shadow-[#c8a84e]/20 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:translate-y-0"
-            >
+            <Button onClick={() => submit(true)} loading={saving} className="px-5">
               {saving ? "Saving..." : "Save & Publish"}
-            </button>
+            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Make the Quill editor area comfortably tall. */}
       <style>{`.announcement-editor .ql-container { min-height: 220px; font-size: 14px; }
         .announcement-editor .ql-editor { min-height: 220px; }`}</style>
-    </div>
+    </>
   );
-}
-
-function TargetValueSelect({ type, value, onChange, className, departments, courses, years }) {
-  if (type === "education_level") {
-    return (
-      <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-[#1a2e5a]">Select level…</option>
-        {EDUCATION_LEVELS.map((l) => (
-          <option key={l.value} value={l.value} className="bg-[#1a2e5a]">
-            {l.label}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  if (type === "department") {
-    return (
-      <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-[#1a2e5a]">Select department…</option>
-        {departments.map((d) => (
-          <option key={d.id} value={String(d.id)} className="bg-[#1a2e5a]">
-            {d.name}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  if (type === "course") {
-    return (
-      <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-[#1a2e5a]">Select course…</option>
-        {courses.map((c) => (
-          <option key={c.id} value={String(c.id)} className="bg-[#1a2e5a]">
-            {c.name}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  if (type === "batch") {
-    return (
-      <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-[#1a2e5a]">Select graduation year…</option>
-        {years.map((y) => (
-          <option key={y} value={String(y)} className="bg-[#1a2e5a]">
-            {y}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  return null;
 }

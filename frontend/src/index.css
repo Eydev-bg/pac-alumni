@@ -1,7 +1,54 @@
 @import "tailwindcss";
 
+/*
+ * ─── Design-system theme tokens (Phase 4) ────────────────
+ * Single source of truth for the brand palette. Every admin surface
+ * references these tokens (e.g. `bg-navy-800`, `text-gold-500`) instead of
+ * repeating hardcoded hex literals. Values mirror the pre-Phase-4 literals
+ * exactly, so migrating a class produces no visual change.
+ *
+ * Semantic aliases (surface / surface-deep / primary) reference the brand
+ * scale so intent-driven usage stays in sync with the palette and dark-mode
+ * theming can be layered on later without touching component markup.
+ */
+@theme {
+  /* Brand — Navy (deep-blue surfaces, darkest → lightest) */
+  --color-navy-950: #0c1525;
+  --color-navy-900: #0f1b3d;
+  --color-navy-850: #131d36;
+  --color-navy-800: #1a2e5a;
+  --color-navy-700: #1e3466;
+  --color-navy-650: #243a6e;
+  --color-navy-600: #2a4177;
+  --color-navy-500: #2a4a8a;
+
+  /* Brand — Gold (accent / primary, lightest → darkest) */
+  --color-gold-300: #e0c76a;
+  --color-gold-400: #d4b85e;
+  --color-gold-500: #c8a84e;
+  --color-gold-600: #b89848;
+  --color-gold-650: #b8963e;
+  --color-gold-700: #a88a3a;
+
+  /* Semantic roles — alias the brand scale (intent-driven usage) */
+  --color-surface: var(--color-navy-800);
+  --color-surface-deep: var(--color-navy-950);
+  --color-primary: var(--color-gold-500);
+}
+
 /* Prevent white flash on dark-themed admin pages */
 html,
 body {
-    background-color: #0c1525;
+    background-color: var(--color-navy-950);
+}
+
+/*
+ * Toast auto-dismiss progress bar. Purely visual: it shrinks a full-width bar
+ * to zero over the toast's lifetime. The JS timer in ToastItem owns the actual
+ * dismissal; this animation shares the same duration and is paused in sync via
+ * `animation-play-state` on hover/focus. Suppressed under reduced motion.
+ */
+@keyframes toastProgress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }

@@ -5,6 +5,7 @@
 
 export const COLORS = {
   registrations: "#c8a84e",
+  axisTick: "#64748b", // slate-500 — chart axis ticks (Recharts prop)
 };
 
 // Fixed color per employment status so the legend, tooltip and slices always agree.

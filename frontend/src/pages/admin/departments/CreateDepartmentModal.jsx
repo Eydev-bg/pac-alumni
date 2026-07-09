@@ -1,31 +1,15 @@
 import { useState } from "react";
 import adminApi from "../../../api/adminApi";
-import { HiOutlineXMark } from "react-icons/hi2";
-
-const EDUCATION_LEVELS = [
-  {
-    value: "college",
-    label: "College",
-    description: "Has courses underneath (BSIT, BSCS, etc.)",
-  },
-  {
-    value: "elementary",
-    label: "Elementary",
-    description: "Standalone department — no courses",
-  },
-  {
-    value: "jhs",
-    label: "Junior High School",
-    description: "Part of JHS/SHS combined dashboard",
-  },
-  {
-    value: "shs",
-    label: "Senior High School",
-    description: "Part of JHS/SHS combined dashboard",
-  },
-];
+import { useToast } from "../../../hooks/useToast";
+import { EDUCATION_LEVELS } from "../../../config/departmentOptions";
+import Modal from "../../../ui/Modal";
+import Button from "../../../ui/Button";
+import Input from "../../../ui/Input";
+import Select from "../../../ui/Select";
+import Alert from "../../../ui/Alert";
 
 export default function CreateDepartmentModal({ onClose, onCreated }) {
+  const toast = useToast();
   const [form, setForm] = useState({
     name: "",
     code: "",
@@ -61,6 +45,7 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
     setLoading(true);
     try {
       await adminApi.createDepartment(form);
+      toast.success("Department created successfully.");
       onCreated();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -80,158 +65,90 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
     (l) => l.value === form.education_level,
   );
 
+  const namePlaceholder = isCollege
+    ? "e.g., Computer Department"
+    : form.education_level === "elementary"
+      ? "e.g., Elementary Department"
+      : form.education_level === "jhs"
+        ? "e.g., Junior High School Department"
+        : "e.g., Senior High School Department";
+
+  const codePlaceholder = isCollege
+    ? "e.g., CD"
+    : form.education_level === "elementary"
+      ? "e.g., ELEM"
+      : form.education_level === "jhs"
+        ? "e.g., JHS"
+        : "e.g., SHS";
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-800">
-              Create Department
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600"
-            >
-              <HiOutlineXMark className="w-5 h-5" />
-            </button>
-          </div>
+    <Modal open onClose={onClose} title="Create Department" size="md">
+      {errors.general && (
+        <Alert variant="error" className="mb-4">
+          {errors.general}
+        </Alert>
+      )}
 
-          {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errors.general}</p>
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Select
+          tone="dark"
+          label="Education Level"
+          required
+          value={form.education_level}
+          onChange={(e) => handleChange("education_level", e.target.value)}
+          hint={selectedLevel?.description}
+          error={errors.education_level}
+          options={EDUCATION_LEVELS.map((l) => ({ value: l.value, label: l.label }))}
+        />
+
+        <Input
+          tone="dark"
+          label="Department Name"
+          required
+          value={form.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          placeholder={namePlaceholder}
+          error={errors.name}
+        />
+
+        <Input
+          tone="dark"
+          label="Department Code"
+          required
+          value={form.code}
+          onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
+          placeholder={codePlaceholder}
+          maxLength={20}
+          className="font-mono"
+          hint="Letters and numbers only, no spaces"
+          error={errors.code}
+        />
+
+        {/* Info box */}
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
+          {isCollege ? (
+            <p className="text-xs text-slate-400">
+              Board program settings are managed per Course, not per Department.
+              After creating the department, add courses under it.
+            </p>
+          ) : (
+            <p className="text-xs text-slate-400">
+              {form.education_level === "elementary"
+                ? "Elementary departments do not have courses or board exams. Graduates are tracked directly under this department."
+                : "JHS/SHS departments do not have courses. Graduates are tracked directly under this department."}
+            </p>
           )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Education Level */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Education Level *
-              </label>
-              <select
-                value={form.education_level}
-                onChange={(e) =>
-                  handleChange("education_level", e.target.value)
-                }
-                required
-                className={`w-full px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.education_level ? "border-red-300" : "border-slate-300"}`}
-              >
-                {EDUCATION_LEVELS.map((level) => (
-                  <option key={level.value} value={level.value}>
-                    {level.label}
-                  </option>
-                ))}
-              </select>
-              {selectedLevel && (
-                <p className="text-xs text-slate-400 mt-1">
-                  {selectedLevel.description}
-                </p>
-              )}
-              {errors.education_level && (
-                <p className="text-xs text-red-500 mt-1">
-                  {errors.education_level[0]}
-                </p>
-              )}
-            </div>
-
-            {/* Department Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Department Name *
-              </label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                required
-                placeholder={
-                  isCollege
-                    ? "e.g., Computer Department"
-                    : form.education_level === "elementary"
-                      ? "e.g., Elementary Department"
-                      : form.education_level === "jhs"
-                        ? "e.g., Junior High School Department"
-                        : "e.g., Senior High School Department"
-                }
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-300" : "border-slate-300"}`}
-              />
-              {errors.name && (
-                <p className="text-xs text-red-500 mt-1">{errors.name[0]}</p>
-              )}
-            </div>
-
-            {/* Department Code */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Department Code *
-              </label>
-              <input
-                type="text"
-                value={form.code}
-                onChange={(e) =>
-                  handleChange("code", e.target.value.toUpperCase())
-                }
-                required
-                placeholder={
-                  isCollege
-                    ? "e.g., CD"
-                    : form.education_level === "elementary"
-                      ? "e.g., ELEM"
-                      : form.education_level === "jhs"
-                        ? "e.g., JHS"
-                        : "e.g., SHS"
-                }
-                maxLength={20}
-                className={`w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.code ? "border-red-300" : "border-slate-300"}`}
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Letters and numbers only, no spaces
-              </p>
-              {errors.code && (
-                <p className="text-xs text-red-500 mt-1">{errors.code[0]}</p>
-              )}
-            </div>
-
-            {/* Info box */}
-            <div className="bg-slate-50 rounded-lg p-3">
-              {isCollege ? (
-                <p className="text-xs text-slate-400">
-                  Board program settings are managed per Course, not per
-                  Department. After creating the department, add courses under
-                  it.
-                </p>
-              ) : (
-                <p className="text-xs text-slate-400">
-                  {form.education_level === "elementary"
-                    ? "Elementary departments do not have courses or board exams. Graduates are tracked directly under this department."
-                    : "JHS/SHS departments do not have courses. Graduates are tracked directly under this department."}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {loading ? "Creating..." : "Create Department"}
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
-    </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" loading={loading}>
+            {loading ? "Creating..." : "Create Department"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

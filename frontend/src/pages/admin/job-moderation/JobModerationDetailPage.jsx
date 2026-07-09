@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import StatusBadge from "../../../components/common/StatusBadge";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
+import { useToast } from "../../../hooks/useToast";
 import { formatDate } from "../../../utils/formatters";
-import {
-  JOB_TYPE_LABELS,
-  formatSalaryRange,
-} from "../../../config/jobOptions";
+import { JOB_TYPE_LABELS, formatSalaryRange } from "../../../config/jobOptions";
+import Card from "../../../ui/Card";
+import Modal from "../../../ui/Modal";
+import Button from "../../../ui/Button";
 import {
   HiOutlineArrowLeft,
   HiOutlineCheckCircle,
@@ -19,54 +20,57 @@ import {
 // ─── Reject modal (reason required) ──────────────────────
 function RejectModal({ open, loading, onConfirm, onCancel }) {
   const [notes, setNotes] = useState("");
-  if (!open) return null;
+
+  // Reset the reason each time the modal opens.
+  useEffect(() => {
+    if (open) setNotes("");
+  }, [open]);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-          <h3 className="text-lg font-semibold text-slate-900">Reject Job Post</h3>
-          <p className="mt-2 text-sm text-slate-500">
-            Provide a reason. The employer will see this note explaining why the post was rejected.
-          </p>
-          <div className="mt-4">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Reason (required)
-            </label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="e.g. Job description is incomplete or violates posting guidelines."
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:border-blue-500"
-            />
-          </div>
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={onCancel}
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={() => onConfirm(notes)}
-              disabled={loading || !notes.trim()}
-              className="px-4 py-2 text-sm font-medium text-white rounded-lg bg-red-600 hover:bg-red-700 transition disabled:opacity-50"
-            >
-              {loading ? "Processing..." : "Reject"}
-            </button>
-          </div>
-        </div>
+    <Modal
+      open={open}
+      onClose={onCancel}
+      title="Reject Job Post"
+      size="sm"
+      closeOnBackdrop={!loading}
+    >
+      <p className="mt-1 text-sm text-slate-400">
+        Provide a reason. The employer will see this note explaining why the post
+        was rejected.
+      </p>
+      <div className="mt-4">
+        <label className="block text-xs font-semibold text-slate-300 mb-1">
+          Reason (required)
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          placeholder="e.g. Job description is incomplete or violates posting guidelines."
+          className="w-full px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30"
+        />
       </div>
-    </div>
+      <div className="flex justify-end gap-3 mt-6">
+        <Button variant="secondary" onClick={onCancel} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          variant="danger"
+          onClick={() => onConfirm(notes)}
+          disabled={loading || !notes.trim()}
+          loading={loading}
+        >
+          {loading ? "Processing..." : "Reject"}
+        </Button>
+      </div>
+    </Modal>
   );
 }
 
 export default function JobModerationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -80,6 +84,7 @@ export default function JobModerationDetailPage() {
       const res = await adminApi.getJobPost(id);
       setJob(res.data.data);
     } catch {
+      toast.error("Job post not found.");
       navigate("/admin/job-posts");
     } finally {
       setLoading(false);
@@ -97,8 +102,9 @@ export default function JobModerationDetailPage() {
       const res = await adminApi.approveJobPost(id);
       setJob(res.data.data);
       setShowApprove(false);
+      toast.success("Job post approved.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to approve job post.");
+      toast.error(err.response?.data?.message || "Failed to approve job post.");
     } finally {
       setActionLoading(false);
     }
@@ -110,8 +116,9 @@ export default function JobModerationDetailPage() {
       const res = await adminApi.rejectJobPost(id, notes);
       setJob(res.data.data);
       setShowReject(false);
+      toast.success("Job post rejected.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to reject job post.");
+      toast.error(err.response?.data?.message || "Failed to reject job post.");
     } finally {
       setActionLoading(false);
     }
@@ -121,20 +128,22 @@ export default function JobModerationDetailPage() {
     setActionLoading(true);
     try {
       await adminApi.deleteJobPost(id);
+      toast.success("Job post deleted.");
       navigate("/admin/job-posts");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete job post.");
+      toast.error(err.response?.data?.message || "Failed to delete job post.");
       setActionLoading(false);
     }
   };
 
+  const actionBtn =
+    "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors border";
+
   if (loading) {
     return (
-      <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
-          <p className="text-sm text-slate-500">Loading job post...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <p className="text-sm text-slate-500">Loading job post...</p>
       </div>
     );
   }
@@ -144,17 +153,17 @@ export default function JobModerationDetailPage() {
   const salary = formatSalaryRange(job.salary_range_min, job.salary_range_max);
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[1000px] mx-auto">
         <button
           onClick={() => navigate("/admin/job-posts")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#c8a84e] mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Job Moderation
         </button>
 
         {/* Header Card */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-6">
+        <Card className="mb-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -167,7 +176,7 @@ export default function JobModerationDetailPage() {
                 )}
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-slate-400">
-                <HiOutlineBuildingOffice2 className="w-4 h-4 text-[#c8a84e]" />
+                <HiOutlineBuildingOffice2 className="w-4 h-4 text-gold-500" />
                 {job.company_name || job.employer?.company_name}
               </div>
             </div>
@@ -177,7 +186,7 @@ export default function JobModerationDetailPage() {
               {job.status !== "approved" && (
                 <button
                   onClick={() => setShowApprove(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 transition-colors"
+                  className={`${actionBtn} text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20`}
                 >
                   <HiOutlineCheckCircle className="w-4 h-4" /> Approve
                 </button>
@@ -185,14 +194,14 @@ export default function JobModerationDetailPage() {
               {job.status !== "rejected" && (
                 <button
                   onClick={() => setShowReject(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-colors"
+                  className={`${actionBtn} text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20`}
                 >
                   <HiOutlineXCircle className="w-4 h-4" /> Reject
                 </button>
               )}
               <button
                 onClick={() => setShowDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+                className={`${actionBtn} text-slate-300 bg-white/[0.06] border-white/[0.08] hover:bg-white/[0.1]`}
               >
                 <HiOutlineTrash className="w-4 h-4" /> Delete
               </button>
@@ -207,11 +216,11 @@ export default function JobModerationDetailPage() {
               <p className="text-sm text-red-100/90">{job.admin_notes}</p>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Details */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-6">
-          <h2 className="text-sm font-semibold text-[#c8a84e] mb-5 uppercase tracking-wider">
+        <Card className="mb-6">
+          <h2 className="text-sm font-semibold text-gold-500 mb-5 uppercase tracking-wider">
             Job Details
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -221,22 +230,30 @@ export default function JobModerationDetailPage() {
               ["Salary Range", salary || "Not specified"],
               ["Applicants", job.applications_count ?? 0],
               ["Submitted", formatDate(job.created_at)],
-              ["Expires", job.expires_at ? formatDate(job.expires_at) : "No expiry"],
+              [
+                "Expires",
+                job.expires_at ? formatDate(job.expires_at) : "No expiry",
+              ],
             ].map(([label, value]) => (
-              <div key={label} className="py-2 border-b border-white/[0.04] last:border-0">
+              <div
+                key={label}
+                className="py-2 border-b border-white/[0.04] last:border-0"
+              >
                 <dt className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   {label}
                 </dt>
-                <dd className="mt-1 text-sm text-slate-200 font-medium">{value}</dd>
+                <dd className="mt-1 text-sm text-slate-200 font-medium">
+                  {value}
+                </dd>
               </div>
             ))}
           </dl>
-        </div>
+        </Card>
 
         {/* Description & qualifications */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 space-y-5">
+        <Card className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-[#c8a84e] mb-2 uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-gold-500 mb-2 uppercase tracking-wider">
               Description
             </h2>
             <p className="text-sm text-slate-300 whitespace-pre-line leading-relaxed">
@@ -245,7 +262,7 @@ export default function JobModerationDetailPage() {
           </div>
           {job.qualifications && (
             <div>
-              <h2 className="text-sm font-semibold text-[#c8a84e] mb-2 uppercase tracking-wider">
+              <h2 className="text-sm font-semibold text-gold-500 mb-2 uppercase tracking-wider">
                 Qualifications
               </h2>
               <p className="text-sm text-slate-300 whitespace-pre-line leading-relaxed">
@@ -253,7 +270,7 @@ export default function JobModerationDetailPage() {
               </p>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* Modals */}
         <ConfirmDialog
@@ -285,6 +302,6 @@ export default function JobModerationDetailPage() {
           onCancel={() => setShowDelete(false)}
         />
       </div>
-    </div>
+    </>
   );
 }

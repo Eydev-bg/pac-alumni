@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import { useAuth } from "../../../hooks/useAuth";
+import { useToast } from "../../../hooks/useToast";
 import adminApi from "../../../api/adminApi";
 import { HiOutlineUserGroup, HiOutlineAcademicCap } from "react-icons/hi2";
-import StatCard from "./components/StatCard";
+import StatCard from "../../../ui/StatCard";
 import RegistrationTrendChart from "./components/RegistrationTrendChart";
 import EmploymentOverviewCard from "./components/EmploymentOverviewCard";
 import BoardExamOverviewCard from "./components/BoardExamOverviewCard";
@@ -12,6 +13,7 @@ import ParticipationSection from "./components/ParticipationSection";
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [reminderStats, setReminderStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,25 +24,28 @@ export default function DashboardPage() {
         const res = await adminApi.getDashboardData();
         setData(res.data.data);
       } catch (err) {
-        console.error("Dashboard fetch error:", err);
+        toast.error(
+          err.response?.data?.message || "Failed to load dashboard data.",
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    // Reminder stats are non-blocking — a failure here must not hide the dashboard.
+    // Reminder stats are non-blocking — a failure here must not hide the
+    // dashboard, so it fails silently (the section simply doesn't render).
     const fetchReminderStats = async () => {
       try {
         const res = await adminApi.getReminderStats();
         setReminderStats(res.data.data);
-      } catch (err) {
-        console.error("Reminder stats fetch error:", err);
+      } catch {
+        // Intentionally ignored — secondary widget, non-blocking.
       }
     };
 
     fetchDashboard();
     fetchReminderStats();
-  }, []);
+  }, [toast]);
 
   // ─── Employment pie data (memoized) ────────────────────
   // Employed comes straight from stats. When the participation payload is
@@ -98,7 +103,7 @@ export default function DashboardPage() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading dashboard...</p>
       </div>
     );
@@ -122,7 +127,7 @@ export default function DashboardPage() {
 
   return (
     /* Dark wrapper — covers the parent's light padding with negative margins */
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)] rounded-none">
+    <>
       <div className="max-w-[1400px] mx-auto">
         {/* ═══ Header ═══════════════════════════════════════ */}
         <div className="mb-8">
@@ -163,14 +168,14 @@ export default function DashboardPage() {
             footer={
               <div className="mt-2 space-y-1">
                 <div className="flex items-center gap-1.5 text-[11px]">
-                  <span className="w-2 h-2 rounded-full bg-[#22c55e] flex-shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-slate-300 font-semibold tabular-nums">
                     {stats.active_recently ?? 0}
                   </span>
                   <span className="text-slate-500">active in last 30 days</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px]">
-                  <span className="w-2 h-2 rounded-full bg-[#f59e0b] flex-shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
                   <span className="text-slate-300 font-semibold tabular-nums">
                     {stats.inactive_alumni ?? 0}
                   </span>
@@ -209,6 +214,6 @@ export default function DashboardPage() {
         {/* ═══ Alumni Participation ════════════════════════ */}
         {participation && <ParticipationSection participation={participation} />}
       </div>
-    </div>
+    </>
   );
 }

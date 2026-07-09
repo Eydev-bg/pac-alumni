@@ -1,8 +1,14 @@
 import { useState, useEffect } from "react";
 import adminApi from "../../../api/adminApi";
-import { HiOutlineXMark } from "react-icons/hi2";
+import { useToast } from "../../../hooks/useToast";
+import Modal from "../../../ui/Modal";
+import Button from "../../../ui/Button";
+import Input from "../../../ui/Input";
+import Select from "../../../ui/Select";
+import Alert from "../../../ui/Alert";
 
 export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
+  const toast = useToast();
   const [form, setForm] = useState({
     first_name: graduate.first_name || "",
     middle_name: graduate.middle_name || "",
@@ -42,6 +48,7 @@ export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
       const payload = { ...form };
       if (!payload.course_id) payload.course_id = null;
       await adminApi.updateGraduate(graduate.id, payload);
+      toast.success("Graduate updated successfully.");
       onUpdated();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -59,153 +66,99 @@ export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
   const isCollege = graduate.education_level === "college";
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-800">Edit Graduate</h3>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600"
-            >
-              <HiOutlineXMark className="w-5 h-5" />
-            </button>
-          </div>
+    <Modal open onClose={onClose} title="Edit Graduate" size="md">
+      {errors.general && (
+        <Alert variant="error" className="mb-4">
+          {errors.general}
+        </Alert>
+      )}
 
-          {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errors.general}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  First Name *
-                </label>
-                <input
-                  type="text"
-                  value={form.first_name}
-                  onChange={(e) => handleChange("first_name", e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Last Name *
-                </label>
-                <input
-                  type="text"
-                  value={form.last_name}
-                  onChange={(e) => handleChange("last_name", e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Middle Name
-                </label>
-                <input
-                  type="text"
-                  value={form.middle_name}
-                  onChange={(e) => handleChange("middle_name", e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Suffix
-                </label>
-                <input
-                  type="text"
-                  value={form.suffix}
-                  onChange={(e) => handleChange("suffix", e.target.value)}
-                  placeholder="Jr, Sr"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Graduation Year *
-              </label>
-              <input
-                type="number"
-                value={form.graduation_year}
-                onChange={(e) =>
-                  handleChange("graduation_year", e.target.value)
-                }
-                required
-                min="1950"
-                max="2099"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            {isCollege && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Course
-                </label>
-                <select
-                  value={form.course_id}
-                  onChange={(e) => handleChange("course_id", e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">No course</option>
-                  {courses.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.code} — {c.name} ({c.department_code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-400">
-                <span className="font-medium">Education Level:</span>{" "}
-                {graduate.education_level_label} (cannot be changed)
-              </p>
-              {graduate.alumni_id_number && (
-                <p className="text-xs text-slate-400 mt-1">
-                  <span className="font-medium">Alumni ID:</span>{" "}
-                  {graduate.alumni_id_number} (auto-generated, cannot be
-                  changed)
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          </form>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            tone="dark"
+            label="First Name"
+            required
+            value={form.first_name}
+            onChange={(e) => handleChange("first_name", e.target.value)}
+            error={errors.first_name}
+          />
+          <Input
+            tone="dark"
+            label="Last Name"
+            required
+            value={form.last_name}
+            onChange={(e) => handleChange("last_name", e.target.value)}
+            error={errors.last_name}
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="col-span-2">
+            <Input
+              tone="dark"
+              label="Middle Name"
+              value={form.middle_name}
+              onChange={(e) => handleChange("middle_name", e.target.value)}
+              error={errors.middle_name}
+            />
+          </div>
+          <Input
+            tone="dark"
+            label="Suffix"
+            placeholder="Jr, Sr"
+            value={form.suffix}
+            onChange={(e) => handleChange("suffix", e.target.value)}
+            error={errors.suffix}
+          />
+        </div>
+
+        <Input
+          tone="dark"
+          label="Graduation Year"
+          type="number"
+          required
+          min="1950"
+          max="2099"
+          value={form.graduation_year}
+          onChange={(e) => handleChange("graduation_year", e.target.value)}
+          error={errors.graduation_year}
+        />
+
+        {isCollege && (
+          <Select
+            tone="dark"
+            label="Course"
+            value={form.course_id}
+            onChange={(e) => handleChange("course_id", e.target.value)}
+            error={errors.course_id}
+            placeholder="No course"
+            options={courses.map((c) => ({ value: c.id, label: c.name }))}
+          />
+        )}
+
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
+          <p className="text-xs text-slate-400">
+            <span className="font-medium">Education Level:</span>{" "}
+            {graduate.education_level_label} (cannot be changed)
+          </p>
+          {graduate.alumni_id_number && (
+            <p className="text-xs text-slate-400 mt-1">
+              <span className="font-medium">Alumni ID:</span>{" "}
+              {graduate.alumni_id_number} (auto-generated, cannot be changed)
+            </p>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" loading={loading}>
+            {loading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

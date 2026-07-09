@@ -2,14 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import StatusBadge from "../../../components/common/StatusBadge";
-import Pagination from "../../../components/common/Pagination";
-import { useDebounce } from "../../../hooks/useDebounce";
+import { useToast } from "../../../hooks/useToast";
 import { formatDate } from "../../../utils/formatters";
 import { JOB_TYPE_LABELS } from "../../../config/jobOptions";
-import {
-  HiOutlineMagnifyingGlass,
-  HiOutlineBriefcase,
-} from "react-icons/hi2";
+import { PAGINATION } from "../../../config/constants";
+import SearchInput from "../../../ui/SearchInput";
+import Card from "../../../ui/Card";
+import DataTable from "../../../ui/DataTable";
+import { HiOutlineBriefcase } from "react-icons/hi2";
 
 const JOB_STATUSES = [
   { value: "pending", label: "Pending Review" },
@@ -17,7 +17,23 @@ const JOB_STATUSES = [
   { value: "rejected", label: "Rejected" },
 ];
 
+function StatusTab({ label, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
+        active
+          ? "bg-gradient-to-r from-gold-500 to-gold-700 text-white shadow-lg shadow-gold-500/20"
+          : "bg-white/[0.06] text-slate-400 border border-white/[0.08] hover:bg-white/[0.1]"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
 export default function JobModerationListPage() {
+  const toast = useToast();
   const [posts, setPosts] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,25 +42,23 @@ export default function JobModerationListPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
 
-  const debouncedSearch = useDebounce(search, 400);
-
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
       const res = await adminApi.getJobPosts({
         page,
-        per_page: 15,
-        ...(debouncedSearch && { search: debouncedSearch }),
+        per_page: PAGINATION.DEFAULT_PER_PAGE,
+        ...(search && { search }),
         ...(statusFilter && { status: statusFilter }),
       });
       setPosts(res.data.data);
       setMeta(res.data.meta);
     } catch (err) {
-      console.error("Failed to fetch job posts:", err);
+      toast.error(err.response?.data?.message || "Failed to load job posts.");
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, statusFilter]);
+  }, [page, search, statusFilter, toast]);
 
   useEffect(() => {
     fetchPosts();
@@ -52,10 +66,60 @@ export default function JobModerationListPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, statusFilter]);
+  }, [search, statusFilter]);
+
+  const columns = [
+    {
+      key: "title",
+      header: "Job Title",
+      cellClassName: "font-medium text-slate-200",
+    },
+    {
+      key: "company",
+      header: "Company",
+      cellClassName: "text-xs text-slate-400",
+      render: (p) => p.company_name || p.employer?.company_name || "—",
+    },
+    {
+      key: "job_type",
+      header: "Type",
+      cellClassName: "text-xs text-slate-400",
+      render: (p) => JOB_TYPE_LABELS[p.job_type] || p.job_type,
+    },
+    {
+      key: "applications_count",
+      header: "Applicants",
+      cellClassName: "text-slate-300",
+      render: (p) => p.applications_count ?? 0,
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (p) => <StatusBadge status={p.status} label={p.status} />,
+    },
+    {
+      key: "created_at",
+      header: "Submitted",
+      cellClassName: "text-xs text-slate-500",
+      render: (p) => formatDate(p.created_at),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      align: "right",
+      render: (p) => (
+        <Link
+          to={`/admin/job-posts/${p.id}`}
+          className="text-gold-500 hover:text-gold-300 text-xs font-semibold transition-colors"
+        >
+          Review →
+        </Link>
+      ),
+    },
+  ];
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-[calc(100vh-4rem)]">
+    <>
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -83,119 +147,32 @@ export default function JobModerationListPage() {
         </div>
 
         {/* Search */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-4 mb-4">
-          <div className="relative">
-            <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by job title or company..."
-              className="w-full pl-10 pr-4 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 focus:border-[#c8a84e]/30 transition-colors"
-            />
-          </div>
-        </div>
+        <Card padding={false} className="p-4 mb-4">
+          <SearchInput
+            onDebouncedChange={setSearch}
+            placeholder="Search by job title or company..."
+          />
+        </Card>
 
         {/* Table */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] overflow-hidden">
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
-              <p className="text-sm text-slate-500">Loading job posts...</p>
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <HiOutlineBriefcase className="w-12 h-12 text-slate-600 mb-4" />
-              <h3 className="text-sm font-semibold text-slate-300 mb-1">
-                No job posts found
-              </h3>
-              <p className="text-sm text-slate-500 max-w-sm">
-                {search || statusFilter
-                  ? "Try adjusting your search or filters."
-                  : "No job posts have been submitted yet."}
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/[0.06]">
-                    {["Job Title", "Company", "Type", "Applicants", "Status", "Submitted"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="text-left py-3.5 px-4 font-semibold text-[#c8a84e] text-[11px] uppercase tracking-wider"
-                        >
-                          {h}
-                        </th>
-                      )
-                    )}
-                    <th className="text-right py-3.5 px-4 font-semibold text-[#c8a84e] text-[11px] uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  {posts.map((p) => (
-                    <tr
-                      key={p.id}
-                      className="hover:bg-white/[0.03] transition-colors"
-                    >
-                      <td className="py-3.5 px-4 font-medium text-slate-200">
-                        {p.title}
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-400">
-                        {p.company_name || p.employer?.company_name || "—"}
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-400">
-                        {JOB_TYPE_LABELS[p.job_type] || p.job_type}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-300">
-                        {p.applications_count ?? 0}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <StatusBadge status={p.status} label={p.status} />
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-500">
-                        {formatDate(p.created_at)}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          to={`/admin/job-posts/${p.id}`}
-                          className="text-[#c8a84e] hover:text-[#e0c76a] text-xs font-semibold transition-colors"
-                        >
-                          Review →
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {meta && (
-            <div className="px-4 pb-4">
-              <Pagination meta={meta} onPageChange={setPage} />
-            </div>
-          )}
-        </div>
+        <DataTable
+          columns={columns}
+          data={posts}
+          loading={loading}
+          keyField="id"
+          meta={meta}
+          onPageChange={setPage}
+          loadingLabel="Loading job posts..."
+          empty={{
+            icon: HiOutlineBriefcase,
+            title: "No job posts found",
+            description:
+              search || statusFilter
+                ? "Try adjusting your search or filters."
+                : "No job posts have been submitted yet.",
+          }}
+        />
       </div>
-    </div>
-  );
-}
-
-function StatusTab({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
-        active
-          ? "bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] text-white shadow-lg shadow-[#c8a84e]/20"
-          : "bg-white/[0.06] text-slate-400 border border-white/[0.08] hover:bg-white/[0.1]"
-      }`}
-    >
-      {label}
-    </button>
+    </>
   );
 }

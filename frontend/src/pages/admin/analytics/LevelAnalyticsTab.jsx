@@ -15,14 +15,21 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useToast } from "../../../hooks/useToast";
 import { HiOutlineAcademicCap, HiOutlineChartBar } from "react-icons/hi2";
+
+// Recharts consumes plain color strings, so the chart palette is named here.
+const CHART_COLORS = {
+  bar: "#c8a84e", // gold — graduate bars
+  axisTick: "#64748b", // slate-500 — axis ticks
+};
 
 // Dark-themed tooltip
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1a2e5a] border border-[#c8a84e]/20 rounded-xl px-4 py-3 shadow-2xl">
-      <p className="text-[11px] font-semibold text-[#c8a84e] mb-1.5">{label}</p>
+    <div className="bg-navy-800 border border-gold-500/20 rounded-xl px-4 py-3 shadow-2xl">
+      <p className="text-[11px] font-semibold text-gold-500 mb-1.5">{label}</p>
       <div className="flex items-center gap-2 text-[11px]">
         <span
           className="w-2 h-2 rounded-full"
@@ -36,6 +43,7 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 export default function LevelAnalyticsTab({ level, label, fetchFn }) {
+  const toast = useToast();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [years, setYears] = useState([]);
@@ -57,14 +65,19 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
     }
     fetchFn(params)
       .then((res) => setData(res.data.data))
-      .catch((err) => console.error(err))
+      .catch((err) =>
+        toast.error(
+          err.response?.data?.message || `Failed to load ${label} analytics.`,
+        ),
+      )
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yearFilter]);
 
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading {label} analytics...</p>
       </div>
     );
@@ -83,14 +96,14 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
         <select
           value={yearFilter}
           onChange={(e) => setYearFilter(e.target.value)}
-          className="px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer min-w-[140px]"
+          className="px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-gold-500/40 appearance-none cursor-pointer min-w-[140px]"
           style={{ colorScheme: "dark" }}
         >
-          <option value="" className="bg-[#1a2e5a] text-slate-300">
+          <option value="" className="bg-navy-800 text-slate-300">
             All Years
           </option>
           {years.map((y) => (
-            <option key={y} value={y} className="bg-[#1a2e5a] text-slate-300">
+            <option key={y} value={y} className="bg-navy-800 text-slate-300">
               {y}
             </option>
           ))}
@@ -99,14 +112,12 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
 
       {/* Total Graduates Card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-[#c8a84e]/10 border border-[#c8a84e]/20 rounded-2xl p-5 text-center">
-          <div className="w-11 h-11 rounded-xl bg-[#c8a84e]/15 flex items-center justify-center mx-auto mb-3">
-            <HiOutlineAcademicCap className="w-5 h-5 text-[#c8a84e]" />
+        <div className="bg-gold-500/10 border border-gold-500/20 rounded-2xl p-5 text-center">
+          <div className="w-11 h-11 rounded-xl bg-gold-500/15 flex items-center justify-center mx-auto mb-3">
+            <HiOutlineAcademicCap className="w-5 h-5 text-gold-500" />
           </div>
-          <p className="text-3xl font-bold text-white">
-            {data.total_graduates}
-          </p>
-          <p className="text-[10px] text-[#c8a84e]/80 uppercase font-semibold mt-1.5 tracking-wider">
+          <p className="text-3xl font-bold text-white">{data.total_graduates}</p>
+          <p className="text-[10px] text-gold-500/80 uppercase font-semibold mt-1.5 tracking-wider">
             Total {label} Graduates
           </p>
         </div>
@@ -127,9 +138,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
               <div className="w-11 h-11 rounded-xl bg-white/[0.06] flex items-center justify-center mx-auto mb-3">
                 <HiOutlineAcademicCap className="w-5 h-5 text-slate-300" />
               </div>
-              <p className="text-3xl font-bold text-white">
-                {chartData.length}
-              </p>
+              <p className="text-3xl font-bold text-white">{chartData.length}</p>
               <p className="text-[10px] text-slate-400 uppercase font-semibold mt-1.5 tracking-wider">
                 Years on Record
               </p>
@@ -141,7 +150,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
       {/* Graduate Trend Chart */}
       {chartData.length > 0 && (
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 mb-6">
-          <h3 className="text-[11px] font-semibold text-[#c8a84e] uppercase tracking-wider mb-4 flex items-center gap-2">
+          <h3 className="text-[11px] font-semibold text-gold-500 uppercase tracking-wider mb-4 flex items-center gap-2">
             <HiOutlineChartBar className="w-4 h-4" />
             Graduate trend by year
           </h3>
@@ -157,12 +166,12 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
               />
               <XAxis
                 dataKey="year"
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: CHART_COLORS.axisTick }}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: "#64748b" }}
+                tick={{ fontSize: 12, fill: CHART_COLORS.axisTick }}
                 allowDecimals={false}
                 axisLine={false}
                 tickLine={false}
@@ -174,7 +183,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
               <Bar
                 dataKey="total_graduates"
                 name="Graduates"
-                fill="#c8a84e"
+                fill={CHART_COLORS.bar}
                 radius={[6, 6, 0, 0]}
                 maxBarSize={50}
               />

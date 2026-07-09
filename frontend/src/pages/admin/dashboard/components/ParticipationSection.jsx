@@ -16,8 +16,8 @@ function ParticipationMetric({ icon: Icon, label, rate, caption }) {
   return (
     <div className="bg-white/[0.03] rounded-xl border border-white/[0.06] p-5">
       <div className="flex items-center gap-2.5 mb-3">
-        <span className="w-8 h-8 rounded-lg bg-[#c8a84e]/15 flex items-center justify-center flex-shrink-0">
-          <Icon className="w-4 h-4 text-[#c8a84e]" />
+        <span className="w-8 h-8 rounded-lg bg-gold-500/15 flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 text-gold-500" />
         </span>
         <span className="text-[12px] font-semibold text-slate-200 leading-tight">
           {label}
@@ -32,7 +32,7 @@ function ParticipationMetric({ icon: Icon, label, rate, caption }) {
       {/* Progress bar */}
       <div className="mt-3 h-2 w-full rounded-full bg-white/[0.06] overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-[#c8a84e] to-[#e0c76a] transition-all duration-700"
+          className="h-full rounded-full bg-gradient-to-r from-gold-500 to-gold-300 transition-all duration-700"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -53,12 +53,12 @@ function ParticipationSection({ participation }) {
   } = participation;
 
   return (
-    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
+    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#c8a84e]/15 flex items-center justify-center">
-            <HiOutlineChartBarSquare className="w-5 h-5 text-[#c8a84e]" />
+          <div className="w-10 h-10 rounded-xl bg-gold-500/15 flex items-center justify-center">
+            <HiOutlineChartBarSquare className="w-5 h-5 text-gold-500" />
           </div>
           <div>
             <h2 className="text-[15px] font-bold text-white">

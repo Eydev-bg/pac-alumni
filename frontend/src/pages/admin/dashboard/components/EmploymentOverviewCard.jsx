@@ -7,7 +7,7 @@ import { EMPLOYMENT_COLORS } from "../constants";
 // Memoized: re-renders only when its derived props change.
 function EmploymentOverviewCard({ pieData, legend, employedCount, employmentRate }) {
   return (
-    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
+    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
       <div className="mb-2">
         <h2 className="text-[15px] font-bold text-white">Employment Overview</h2>
         <p className="text-[11px] text-slate-400 mt-0.5">
@@ -63,9 +63,9 @@ function EmploymentOverviewCard({ pieData, legend, employedCount, employmentRate
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-auto pt-3">
-        <div className="text-center p-3 bg-[#c8a84e]/10 rounded-xl border border-[#c8a84e]/15">
-          <p className="text-xl font-bold text-[#c8a84e]">{employedCount}</p>
-          <p className="text-[10px] text-[#c8a84e]/70 font-medium mt-0.5">
+        <div className="text-center p-3 bg-gold-500/10 rounded-xl border border-gold-500/15">
+          <p className="text-xl font-bold text-gold-500">{employedCount}</p>
+          <p className="text-[10px] text-gold-500/70 font-medium mt-0.5">
             Employed
           </p>
         </div>

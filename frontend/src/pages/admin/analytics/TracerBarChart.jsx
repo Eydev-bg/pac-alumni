@@ -18,13 +18,18 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import Card from "../../../ui/Card";
 
 // ─── Colors ──────────────────────────────────────────────
+// Recharts consumes plain color strings (not Tailwind classes), so the chart
+// palette lives here as named constants rather than magic literals inline.
 const COLORS = {
   graduates: "#3b82f6", // Blue — total imported graduates
   registered: "#10b981", // Green — registered in system
   boardPassers: "#f59e0b", // Amber — board exam passers
   employed: "#c8a84e", // Gold — employed alumni
+  axisLabel: "#94a3b8", // slate-400 — x-axis labels
+  axisTick: "#64748b", // slate-500 — y-axis ticks
 };
 
 // ─── Custom Tooltip ──────────────────────────────────────
@@ -32,8 +37,8 @@ function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="bg-[#0f172a] border border-[#c8a84e]/30 rounded-xl px-4 py-3 shadow-2xl min-w-[180px]">
-      <p className="text-[12px] font-bold text-[#c8a84e] mb-2 border-b border-white/10 pb-1.5">
+    <div className="bg-slate-900 border border-gold-500/30 rounded-xl px-4 py-3 shadow-2xl min-w-[180px]">
+      <p className="text-[12px] font-bold text-gold-500 mb-2 border-b border-white/10 pb-1.5">
         Batch {label}
       </p>
       {payload.map((entry, i) => (
@@ -99,7 +104,7 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
   const chartHeight = Math.max(380, Math.min(500, data.length * 60));
 
   return (
-    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
+    <Card>
       {/* Header */}
       <div className="mb-5">
         <h3 className="text-[16px] font-bold text-white">
@@ -128,12 +133,12 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
             />
             <XAxis
               dataKey="year"
-              tick={{ fontSize: 12, fill: "#94a3b8", fontWeight: 600 }}
+              tick={{ fontSize: 12, fill: COLORS.axisLabel, fontWeight: 600 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 11, fill: "#64748b" }}
+              tick={{ fontSize: 11, fill: COLORS.axisTick }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
@@ -177,6 +182,6 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </div>
+    </Card>
   );
 }

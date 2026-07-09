@@ -9,16 +9,40 @@ import { Link, useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import { storageUrl } from "../../../utils/formatters";
 import Pagination from "../../../components/common/Pagination";
-import { useDebounce } from "../../../hooks/useDebounce";
+import { useToast } from "../../../hooks/useToast";
+import Button from "../../../ui/Button";
+import Select from "../../../ui/Select";
+import SearchInput from "../../../ui/SearchInput";
+import Card from "../../../ui/Card";
 import {
-  HiOutlineMagnifyingGlass,
   HiOutlineAcademicCap,
   HiOutlineArrowUpTray,
   HiOutlineUserCircle,
 } from "react-icons/hi2";
 
-const selectClass =
-  "px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer";
+// Grid page size for the card layout (named so it is not a magic number).
+const GRADUATES_PER_PAGE = 60;
+
+const BOARD_LABELS = {
+  passer: "Board Passers",
+  failed: "Board Failed",
+  not_taken: "Not Yet Taken",
+};
+const EMPLOYMENT_LABELS = {
+  employed: "Employed",
+  unemployed: "Unemployed",
+  unknown: "Unknown",
+};
+const BOARD_OPTIONS = [
+  { value: "passer", label: "Board Passer" },
+  { value: "failed", label: "Board Failed" },
+  { value: "not_taken", label: "Not Yet Taken" },
+];
+const EMPLOYMENT_OPTIONS = [
+  { value: "employed", label: "Employed" },
+  { value: "unemployed", label: "Unemployed" },
+  { value: "unknown", label: "Unknown" },
+];
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  GraduateCard — flat by default, card box on hover
@@ -29,9 +53,9 @@ function GraduateCard({ graduate }) {
   return (
     <Link
       to={`/admin/graduates/${graduate.id}`}
-      className="group flex flex-col items-center text-center p-4 rounded-2xl border border-transparent hover:border-[#c8a84e]/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-[#c8a84e]/5 transition-all duration-300 cursor-pointer"
+      className="group flex flex-col items-center text-center p-4 rounded-2xl border border-transparent hover:border-gold-500/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-gold-500/5 transition-all duration-300 cursor-pointer"
     >
-      <div className="relative w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-white/[0.08] group-hover:border-[#c8a84e]/30 transition-colors duration-300 bg-[#1a2e5a]/60 flex-shrink-0">
+      <div className="relative w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-white/[0.08] group-hover:border-gold-500/30 transition-colors duration-300 bg-navy-800/60 flex-shrink-0">
         {hasProfilePic ? (
           <img
             src={storageUrl(graduate.profile_picture)}
@@ -49,7 +73,7 @@ function GraduateCard({ graduate }) {
           <HiOutlineUserCircle className="w-10 h-10 text-slate-500" />
         </div>
       </div>
-      <p className="text-sm font-semibold text-slate-200 group-hover:text-[#c8a84e] transition-colors duration-200 leading-tight line-clamp-2">
+      <p className="text-sm font-semibold text-slate-200 group-hover:text-gold-500 transition-colors duration-200 leading-tight line-clamp-2">
         {graduate.full_name}
       </p>
       {graduate.course?.code && (
@@ -57,7 +81,7 @@ function GraduateCard({ graduate }) {
           {graduate.course.code}
         </p>
       )}
-      <div className="w-0 h-[2px] bg-[#c8a84e] rounded-full mt-2.5 group-hover:w-10 transition-all duration-300" />
+      <div className="w-0 h-[2px] bg-gold-500 rounded-full mt-2.5 group-hover:w-10 transition-all duration-300" />
     </Link>
   );
 }
@@ -74,8 +98,8 @@ function CourseSection({ courseName, graduates }) {
             {courseName}
           </h2>
           <div className="flex items-center gap-2 mt-1.5">
-            <div className="w-8 h-[3px] bg-[#c8a84e] rounded-full" />
-            <div className="w-1.5 h-1.5 bg-[#c8a84e] rounded-full" />
+            <div className="w-8 h-[3px] bg-gold-500 rounded-full" />
+            <div className="w-1.5 h-1.5 bg-gold-500 rounded-full" />
           </div>
         </div>
       </div>
@@ -93,6 +117,7 @@ function CourseSection({ courseName, graduates }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export default function GraduatesListPage() {
   const navigate = useNavigate();
+  const toast = useToast();
   const [graduates, setGraduates] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -107,8 +132,6 @@ export default function GraduatesListPage() {
   const [boardFilter, setBoardFilter] = useState("");
   const [empFilter, setEmpFilter] = useState("");
   const [page, setPage] = useState(1);
-
-  const debouncedSearch = useDebounce(search, 400);
 
   useEffect(() => {
     adminApi
@@ -162,10 +185,10 @@ export default function GraduatesListPage() {
     try {
       const params = {
         page,
-        per_page: 60,
+        per_page: GRADUATES_PER_PAGE,
         sort_by: "last_name",
         sort_dir: "asc",
-        ...(debouncedSearch && { search: debouncedSearch }),
+        ...(search && { search }),
         ...(yearFilter && { graduation_year: yearFilter }),
         ...(deptFilter && { department_id: deptFilter }),
         ...(courseFilter && isCollegeDept && { course_id: courseFilter }),
@@ -176,13 +199,13 @@ export default function GraduatesListPage() {
       setGraduates(res.data.data);
       setMeta(res.data.meta);
     } catch (err) {
-      console.error("Failed to fetch graduates:", err);
+      toast.error(err.response?.data?.message || "Failed to load graduates.");
     } finally {
       setLoading(false);
     }
   }, [
     page,
-    debouncedSearch,
+    search,
     yearFilter,
     deptFilter,
     courseFilter,
@@ -191,6 +214,7 @@ export default function GraduatesListPage() {
     showBoardFilter,
     empFilter,
     showEmpFilter,
+    toast,
   ]);
 
   useEffect(() => {
@@ -198,14 +222,7 @@ export default function GraduatesListPage() {
   }, [fetchGraduates]);
   useEffect(() => {
     setPage(1);
-  }, [
-    debouncedSearch,
-    yearFilter,
-    deptFilter,
-    courseFilter,
-    boardFilter,
-    empFilter,
-  ]);
+  }, [search, yearFilter, deptFilter, courseFilter, boardFilter, empFilter]);
 
   const groupedByCourse = graduates.reduce((groups, g) => {
     const key = g.course?.code || g.department?.code || "Other";
@@ -233,14 +250,14 @@ export default function GraduatesListPage() {
       courseFilter ||
       boardFilter ||
       empFilter ||
-      debouncedSearch;
+      search;
 
     // No filters — default view showing all graduates
     if (!hasAnyFilter) return "All graduate records across education levels";
 
     // Search without department
-    if (!deptFilter && debouncedSearch) {
-      return `Search results for "${debouncedSearch}"`;
+    if (!deptFilter && search) {
+      return `Search results for "${search}"`;
     }
 
     // Filters applied — build contextual label (no count)
@@ -257,23 +274,9 @@ export default function GraduatesListPage() {
 
     // Qualifiers
     const qualifiers = [];
-    if (boardFilter) {
-      const boardLabels = {
-        passer: "Board Passers",
-        failed: "Board Failed",
-        not_taken: "Not Yet Taken",
-      };
-      qualifiers.push(boardLabels[boardFilter] || boardFilter);
-    }
-    if (empFilter) {
-      const empLabels = {
-        employed: "Employed",
-        unemployed: "Unemployed",
-        unknown: "Unknown",
-      };
-      qualifiers.push(empLabels[empFilter] || empFilter);
-    }
-    if (debouncedSearch) qualifiers.push(`matching "${debouncedSearch}"`);
+    if (boardFilter) qualifiers.push(BOARD_LABELS[boardFilter] || boardFilter);
+    if (empFilter) qualifiers.push(EMPLOYMENT_LABELS[empFilter] || empFilter);
+    if (search) qualifiers.push(`matching "${search}"`);
 
     let label = parts.filter(Boolean).join(" · ");
     if (qualifiers.length) label += ` · ${qualifiers.join(" · ")}`;
@@ -282,7 +285,7 @@ export default function GraduatesListPage() {
   })();
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -290,30 +293,26 @@ export default function GraduatesListPage() {
             <h1 className="text-2xl font-bold text-white">Graduates</h1>
             <p className="text-sm text-slate-400 mt-1">{headerSubtitle}</p>
           </div>
-          <button
+          <Button
+            icon={HiOutlineArrowUpTray}
             onClick={() => navigate("/admin/graduates/import")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] text-white text-sm font-semibold rounded-xl hover:from-[#d4b85e] hover:to-[#b89848] transition-all shadow-lg shadow-[#c8a84e]/20"
           >
-            <HiOutlineArrowUpTray className="w-4 h-4" />
             Import Graduates
-          </button>
+          </Button>
         </div>
 
         {/* Filters */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-4 mb-4">
+        <Card padding={false} className="p-4 mb-4">
           <div className="flex flex-col gap-3">
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 relative">
-                <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name or alumni ID..."
-                  className="w-full pl-10 pr-4 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 focus:border-[#c8a84e]/30 transition-colors"
-                />
-              </div>
-              <select
+              <SearchInput
+                className="flex-1"
+                onDebouncedChange={setSearch}
+                placeholder="Search by name or alumni ID..."
+              />
+              <Select
+                tone="dark"
+                className="min-w-[180px]"
                 value={deptFilter}
                 onChange={(e) => {
                   setDeptFilter(e.target.value);
@@ -322,87 +321,69 @@ export default function GraduatesListPage() {
                   setEmpFilter("");
                   setYearFilter("");
                 }}
-                className={`${selectClass} min-w-[180px]`}
-              >
-                <option value="">All Departments</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
+                placeholder="All Departments"
+                options={departments.map((d) => ({ value: d.id, label: d.name }))}
+              />
             </div>
 
             {hasDeptSelected && (
               <div className="flex flex-wrap items-center gap-3">
-                <select
+                <Select
+                  tone="dark"
                   value={yearFilter}
                   onChange={(e) => setYearFilter(e.target.value)}
-                  className={selectClass}
-                >
-                  <option value="">All Years</option>
-                  {years.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="All Years"
+                  options={years.map((y) => ({ value: y, label: String(y) }))}
+                />
                 {isCollegeDept && filteredCourses.length > 0 && (
-                  <select
+                  <Select
+                    tone="dark"
+                    className="min-w-[220px]"
                     value={courseFilter}
                     onChange={(e) => {
                       setCourseFilter(e.target.value);
                       setBoardFilter("");
                     }}
-                    className={`${selectClass} min-w-[220px]`}
-                  >
-                    <option value="">All Courses</option>
-                    {filteredCourses.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="All Courses"
+                    options={filteredCourses.map((c) => ({
+                      value: c.id,
+                      label: c.name,
+                    }))}
+                  />
                 )}
                 {showBoardFilter && (
-                  <select
+                  <Select
+                    tone="dark"
                     value={boardFilter}
                     onChange={(e) => setBoardFilter(e.target.value)}
-                    className={selectClass}
-                  >
-                    <option value="">All Board Status</option>
-                    <option value="passer">Board Passer</option>
-                    <option value="failed">Board Failed</option>
-                    <option value="not_taken">Not Yet Taken</option>
-                  </select>
+                    placeholder="All Board Status"
+                    options={BOARD_OPTIONS}
+                  />
                 )}
                 {showEmpFilter && (
-                  <select
+                  <Select
+                    tone="dark"
                     value={empFilter}
                     onChange={(e) => setEmpFilter(e.target.value)}
-                    className={selectClass}
-                  >
-                    <option value="">All Employment</option>
-                    <option value="employed">Employed</option>
-                    <option value="unemployed">Unemployed</option>
-                    <option value="unknown">Unknown</option>
-                  </select>
+                    placeholder="All Employment"
+                    options={EMPLOYMENT_OPTIONS}
+                  />
                 )}
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Content */}
         {loading ? (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-16">
+          <Card className="p-16">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
               <p className="text-sm text-slate-500">Loading graduates...</p>
             </div>
-          </div>
+          </Card>
         ) : graduates.length === 0 ? (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-16">
+          <Card className="p-16">
             <div className="flex flex-col items-center justify-center text-center">
               <HiOutlineAcademicCap className="w-12 h-12 text-slate-600 mb-4" />
               <h3 className="text-sm font-semibold text-slate-300 mb-1">
@@ -415,12 +396,12 @@ export default function GraduatesListPage() {
               </p>
               <button
                 onClick={() => navigate("/admin/graduates/import")}
-                className="mt-3 text-sm text-[#c8a84e] hover:text-[#e0c76a] font-medium transition-colors"
+                className="mt-3 text-sm text-gold-500 hover:text-gold-300 font-medium transition-colors"
               >
                 Import Graduates
               </button>
             </div>
-          </div>
+          </Card>
         ) : (
           <div>
             {courseGroups.map((group) => (
@@ -431,13 +412,13 @@ export default function GraduatesListPage() {
               />
             ))}
             {meta && (
-              <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] px-4 py-3 mt-4">
+              <Card padding={false} className="px-4 py-3 mt-4">
                 <Pagination meta={meta} onPageChange={setPage} />
-              </div>
+              </Card>
             )}
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }

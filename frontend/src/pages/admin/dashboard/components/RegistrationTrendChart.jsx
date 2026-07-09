@@ -15,7 +15,7 @@ import { COLORS } from "../constants";
 // Memoized: re-renders only when its `data` slice changes.
 function RegistrationTrendChart({ data }) {
   return (
-    <div className="lg:col-span-2 bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
+    <div className="lg:col-span-2 bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-[15px] font-bold text-white">Registration Trend</h2>
@@ -25,7 +25,7 @@ function RegistrationTrendChart({ data }) {
         </div>
         <div className="hidden sm:flex items-center gap-5 text-[11px]">
           <span className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-[#c8a84e] inline-block" />{" "}
+            <span className="w-3 h-3 rounded bg-gold-500 inline-block" />{" "}
             <span className="text-slate-400">Registrations</span>
           </span>
         </div>
@@ -45,13 +45,13 @@ function RegistrationTrendChart({ data }) {
               />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 10, fill: "#64748b" }}
+                tick={{ fontSize: 10, fill: COLORS.axisTick }}
                 axisLine={false}
                 tickLine={false}
                 tickFormatter={(val) => val.split(" ")[0]}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#64748b" }}
+                tick={{ fontSize: 11, fill: COLORS.axisTick }}
                 axisLine={false}
                 tickLine={false}
                 allowDecimals={false}

@@ -9,7 +9,7 @@ import {
 // ─── Automated Reminder Stats ────────────────────────────
 const REMINDER_TYPE_META = {
   login_reminder: { icon: HiOutlineUserPlus, color: "text-blue-400", bg: "bg-blue-500/15" },
-  employment_update: { icon: HiOutlineBriefcase, color: "text-[#c8a84e]", bg: "bg-[#c8a84e]/15" },
+  employment_update: { icon: HiOutlineBriefcase, color: "text-gold-500", bg: "bg-gold-500/15" },
   profile_completion: { icon: HiOutlineClipboardDocumentList, color: "text-emerald-400", bg: "bg-emerald-500/15" },
   announcement: { icon: HiOutlineEnvelope, color: "text-violet-400", bg: "bg-violet-500/15" },
 };
@@ -27,12 +27,12 @@ function ReminderStatsSection({ stats }) {
   ];
 
   return (
-    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-8">
+    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#c8a84e]/15 flex items-center justify-center">
-            <HiOutlineEnvelope className="w-5 h-5 text-[#c8a84e]" />
+          <div className="w-10 h-10 rounded-xl bg-gold-500/15 flex items-center justify-center">
+            <HiOutlineEnvelope className="w-5 h-5 text-gold-500" />
           </div>
           <div>
             <h2 className="text-[15px] font-bold text-white">

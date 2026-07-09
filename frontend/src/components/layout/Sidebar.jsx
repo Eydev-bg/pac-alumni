@@ -82,6 +82,11 @@ const navItems = [
   },
 ];
 
+// Sidebar surface gradient — references theme tokens (exposed as CSS vars by
+// Tailwind v4) instead of hardcoded hex, so it stays in sync with the palette.
+const SIDEBAR_BACKGROUND =
+  "linear-gradient(180deg, var(--color-slate-900) 0%, var(--color-navy-850) 50%, var(--color-slate-900) 100%)";
+
 /**
  * Sidebar — collapsible navigation for admin.
  * Design: Dark navy with gold accent, school branding.
@@ -92,7 +97,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
   const linkClasses = (isActive) =>
     `group flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200 relative ${
       isActive
-        ? "bg-gradient-to-r from-[#c8a84e]/15 to-[#c8a84e]/5 text-[#c8a84e]"
+        ? "bg-gradient-to-r from-gold-500/15 to-gold-500/5 text-gold-500"
         : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
     }`;
 
@@ -100,7 +105,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
     <>
       {/* Logo Area */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-[#c8a84e] to-[#a88a3a] flex items-center justify-center shadow-lg shadow-[#c8a84e]/20">
+        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center shadow-lg shadow-gold-500/20">
           <svg
             width="18"
             height="18"
@@ -121,7 +126,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
             <h2 className="text-[13px] font-bold text-white tracking-wide truncate">
               PAC Alumni
             </h2>
-            <p className="text-[10px] text-[#c8a84e]/70 font-medium tracking-wider uppercase truncate">
+            <p className="text-[10px] text-gold-500/70 font-medium tracking-wider uppercase truncate">
               Admin Panel
             </p>
           </div>
@@ -160,12 +165,12 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
                     {({ isActive }) => (
                       <>
                         {isActive && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-[#c8a84e]" />
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-gold-500" />
                         )}
                         <item.icon
                           className={`w-[18px] h-[18px] flex-shrink-0 transition-colors duration-200 ${
                             isActive
-                              ? "text-[#c8a84e]"
+                              ? "text-gold-500"
                               : "text-slate-500 group-hover:text-slate-300"
                           }`}
                         />
@@ -204,10 +209,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
         className={`hidden lg:flex lg:flex-col fixed inset-y-0 left-0 z-30 transition-all duration-300 ${
           open ? "w-64" : "w-20"
         }`}
-        style={{
-          background:
-            "linear-gradient(180deg, #0f172a 0%, #131d36 50%, #0f172a 100%)",
-        }}
+        style={{ background: SIDEBAR_BACKGROUND }}
       >
         {content}
       </aside>
@@ -217,10 +219,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
         className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 flex flex-col ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-        style={{
-          background:
-            "linear-gradient(180deg, #0f172a 0%, #131d36 50%, #0f172a 100%)",
-        }}
+        style={{ background: SIDEBAR_BACKGROUND }}
       >
         {content}
       </aside>

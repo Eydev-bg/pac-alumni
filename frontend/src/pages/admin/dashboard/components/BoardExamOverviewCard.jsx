@@ -7,7 +7,7 @@ import { BOARD_COLORS } from "../constants";
 // Memoized: re-renders only when its derived props change.
 function BoardExamOverviewCard({ pieData, legend, passers, passingRate }) {
   return (
-    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
+    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
       <div className="mb-2">
         <h2 className="text-[15px] font-bold text-white">Board Exam Overview</h2>
         <p className="text-[11px] text-slate-400 mt-0.5">
@@ -60,9 +60,9 @@ function BoardExamOverviewCard({ pieData, legend, passers, passingRate }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3 mt-auto pt-3">
-        <div className="text-center p-3 bg-[#22c55e]/10 rounded-xl border border-[#22c55e]/15">
-          <p className="text-xl font-bold text-[#22c55e]">{passers}</p>
-          <p className="text-[10px] text-[#22c55e]/70 font-medium mt-0.5">
+        <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/15">
+          <p className="text-xl font-bold text-green-500">{passers}</p>
+          <p className="text-[10px] text-green-500/70 font-medium mt-0.5">
             Passers
           </p>
         </div>

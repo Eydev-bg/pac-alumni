@@ -11,6 +11,8 @@ import { storageUrl, formatDate } from "../../../utils/formatters";
 import StatusBadge from "../../../components/common/StatusBadge";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
 import EditGraduateModal from "./EditGraduateModal";
+import { useToast } from "../../../hooks/useToast";
+import Card from "../../../ui/Card";
 import {
   HiOutlineArrowLeft,
   HiOutlinePencilSquare,
@@ -23,6 +25,7 @@ import {
 export default function GraduateDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
 
   const [graduate, setGraduate] = useState(null);
   const [alumniData, setAlumniData] = useState(null);
@@ -46,6 +49,7 @@ export default function GraduateDetailPage() {
         }
       }
     } catch {
+      toast.error("Graduate not found.");
       navigate("/admin/graduates");
     } finally {
       setLoading(false);
@@ -60,9 +64,10 @@ export default function GraduateDetailPage() {
     setActionLoading(true);
     try {
       await adminApi.deleteGraduate(id);
+      toast.success("Graduate record deleted.");
       navigate("/admin/graduates");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete.");
+      toast.error(err.response?.data?.message || "Failed to delete.");
     } finally {
       setActionLoading(false);
     }
@@ -70,11 +75,9 @@ export default function GraduateDetailPage() {
 
   if (loading)
     return (
-      <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
-          <p className="text-sm text-slate-500">Loading graduate...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center py-16">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <p className="text-sm text-slate-500">Loading graduate...</p>
       </div>
     );
 
@@ -94,22 +97,12 @@ export default function GraduateDetailPage() {
     ["Suffix", graduate.suffix || "—"],
     ["Education Level", graduate.education_level_label],
     ["Graduation Year", graduate.graduation_year],
-    [
-      "Department",
-      graduate.department
-        ? `${graduate.department.name}`
-        : "—",
-    ],
+    ["Department", graduate.department ? `${graduate.department.name}` : "—"],
   ];
 
   if (isCollege) {
     detailRows.push(
-      [
-        "Course",
-        graduate.course
-          ? `${graduate.course.name}`
-          : "—",
-      ],
+      ["Course", graduate.course ? `${graduate.course.name}` : "—"],
       ["Has Alumni Account", hasAlumniAccount ? "Yes" : "No"],
     );
   }
@@ -119,30 +112,33 @@ export default function GraduateDetailPage() {
     ["Last Updated", formatDate(graduate.updated_at)],
   );
 
+  const actionBtn =
+    "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors border";
+
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[1100px] mx-auto">
         {/* Back */}
         <button
           onClick={() => navigate("/admin/graduates")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#c8a84e] mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Graduates
         </button>
 
         {/* ═══ 1. Profile Hero — college grads with account ═══ */}
         {isCollege && hasAlumniAccount && (
-          <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] overflow-hidden mb-6">
+          <Card padding={false} className="overflow-hidden mb-6">
             <div className="flex flex-col items-center pt-8 pb-6 px-6">
               {/* Avatar */}
               {graduate.profile_picture ? (
                 <img
                   src={storageUrl(graduate.profile_picture)}
                   alt={graduate.full_name}
-                  className="w-28 h-28 rounded-full border-4 border-[#0c1525] shadow-xl object-cover"
+                  className="w-28 h-28 rounded-full border-4 border-navy-950 shadow-xl object-cover"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full border-4 border-[#0c1525] shadow-xl bg-gradient-to-br from-[#c8a84e] to-[#a88a3a] flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full border-4 border-navy-950 shadow-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center">
                   <span className="text-3xl font-bold text-white tracking-wider">
                     {graduate.first_name?.[0]}
                     {graduate.last_name?.[0]}
@@ -195,14 +191,14 @@ export default function GraduateDetailPage() {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Alumni ID Card — college without account */}
         {isCollege && !hasAlumniAccount && graduate.alumni_id_number && (
-          <div className="relative bg-gradient-to-br from-[#c8a84e] via-[#b8963e] to-[#a88a3a] rounded-2xl p-6 mb-6 text-white shadow-2xl shadow-[#c8a84e]/20 overflow-hidden">
+          <div className="relative bg-gradient-to-br from-gold-500 via-gold-650 to-gold-700 rounded-2xl p-6 mb-6 text-white shadow-2xl shadow-gold-500/20 overflow-hidden">
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-[#1a2e5a]/20 blur-2xl" />
+            <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-navy-800/20 blur-2xl" />
             <div className="relative">
               <div className="flex items-center gap-2 mb-1">
                 <HiOutlineIdentification className="w-4 h-4 text-white/80" />
@@ -226,8 +222,8 @@ export default function GraduateDetailPage() {
             className={`grid grid-cols-1 ${isBoardProgram ? "lg:grid-cols-2" : ""} gap-6 mb-6`}
           >
             {/* Employment History */}
-            <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
-              <h2 className="text-[11px] font-semibold text-[#c8a84e] mb-4 uppercase tracking-wider flex items-center gap-2">
+            <Card>
+              <h2 className="text-[11px] font-semibold text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
                 <HiOutlineBriefcase className="w-4 h-4" />
                 Employment History
               </h2>
@@ -263,7 +259,7 @@ export default function GraduateDetailPage() {
                       </div>
                       {(r.start_date || r.end_date) && (
                         <p className="text-xs text-slate-500 mt-2">
-                          {r.start_date || "?"} - {" "}
+                          {r.start_date || "?"} -{" "}
                           {r.is_current ? "Present" : r.end_date || "?"}
                         </p>
                       )}
@@ -271,12 +267,12 @@ export default function GraduateDetailPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </Card>
 
             {/* Board Exam — only for board program courses */}
             {isBoardProgram && (
-              <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
-                <h2 className="text-[11px] font-semibold text-[#c8a84e] mb-4 uppercase tracking-wider flex items-center gap-2">
+              <Card>
+                <h2 className="text-[11px] font-semibold text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
                   <HiOutlineAcademicCap className="w-4 h-4" />
                   Board Exam Records
                 </h2>
@@ -307,27 +303,27 @@ export default function GraduateDetailPage() {
                     ))}
                   </div>
                 )}
-              </div>
+              </Card>
             )}
           </div>
         )}
 
         {/* ═══ 3. Graduate Details — bottom ═══ */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
+        <Card>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-semibold text-[#c8a84e] uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-gold-500 uppercase tracking-wider">
               Graduate Details
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowEdit(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+                className={`${actionBtn} text-slate-300 bg-white/[0.06] border-white/[0.08] hover:bg-white/[0.1]`}
               >
                 <HiOutlinePencilSquare className="w-4 h-4" /> Edit
               </button>
               <button
                 onClick={() => setConfirmDelete(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-colors"
+                className={`${actionBtn} text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20`}
               >
                 <HiOutlineTrash className="w-4 h-4" /> Delete
               </button>
@@ -348,7 +344,7 @@ export default function GraduateDetailPage() {
               </div>
             ))}
           </dl>
-        </div>
+        </Card>
 
         {/* Modals */}
         {showEdit && (
@@ -372,6 +368,6 @@ export default function GraduateDetailPage() {
           onCancel={() => setConfirmDelete(false)}
         />
       </div>
-    </div>
+    </>
   );
 }

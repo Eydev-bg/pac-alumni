@@ -75,7 +75,7 @@ export default function Header({
     <header
       className={`fixed top-0 right-0 left-0 z-20 h-16 flex items-center justify-between px-4 sm:px-6 ${
         dark
-          ? "bg-[#0c1525] border-b border-white/[0.06]"
+          ? "bg-navy-950 border-b border-white/[0.06]"
           : "bg-white border-b border-slate-200"
       }`}
     >
@@ -131,7 +131,7 @@ export default function Header({
           <div
             className={`absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 ${
               dark
-                ? "bg-[#1a2e5a] border border-white/[0.08] shadow-2xl"
+                ? "bg-navy-800 border border-white/[0.08] shadow-2xl"
                 : "bg-white border border-slate-200 shadow-lg"
             }`}
           >
@@ -184,7 +184,7 @@ export default function Header({
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center ${
               dark
-                ? "bg-gradient-to-br from-[#c8a84e] to-[#a88a3a] shadow-lg shadow-[#c8a84e]/10"
+                ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
                 : "bg-blue-100"
             }`}
           >
@@ -214,7 +214,7 @@ export default function Header({
           <div
             className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl py-2 z-50 ${
               dark
-                ? "bg-[#1a2e5a] border border-white/[0.08]"
+                ? "bg-navy-800 border border-white/[0.08]"
                 : "bg-white border border-slate-200 shadow-lg"
             }`}
           >

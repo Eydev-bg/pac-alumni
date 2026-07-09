@@ -1,12 +1,13 @@
 import { useState } from "react";
 import adminApi from "../../../api/adminApi";
-import { HiOutlineXMark } from "react-icons/hi2";
+import { useToast } from "../../../hooks/useToast";
+import Modal from "../../../ui/Modal";
+import Button from "../../../ui/Button";
+import Input from "../../../ui/Input";
+import Alert from "../../../ui/Alert";
 
-export default function EditDepartmentModal({
-  department,
-  onClose,
-  onUpdated,
-}) {
+export default function EditDepartmentModal({ department, onClose, onUpdated }) {
+  const toast = useToast();
   const [form, setForm] = useState({
     name: department.name || "",
     code: department.code || "",
@@ -31,6 +32,7 @@ export default function EditDepartmentModal({
     setLoading(true);
     try {
       await adminApi.updateDepartment(department.id, form);
+      toast.success("Department updated successfully.");
       onUpdated();
     } catch (err) {
       if (err.response?.status === 422) {
@@ -46,93 +48,50 @@ export default function EditDepartmentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-bold text-slate-800">
-              Edit Department
-            </h3>
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-slate-600"
-            >
-              <HiOutlineXMark className="w-5 h-5" />
-            </button>
-          </div>
+    <Modal open onClose={onClose} title="Edit Department" size="md">
+      {errors.general && (
+        <Alert variant="error" className="mb-4">
+          {errors.general}
+        </Alert>
+      )}
 
-          {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errors.general}</p>
-            </div>
-          )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          tone="dark"
+          label="Department Name"
+          required
+          value={form.name}
+          onChange={(e) => handleChange("name", e.target.value)}
+          error={errors.name}
+        />
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Department Name *
-              </label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                required
-                className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.name ? "border-red-300" : "border-slate-300"}`}
-              />
-              {errors.name && (
-                <p className="text-xs text-red-500 mt-1">{errors.name[0]}</p>
-              )}
-            </div>
+        <Input
+          tone="dark"
+          label="Code"
+          required
+          value={form.code}
+          onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
+          maxLength={20}
+          className="font-mono"
+          error={errors.code}
+        />
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
-                Code *
-              </label>
-              <input
-                type="text"
-                value={form.code}
-                onChange={(e) =>
-                  handleChange("code", e.target.value.toUpperCase())
-                }
-                required
-                maxLength={20}
-                className={`w-full px-3 py-2 border rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.code ? "border-red-300" : "border-slate-300"}`}
-              />
-              {errors.code && (
-                <p className="text-xs text-red-500 mt-1">{errors.code[0]}</p>
-              )}
-            </div>
-
-            <div className="bg-slate-50 rounded-lg p-3">
-              <p className="text-xs text-slate-400">
-                Board program settings are managed per Course. Go to Courses
-                page to manage board exam details.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
-            </div>
-          </form>
+        <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
+          <p className="text-xs text-slate-400">
+            Board program settings are managed per Course. Go to Courses page to
+            manage board exam details.
+          </p>
         </div>
-      </div>
-    </div>
+
+        <div className="flex justify-end gap-3 pt-2">
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" loading={loading}>
+            {loading ? "Saving..." : "Save Changes"}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 }

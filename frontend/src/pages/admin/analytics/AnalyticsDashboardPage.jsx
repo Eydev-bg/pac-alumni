@@ -9,10 +9,9 @@ import adminApi from "../../../api/adminApi";
 import LevelAnalyticsTab from "./LevelAnalyticsTab";
 import GraduateTracerTab from "./GraduateTracerTab";
 import ReportExportModal from "./ReportExportModal";
-import {
-  HiOutlineChevronDown,
-  HiOutlineArrowDownTray,
-} from "react-icons/hi2";
+import { useToast } from "../../../hooks/useToast";
+import Card from "../../../ui/Card";
+import { HiOutlineChevronDown, HiOutlineArrowDownTray } from "react-icons/hi2";
 
 const TABS = [
   { key: "tracer", label: "Graduate Tracer" },
@@ -22,12 +21,25 @@ const TABS = [
 ];
 
 const REPORTS = [
-  { key: "board", title: "Board Passing Report", exportFn: adminApi.exportBoardPassingReport },
-  { key: "employment", title: "Employment Report", exportFn: adminApi.exportEmploymentReport },
-  { key: "alumni-ids", title: "Alumni ID List", exportFn: adminApi.exportAlumniIdListReport },
+  {
+    key: "board",
+    title: "Board Passing Report",
+    exportFn: adminApi.exportBoardPassingReport,
+  },
+  {
+    key: "employment",
+    title: "Employment Report",
+    exportFn: adminApi.exportEmploymentReport,
+  },
+  {
+    key: "alumni-ids",
+    title: "Alumni ID List",
+    exportFn: adminApi.exportAlumniIdListReport,
+  },
 ];
 
 export default function AnalyticsDashboardPage() {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState("tracer");
 
   // ─── Export dropdown + modal state ───────────────────────
@@ -44,21 +56,27 @@ export default function AnalyticsDashboardPage() {
       adminApi.getAllDepartments(),
       adminApi.getAllCourses(),
       adminApi.getGraduationYears("college"),
-    ]).then(([deptRes, courseRes, yearRes]) => {
-      const collegeDepts = (deptRes.data.data || []).filter(
-        (d) => !d.education_level || d.education_level === "college",
-      );
-      // Keep only courses that belong to a college department so elem/JHS/SHS
-      // courses can never appear in any export dropdown.
-      const collegeDeptIds = new Set(collegeDepts.map((d) => d.id));
-      const collegeCourses = (courseRes.data.data || []).filter((c) =>
-        collegeDeptIds.has(c.department_id),
-      );
-      setDepartments(collegeDepts);
-      setCourses(collegeCourses);
-      setYears(yearRes.data.data || []);
-    });
-  }, []);
+    ])
+      .then(([deptRes, courseRes, yearRes]) => {
+        const collegeDepts = (deptRes.data.data || []).filter(
+          (d) => !d.education_level || d.education_level === "college",
+        );
+        // Keep only courses that belong to a college department so elem/JHS/SHS
+        // courses can never appear in any export dropdown.
+        const collegeDeptIds = new Set(collegeDepts.map((d) => d.id));
+        const collegeCourses = (courseRes.data.data || []).filter((c) =>
+          collegeDeptIds.has(c.department_id),
+        );
+        setDepartments(collegeDepts);
+        setCourses(collegeCourses);
+        setYears(yearRes.data.data || []);
+      })
+      .catch((err) => {
+        toast.error(
+          err.response?.data?.message || "Failed to load export filters.",
+        );
+      });
+  }, [toast]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -93,7 +111,7 @@ export default function AnalyticsDashboardPage() {
   };
 
   return (
-    <div className="bg-[#0c1525] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-screen">
+    <>
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between gap-4">
@@ -108,7 +126,7 @@ export default function AnalyticsDashboardPage() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen((o) => !o)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-[#c8a84e] bg-[#c8a84e]/10 border border-[#c8a84e]/20 rounded-xl hover:bg-[#c8a84e]/20 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gold-500 bg-gold-500/10 border border-gold-500/20 rounded-xl hover:bg-gold-500/20 transition-colors"
             >
               <HiOutlineArrowDownTray className="w-4 h-4" />
               Export Report
@@ -120,12 +138,12 @@ export default function AnalyticsDashboardPage() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-[#0f172a] border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-40">
+              <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-40">
                 {REPORTS.map((report) => (
                   <button
                     key={report.key}
                     onClick={() => handleSelectReport(report)}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-300 hover:bg-[#c8a84e]/10 hover:text-[#c8a84e] transition-colors"
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-300 hover:bg-gold-500/10 hover:text-gold-500 transition-colors"
                   >
                     {report.title}
                   </button>
@@ -136,7 +154,7 @@ export default function AnalyticsDashboardPage() {
         </div>
 
         {/* Tabs Container */}
-        <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] mb-6 overflow-hidden">
+        <Card padding={false} className="mb-6 overflow-hidden">
           <div className="flex overflow-x-auto border-b border-white/[0.06]">
             {TABS.map((tab) => (
               <button
@@ -144,13 +162,13 @@ export default function AnalyticsDashboardPage() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative px-6 py-3.5 text-sm font-semibold whitespace-nowrap transition-all ${
                   activeTab === tab.key
-                    ? "text-[#c8a84e]"
+                    ? "text-gold-500"
                     : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
                 }`}
               >
                 {tab.label}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-t-full bg-[#c8a84e] shadow-[0_0_8px_rgba(200,168,78,0.4)]" />
+                  <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-t-full bg-gold-500 shadow-[0_0_8px_rgba(200,168,78,0.4)]" />
                 )}
               </button>
             ))}
@@ -180,7 +198,7 @@ export default function AnalyticsDashboardPage() {
               />
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* ═══ EXPORT MODAL — rendered OUTSIDE the overflow-hidden container ═══ */}
@@ -193,6 +211,6 @@ export default function AnalyticsDashboardPage() {
         courses={activeReport?.courses || []}
         years={years}
       />
-    </div>
+    </>
   );
 }
