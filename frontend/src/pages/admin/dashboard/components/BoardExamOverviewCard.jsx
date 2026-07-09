@@ -1,0 +1,80 @@
+import { memo } from "react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import { CustomPieTooltip } from "./tooltips";
+import { BOARD_COLORS } from "../constants";
+
+// ─── Board Exam Overview (pie) ───────────────────────────
+// Memoized: re-renders only when its derived props change.
+function BoardExamOverviewCard({ pieData, legend, passers, passingRate }) {
+  return (
+    <div className="bg-[#1a2e5a]/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
+      <div className="mb-2">
+        <h2 className="text-[15px] font-bold text-white">Board Exam Overview</h2>
+        <p className="text-[11px] text-slate-400 mt-0.5">
+          Passers · Failed · Not Yet Taken breakdown
+        </p>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center min-h-[200px]">
+        {pieData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                cx="50%"
+                cy="50%"
+                innerRadius={55}
+                outerRadius={80}
+                paddingAngle={3}
+                dataKey="value"
+                animationDuration={1000}
+                stroke="none"
+                label={false}
+                labelLine={false}
+              >
+                {pieData.map((entry) => (
+                  <Cell key={`cell-${entry.name}`} fill={BOARD_COLORS[entry.name]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomPieTooltip colorMap={BOARD_COLORS} />} />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-sm text-slate-500">No data yet.</p>
+        )}
+      </div>
+
+      {/* Legend — lists all three statuses so empty slices are still shown */}
+      <div className="flex items-center justify-center gap-4 pt-1 flex-wrap">
+        {legend.map((item) => (
+          <span key={item.name} className="flex items-center gap-1.5 text-[10px]">
+            <span
+              className="w-2.5 h-2.5 rounded-full inline-block"
+              style={{ backgroundColor: BOARD_COLORS[item.name] }}
+            />
+            <span className="text-slate-400">
+              {item.name} · {item.value}
+            </span>
+          </span>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 mt-auto pt-3">
+        <div className="text-center p-3 bg-[#22c55e]/10 rounded-xl border border-[#22c55e]/15">
+          <p className="text-xl font-bold text-[#22c55e]">{passers}</p>
+          <p className="text-[10px] text-[#22c55e]/70 font-medium mt-0.5">
+            Passers
+          </p>
+        </div>
+        <div className="text-center p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
+          <p className="text-xl font-bold text-white">{passingRate}%</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+            Passing Rate
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default memo(BoardExamOverviewCard);

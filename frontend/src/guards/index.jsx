@@ -8,7 +8,12 @@ const ROLE_DASHBOARDS = {
   employer: "/employer/dashboard",
 };
 
-function LoadingScreen() {
+/**
+ * LoadingScreen — full-screen centered spinner.
+ * Exported so it can double as the router's Suspense fallback for lazy
+ * route chunks (reused, not re-implemented).
+ */
+export function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />

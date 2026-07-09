@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback, useMemo } from "react";
 import authApi from "../api/authApi";
 import { tokenStorage } from "../utils/storage";
 
@@ -100,16 +100,22 @@ export function AuthProvider({ children }) {
    },
    [user],
  );
-  const value = {
-    user,
-    token,
-    loading,
-    isAuthenticated: !!token && !!user,
-    login,
-    logout,
-    hasRole,
-    refreshUser,
-  };
+  // Memoize the provided value so consumers only re-render when an actual
+  // auth field/callback changes, not on every AuthProvider render. The
+  // callbacks below are already useCallback-stable.
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      loading,
+      isAuthenticated: !!token && !!user,
+      login,
+      logout,
+      hasRole,
+      refreshUser,
+    }),
+    [user, token, loading, login, logout, hasRole, refreshUser],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
