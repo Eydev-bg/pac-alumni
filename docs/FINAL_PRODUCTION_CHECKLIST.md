@@ -37,7 +37,7 @@
 
 - [ ] 🟡 `distinct()->count()` replaced with `COUNT(DISTINCT ...)`; `whereNotIn(pluck())` replaced with `whereNotExists`. *(Phase 2)*
 - [ ] Import rejects unresolvable college-course rows as errors (no orphaned `course_id = null` rows that vanish from tracer exports). *(Phase 2)*
-- [ ] 🟡 Policies/Gates introduced; preserve current admin-only behavior; ready for HR/dept-head roles. *(Phase 5)*
+- [ ] 🟡 Policies/Gates introduced; preserve current admin-only behavior; centralize scattered inline checks. *(Phase 5)*
 - [ ] 🟡 `AuthController::updateProfile` and `changePassword` use the `ApiResponse` trait and return a `UserResource` (no raw-model leakage). *(Phase 5)*
 - [ ] 🟢 Inline `email-logs` route moved into a controller. *(Phase 5)*
 - [ ] A supervised queue worker runs in the production environment. *(Phase 2)*

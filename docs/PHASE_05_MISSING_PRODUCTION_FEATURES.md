@@ -7,7 +7,7 @@
 
 ## Phase Objective
 
-Add the production-grade capabilities the audit identified as missing, and pay down the remaining Laravel best-practice debt: soft-delete with Trash/Restore for records, expanded system settings, formal Policies/Gates ahead of the planned HR/dept-head roles, normalization of the two off-contract auth endpoints, and moving the inline `email-logs` route into a controller. Privileged actions added here emit audit events using the Phase 1 substrate.
+Add the production-grade capabilities the audit identified as missing, and pay down the remaining Laravel best-practice debt: soft-delete with Trash/Restore for records, expanded system settings, formal Policies/Gates to centralize the scattered inline authorization checks, normalization of the two off-contract auth endpoints, and moving the inline `email-logs` route into a controller. Privileged actions added here emit audit events using the Phase 1 substrate.
 
 ---
 
@@ -21,8 +21,8 @@ Testing (Phase 6) should target the **final** behavior and signatures. Introduci
 
 From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 
-1. 🟡 **Medium** — No Trash/soft-delete + Restore for graduates and users; hard deletes are irreversible (risky for a records system).
-2. 🟡 **Medium** — No formal Policies/Gates; authorization is middleware + inline `if ($user->isAdmin())`. Won't scale to HR/dept-head roles.
+1. 🟡 **Medium** — No Trash/soft-delete + Restore for **graduates**; hard deletes are irreversible (risky for a records system). *(User-management pages have been removed from this system, so soft-delete applies to graduate records only, not admin users.)*
+2. 🟡 **Medium** — No formal Policies/Gates; authorization is middleware + inline `if ($user->isAdmin())` scattered across services. Centralizing it reduces the risk of inconsistent checks. *(System roles are Admin, Alumni, Employer — no separate HR role; the Employer role is the third-party/HR-equivalent and already exists.)*
 3. 🟡 **Medium** — Two auth endpoints (`updateProfile`, `changePassword`) bypass the `ApiResponse` trait; `updateProfile` returns a raw model (`$user->fresh()`) instead of a `UserResource`, risking field leakage and contract drift.
 4. 🟡 **Medium** — Harden file upload (real content sniffing) — carried here if not fully addressed in Phase 2's import work.
 5. 🟢 **Nice to have** — Move the inline `email-logs` closure route in `admin.php` into a controller method.
@@ -36,12 +36,12 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 ## Files or Modules Affected
 
 **Backend:**
-- `app/Models/Graduate.php`, `app/Models/User.php` (add `SoftDeletes`)
-- Migrations to add `deleted_at` to `graduates` and `users` (and any other record tables chosen for soft-delete)
-- `app/Http/Controllers/Api/Admin/GraduateController.php`, `UserController.php` (destroy → soft delete; add restore + force-delete + trashed-listing endpoints)
-- `app/Services/Admin/GraduateService.php`, `UserService.php` (soft-delete/restore logic; emit audit events)
+- `app/Models/Graduate.php` (add `SoftDeletes`) — *User model soft-delete dropped: no user-management UI*
+- Migration to add `deleted_at` to `graduates` (user-management removed, so no `users` Trash)
+- `app/Http/Controllers/Api/Admin/GraduateController.php` (destroy → soft delete; add restore + force-delete + trashed-listing endpoints)
+- `app/Services/Admin/GraduateService.php` (soft-delete/restore logic; emit audit events)
 - `routes/api/admin.php` (Trash/restore routes; move `email-logs` closure into a controller — new `EmailLogController` or existing controller method)
-- New: `app/Policies/*` (UserPolicy, GraduatePolicy, etc.) + registration; introduce Gates where appropriate
+- New: `app/Policies/*` (GraduatePolicy, and policies for announcements/employers/verification as needed) + registration; introduce Gates where appropriate. *(No UserPolicy — user-management UI removed; `updateProfile`/`changePassword` remain self-service and are covered by P5-T06, not a management policy.)*
 - `app/Http/Controllers/Api/Auth/AuthController.php` (`updateProfile`, `changePassword` → use `ApiResponse` trait + `UserResource`)
 - `app/Http/Requests/*` (add Form Requests for the normalized profile/password endpoints if not already present)
 - `app/Services/*` or `app/Console/*` (optional: scheduled report command)
@@ -49,7 +49,7 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 - Audit wiring: reuse the Phase 1 audit service in all new privileged actions
 
 **Frontend:**
-- New Trash/Archive pages for graduates and users (consume Phase 4 `DataTable`, `Modal`, `Toast`)
+- New Trash/Archive page for **graduates** (consume Phase 4 `DataTable`, `Modal`, `Toast`) — no users Trash page
 - `src/pages/admin/settings/*` (expanded settings UI — maintenance mode, email config, if implemented)
 - `src/api/adminApi.js` (new endpoints: trashed lists, restore, force-delete, expanded settings)
 - Any page whose delete action should now offer restore/Trash affordances
@@ -68,11 +68,11 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 
 | Task ID | Description | Expected Result | Risk | Complexity |
 |---------|-------------|-----------------|------|------------|
-| P5-T01 | Add `SoftDeletes` + `deleted_at` migrations to `graduates` and `users`; convert `destroy` to soft delete. | Deletes are reversible; records move to Trash. | Medium | Medium |
-| P5-T02 | Add trashed-list, restore, and force-delete endpoints for graduates and users; guard them admin-only. | Admins can view, restore, or permanently delete trashed records. | Medium | Medium |
+| P5-T01 | Add `SoftDeletes` + `deleted_at` migration to `graduates`; convert `destroy` to soft delete. *(Users excluded — no user-management UI.)* | Graduate deletes are reversible; records move to Trash. | Medium | Medium |
+| P5-T02 | Add trashed-list, restore, and force-delete endpoints for **graduates**; guard them admin-only. | Admins can view, restore, or permanently delete trashed graduate records. | Medium | Medium |
 | P5-T03 | Emit audit events (Phase 1 substrate) on soft-delete, restore, and force-delete. | Every Trash action is auditable. | Low | Low |
-| P5-T04 | Build Trash/Archive UI for graduates and users using Phase 4 `DataTable`/`Modal`/`Toast`, with restore and permanent-delete confirmations. | Admins manage the Trash from the UI. | Medium | Medium |
-| P5-T05 | Introduce Laravel Policies for user and graduate management (and Gates where appropriate); register them; replace inline `if ($user->isAdmin())` checks with policy authorization while preserving current admin-only behavior. | Authorization is centralized and ready for HR/dept-head roles. | High | High |
+| P5-T04 | Build Trash/Archive UI for **graduates** using Phase 4 `DataTable`/`Modal`/`Toast`, with restore and permanent-delete confirmations. | Admins manage the graduate Trash from the UI. | Medium | Medium |
+| P5-T05 | Introduce Laravel Policies for **graduate management** (and announcements/employers/verification as appropriate, plus Gates); register them; replace inline `if ($user->isAdmin())` checks with policy authorization while preserving current admin-only behavior. *(No user-management policy — those pages were removed.)* | Authorization is centralized and consistent (admin-only behavior preserved exactly). | High | High |
 | P5-T06 | Normalize `AuthController::updateProfile` and `changePassword` to use the `ApiResponse` trait and return a `UserResource` (never a raw model). Add Form Requests for their validation. | Both endpoints match the app-wide contract; no raw-model leakage. | Medium | Medium |
 | P5-T07 | Move the inline `email-logs` closure route in `admin.php` into a dedicated controller method (e.g., `EmailLogController@index`). | Route logic lives in a controller; router stays declarative. | Low | Low |
 | P5-T08 | (If not fully handled in Phase 2) Harden import file upload with real content sniffing beyond extension/MIME. | Renamed/hostile files are rejected before parsing. | Medium | Medium |
@@ -84,7 +84,7 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 ## Validation Checklist
 
 **Functional**
-- [ ] Deleting a graduate/user moves it to Trash (not permanently removed); it disappears from default lists.
+- [ ] Deleting a graduate moves it to Trash (not permanently removed); it disappears from default lists.
 - [ ] Trashed records can be listed, restored (reappear in normal lists), and permanently deleted.
 - [ ] `updateProfile` and `changePassword` return the standard `{success, message, data}` envelope with a `UserResource` payload.
 - [ ] `email-logs` endpoint behaves identically after moving to a controller.
@@ -106,7 +106,7 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 - [ ] Delete actions clearly communicate that records go to Trash and can be restored.
 
 **Regression**
-- [ ] Existing graduate/user CRUD still works; default lists exclude trashed rows.
+- [ ] Existing graduate CRUD still works; default lists exclude trashed rows.
 - [ ] All existing admin endpoints keep their contracts (now including the two normalized auth endpoints).
 - [ ] Existing role middleware still blocks non-admins even with Policies added.
 - [ ] Import still functions (with the hardened upload check).
@@ -115,7 +115,7 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 
 ## Completion Criteria
 
-- Soft-delete + Trash/Restore/force-delete implemented for graduates and users, audited, and surfaced in the UI.
+- Soft-delete + Trash/Restore/force-delete implemented for **graduates**, audited, and surfaced in the UI.
 - Policies/Gates introduced and preserve current admin-only behavior while enabling future roles.
 - `updateProfile` and `changePassword` normalized to the app-wide contract with `UserResource`.
 - `email-logs` route moved into a controller.
@@ -149,8 +149,8 @@ From the audit's Feature Review, Laravel Best Practices, and Priority Checklist:
 ```
 feat(admin): soft-delete/Trash, Policies/Gates, normalize auth endpoints, expand settings
 
-- Add SoftDeletes + Trash/Restore/force-delete for graduates and users (audited)
-- Introduce Policies/Gates preserving current admin-only behavior (HR/dept-head ready)
+- Add SoftDeletes + Trash/Restore/force-delete for graduates (audited)
+- Introduce Policies/Gates centralizing scattered inline checks (admin-only behavior preserved)
 - Normalize AuthController updateProfile/changePassword to ApiResponse + UserResource
 - Move inline email-logs route into a controller
 - Harden import upload with content sniffing; (optional) maintenance mode & scheduled reports

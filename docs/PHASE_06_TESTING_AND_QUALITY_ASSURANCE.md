@@ -7,7 +7,7 @@
 
 ## Phase Objective
 
-Establish the automated test suite the audit found entirely absent (`tests/` is empty — zero tests). Prioritize the highest-risk paths surfaced by the audit: authentication, authorization/role gating, and the graduate import pipeline. Wire the suite into CI so regressions in future work (Alumni Portal, HR modules) are caught automatically.
+Establish the automated test suite the audit found entirely absent (`tests/` is empty — zero tests). Prioritize the highest-risk paths surfaced by the audit: authentication, authorization/role gating, and the graduate import pipeline. Wire the suite into CI so regressions in future work (Alumni Portal, Employer modules) are caught automatically.
 
 ---
 
