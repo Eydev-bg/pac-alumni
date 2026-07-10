@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\Admin\UserResource;
 use App\Models\PasswordReset;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -13,9 +15,7 @@ use App\Services\Auth\AuthService;
 use App\Services\Auth\PasswordResetService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -93,38 +93,27 @@ class AuthController extends Controller
     /**
      * PUT /api/auth/profile
      */
-    public function updateProfile(Request $request): JsonResponse
+    public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
         $user = auth()->user();
 
-        $validated = $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
-            'email'      => [
-                'required', 'email', 'max:150',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-        ]);
+        $user->update($request->validated());
 
-        $user->update($validated);
-
-        return response()->json([
-            'message' => 'Profile updated successfully.',
-            'data'    => $user->fresh(),
-        ]);
+        // Return a UserResource (never a raw model) so no non-$hidden field leaks
+        // and the payload matches the app-wide contract.
+        return $this->success(
+            new UserResource($user->fresh()),
+            'Profile updated successfully.'
+        );
     }
 
     /**
      * PUT /api/auth/change-password
      */
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
         $user = auth()->user();
-
-        $validated = $request->validate([
-            'current_password' => 'required|string',
-            'password'         => 'required|string|min:8|confirmed',
-        ]);
+        $validated = $request->validated();
 
         if (!Hash::check($validated['current_password'], $user->password)) {
             throw ValidationException::withMessages([
@@ -140,14 +129,11 @@ class AuthController extends Controller
         // active sessions are forced to re-authenticate.
         $token = JWTAuth::fromUser($user);
 
-        return response()->json([
-            'message' => 'Password changed successfully.',
-            'data' => [
-                'token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => JWTAuth::factory()->getTTL() * 60,
-            ],
-        ]);
+        return $this->success([
+            'token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+        ], 'Password changed successfully.');
     }
 
     /**

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Admin\AnalyticsController;
 use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\DepartmentController;
+use App\Http\Controllers\Api\Admin\EmailLogController;
 use App\Http\Controllers\Api\Admin\GraduateController;
 use App\Http\Controllers\Api\Admin\LoginActivityLogController;
 use App\Http\Controllers\Api\Admin\NotificationController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Api\Admin\ReminderController;
 use App\Http\Controllers\Api\Admin\ReportController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VerificationController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -202,21 +202,8 @@ Route::prefix('admin')
             ->name('reminders.stats');
 
         // ─── Email Logs (Phase 6) ────────────────────────
-        Route::get('/email-logs', function (Request $request) {
-            $logs = \App\Models\EmailLog::with('user:id,uuid,first_name,last_name')
-                ->when($request->type, fn($q) => $q->where('type', $request->type))
-                ->when($request->status, fn($q) => $q->where('status', $request->status))
-                ->orderBy('created_at', 'desc')
-                ->paginate($request->integer('per_page', 20));
-            return response()->json(['success' => true, 'message' => 'Email logs.', 'data' => $logs->items(), 'meta' => [
-                'current_page' => $logs->currentPage(),
-                'last_page' => $logs->lastPage(),
-                'per_page' => $logs->perPage(),
-                'total' => $logs->total(),
-                'from' => $logs->firstItem(),
-                'to' => $logs->lastItem(),
-            ]]);
-        })->name('email-logs.index');
+        Route::get('/email-logs', [EmailLogController::class, 'index'])
+            ->name('email-logs.index');
 
         // ─── Reports & Export (Phase 6) ──────────────────
         Route::prefix('reports')->name('reports.')->group(function () {
