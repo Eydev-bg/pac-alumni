@@ -35,7 +35,7 @@ const navItems = [
         icon: HiOutlineDocumentArrowUp,
       },
       {
-        name: "Graduate Trash",
+        name: "Recently Deleted",
         path: "/admin/graduates/trash",
         icon: HiOutlineTrash,
       },
@@ -45,7 +45,7 @@ const navItems = [
     section: "Analytics",
     items: [
       {
-        name: "Analytics Dashboard",
+        name: "Reports & Analytics",
         path: "/admin/analytics",
         icon: HiOutlinePresentationChartBar,
       },
