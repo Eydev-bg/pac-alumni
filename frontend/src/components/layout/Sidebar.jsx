@@ -194,12 +194,6 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
       {/* Bottom branding */}
       {open && (
         <div className="px-5 py-4 border-t border-white/[0.06]">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <p className="text-[10px] text-slate-500 font-medium">
-              System Online
-            </p>
-          </div>
           <p className="text-[9px] text-slate-600 mt-1 tracking-wide">
             © {new Date().getFullYear()} Philippine Advent College
           </p>

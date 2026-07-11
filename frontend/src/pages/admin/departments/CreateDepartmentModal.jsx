@@ -98,7 +98,10 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
           onChange={(e) => handleChange("education_level", e.target.value)}
           hint={selectedLevel?.description}
           error={errors.education_level}
-          options={EDUCATION_LEVELS.map((l) => ({ value: l.value, label: l.label }))}
+          options={EDUCATION_LEVELS.map((l) => ({
+            value: l.value,
+            label: l.label,
+          }))}
         />
 
         <Input
@@ -128,8 +131,9 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
           {isCollege ? (
             <p className="text-xs text-slate-400">
-              Board program settings are managed per Course, not per Department.
-              After creating the department, add courses under it.
+              Board program settings are managed per Course, not per
+              Department. Create a Department first, then click the Department
+              name to manage and add Courses under it.
             </p>
           ) : (
             <p className="text-xs text-slate-400">

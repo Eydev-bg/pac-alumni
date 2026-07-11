@@ -78,8 +78,9 @@ export default function EditDepartmentModal({ department, onClose, onUpdated }) 
 
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
           <p className="text-xs text-slate-400">
-            Board program settings are managed per Course. Go to Courses page to
-            manage board exam details.
+            Board program settings are managed per Course. Click the
+            Department name to view its Courses, then manage the board exam
+            details for each Course.
           </p>
         </div>
 
