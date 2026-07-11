@@ -38,6 +38,8 @@ const JobModerationListPage = lazy(() => import("../pages/admin/job-moderation/J
 const JobModerationDetailPage = lazy(() => import("../pages/admin/job-moderation/JobModerationDetailPage"));
 const AnnouncementListPage = lazy(() => import("../pages/admin/announcements/AnnouncementListPage"));
 const AnnouncementFormPage = lazy(() => import("../pages/admin/announcements/AnnouncementFormPage"));
+const EventListPage = lazy(() => import("../pages/admin/events/EventListPage"));
+const EventFormPage = lazy(() => import("../pages/admin/events/EventFormPage"));
 const SettingsPage = lazy(() => import("../pages/admin/settings/SettingsPage"));
 
 // ─── Alumni pages ────────────────────────────────────────
@@ -49,6 +51,7 @@ const AlumniJobBoardPage = lazy(() => import("../pages/alumni/jobs/AlumniJobBoar
 const AlumniJobDetailPage = lazy(() => import("../pages/alumni/jobs/AlumniJobDetailPage"));
 const AlumniMyApplicationsPage = lazy(() => import("../pages/alumni/jobs/AlumniMyApplicationsPage"));
 const AlumniAnnouncementsPage = lazy(() => import("../pages/alumni/announcements/AlumniAnnouncementsPage"));
+const AlumniEventsPage = lazy(() => import("../pages/alumni/events/AlumniEventsPage"));
 const AlumniInboxPage = lazy(() => import("../pages/alumni/messages/AlumniInboxPage"));
 const AlumniConversationPage = lazy(() => import("../pages/alumni/messages/AlumniConversationPage"));
 
@@ -118,6 +121,9 @@ export default function AppRouter() {
                 <Route path="announcements" element={<AnnouncementListPage />} />
                 <Route path="announcements/new" element={<AnnouncementFormPage />} />
                 <Route path="announcements/:id/edit" element={<AnnouncementFormPage />} />
+                <Route path="events" element={<EventListPage />} />
+                <Route path="events/new" element={<EventFormPage />} />
+                <Route path="events/:id/edit" element={<EventFormPage />} />
               </Route>
             </Route>
           </Route>
@@ -135,6 +141,7 @@ export default function AppRouter() {
                 <Route path="jobs/:id" element={<AlumniJobDetailPage />} />
                 <Route path="my-applications" element={<AlumniMyApplicationsPage />} />
                 <Route path="announcements" element={<AlumniAnnouncementsPage />} />
+                <Route path="events" element={<AlumniEventsPage />} />
                 <Route path="messages" element={<AlumniInboxPage />} />
                 <Route path="messages/:id" element={<AlumniConversationPage />} />
               </Route>

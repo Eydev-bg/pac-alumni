@@ -16,6 +16,7 @@ import {
   HiOutlineNewspaper,
   HiOutlineClipboardDocumentList,
   HiOutlineMegaphone,
+  HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftRight,
 } from "react-icons/hi2";
 
@@ -137,6 +138,11 @@ export default function AlumniLayout() {
           path: "/alumni/announcements",
           icon: HiOutlineMegaphone,
           badge: unreadAnnouncements,
+        },
+        {
+          name: "Events",
+          path: "/alumni/events",
+          icon: HiOutlineCalendarDays,
         },
       ],
     },

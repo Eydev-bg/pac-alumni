@@ -9,6 +9,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
   HiOutlineMegaphone,
+  HiOutlineCalendarDays,
   HiOutlineTrash,
   HiOutlineXMark,
 } from "react-icons/hi2";
@@ -73,6 +74,11 @@ const navItems = [
         name: "Announcements",
         path: "/admin/announcements",
         icon: HiOutlineMegaphone,
+      },
+      {
+        name: "Events",
+        path: "/admin/events",
+        icon: HiOutlineCalendarDays,
       },
     ],
   },

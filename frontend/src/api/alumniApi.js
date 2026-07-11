@@ -104,6 +104,23 @@ const alumniApi = {
     return api.get('/alumni/announcements/unread-count');
   },
 
+  // ─── Events (Phase 2) ──────────────────────────────────
+  getEvents(params = {}) {
+    return api.get('/alumni/events', { params });
+  },
+
+  getEvent(id) {
+    return api.get(`/alumni/events/${id}`);
+  },
+
+  rsvpEvent(id, status) {
+    return api.post(`/alumni/events/${id}/rsvp`, { status });
+  },
+
+  cancelEventRsvp(id) {
+    return api.delete(`/alumni/events/${id}/rsvp`);
+  },
+
   // ─── Achievement Feed (Phase 3.1) ──────────────────────
   getAchievementFeed(params = {}) {
     return api.get('/alumni/achievement-feed', { params });

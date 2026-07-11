@@ -143,6 +143,28 @@ const adminApi = {
   publishAnnouncement: (id) => api.patch(`/admin/announcements/${id}/publish`),
   archiveAnnouncement: (id) => api.patch(`/admin/announcements/${id}/archive`),
   toggleAnnouncementPin: (id) => api.patch(`/admin/announcements/${id}/pin`),
+
+  // ─── Phase 2: Events ───────────────────────────────────
+  getEvents: (params = {}) => api.get('/admin/events', { params }),
+  getEvent: (id) => api.get(`/admin/events/${id}`),
+  // Accepts FormData (title, content, target_type, target_value, is_pinned,
+  // is_published, start_datetime, end_datetime, location, optional image banner).
+  createEvent: (formData) =>
+    api.post('/admin/events', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  // POST + method spoofing so the optional banner file is parsed correctly
+  // (PHP does not parse multipart PUT bodies).
+  updateEvent: (id, formData) => {
+    formData.append('_method', 'PUT');
+    return api.post(`/admin/events/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deleteEvent: (id) => api.delete(`/admin/events/${id}`),
+  publishEvent: (id) => api.patch(`/admin/events/${id}/publish`),
+  archiveEvent: (id) => api.patch(`/admin/events/${id}/archive`),
+  toggleEventPin: (id) => api.patch(`/admin/events/${id}/pin`),
 };
 
 export default adminApi;
