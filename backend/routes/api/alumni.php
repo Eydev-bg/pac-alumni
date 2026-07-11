@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Alumni\AlumniAnnouncementController;
 use App\Http\Controllers\Api\Alumni\AlumniController;
 use App\Http\Controllers\Api\Alumni\AlumniJobController;
 use App\Http\Controllers\Api\Alumni\BoardExamController;
+use App\Http\Controllers\Api\Alumni\AlumniEventController;
 use App\Http\Controllers\Api\Alumni\EmploymentController;
 use App\Http\Controllers\Api\Alumni\MessageController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,16 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
         ->whereNumber('id')->name('alumni.announcements.show');
     Route::post('/announcements/{id}/read', [AlumniAnnouncementController::class, 'markAsRead'])
         ->whereNumber('id')->name('alumni.announcements.read');
+
+    // ─── Events (Phase 2) ─────────────────────────────────
+    Route::get('/events', [AlumniEventController::class, 'index'])
+        ->name('alumni.events.index');
+    Route::get('/events/{id}', [AlumniEventController::class, 'show'])
+        ->whereNumber('id')->name('alumni.events.show');
+    Route::post('/events/{id}/rsvp', [AlumniEventController::class, 'rsvp'])
+        ->whereNumber('id')->name('alumni.events.rsvp');
+    Route::delete('/events/{id}/rsvp', [AlumniEventController::class, 'cancelRsvp'])
+        ->whereNumber('id')->name('alumni.events.rsvp.cancel');
 
     // ─── Achievement Feed (Phase 3.1) ────────────────────
     Route::get('/achievement-feed', [AchievementFeedController::class, 'index'])

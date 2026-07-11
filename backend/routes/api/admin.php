@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\Admin\CourseController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\DepartmentController;
 use App\Http\Controllers\Api\Admin\EmailLogController;
+use App\Http\Controllers\Api\Admin\EventController;
 use App\Http\Controllers\Api\Admin\GraduateController;
 use App\Http\Controllers\Api\Admin\LoginActivityLogController;
 use App\Http\Controllers\Api\Admin\NotificationController;
@@ -265,5 +266,23 @@ Route::prefix('admin')
             ->whereNumber('id')->name('announcements.archive');
         Route::patch('/announcements/{id}/pin', [AnnouncementController::class, 'togglePin'])
             ->whereNumber('id')->name('announcements.pin');
+
+        // ─── Event Module (Phase 2) ──────────────────────
+        Route::get('/events', [EventController::class, 'index'])
+            ->name('events.index');
+        Route::post('/events', [EventController::class, 'store'])
+            ->name('events.store');
+        Route::get('/events/{id}', [EventController::class, 'show'])
+            ->whereNumber('id')->name('events.show');
+        Route::put('/events/{id}', [EventController::class, 'update'])
+            ->whereNumber('id')->name('events.update');
+        Route::delete('/events/{id}', [EventController::class, 'destroy'])
+            ->whereNumber('id')->name('events.destroy');
+        Route::patch('/events/{id}/publish', [EventController::class, 'publish'])
+            ->whereNumber('id')->name('events.publish');
+        Route::patch('/events/{id}/archive', [EventController::class, 'archive'])
+            ->whereNumber('id')->name('events.archive');
+        Route::patch('/events/{id}/pin', [EventController::class, 'togglePin'])
+            ->whereNumber('id')->name('events.pin');
 
     });
