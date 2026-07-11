@@ -7,6 +7,7 @@
 
 namespace App\Exports;
 
+use App\Enums\BoardExamStatus;
 use App\Models\BoardExamRecord;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\Exportable;
@@ -32,6 +33,7 @@ class BoardPassingExport implements FromQuery, WithHeadings, WithMapping, Should
     public function query()
     {
         return BoardExamRecord::query()
+            ->where('status', BoardExamStatus::PASSER)
             ->with(['graduate.course.department'])
             ->whereHas('graduate', fn ($q) => $q
                 ->byDepartment($this->departmentId)
@@ -53,7 +55,6 @@ class BoardPassingExport implements FromQuery, WithHeadings, WithMapping, Should
             'Exam Name',
             'Exam Year',
             'Batch Year',
-            'Status',
         ];
     }
 
@@ -70,7 +71,6 @@ class BoardPassingExport implements FromQuery, WithHeadings, WithMapping, Should
             $row->exam_name,
             $row->exam_year,
             $row->graduate?->graduation_year,
-            $row->status?->value,
         ];
     }
 

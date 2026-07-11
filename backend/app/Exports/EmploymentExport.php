@@ -32,7 +32,14 @@ class EmploymentExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
     public function query()
     {
         return AlumniProfile::query()
-            ->with(['graduate.course.department'])
+            ->with([
+                'graduate.course.department',
+                // Current/most-recent employment record first (current flag wins,
+                // then latest by created_at). Eager-loaded to avoid N+1.
+                'graduate.employmentRecords' => fn ($q) => $q
+                    ->orderByDesc('is_current')
+                    ->orderByDesc('created_at'),
+            ])
             ->whereHas('graduate', fn ($q) => $q
                 ->collegeOnly()
                 ->byDepartment($this->departmentId)
@@ -52,7 +59,7 @@ class EmploymentExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             'Department',
             'Graduation Year',
             'Employment Status',
-            'Board Status',
+            'Employment Type',
         ];
     }
 
@@ -61,6 +68,10 @@ class EmploymentExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
      */
     public function map($row): array
     {
+        // Current/most-recent employment record (already ordered in query()).
+        // Null for alumni with no employment record (Unemployed/Unknown).
+        $currentEmployment = $row->graduate?->employmentRecords->first();
+
         return [
             $row->graduate?->alumni_id_number ?? 'N/A',
             $row->graduate ? trim($row->graduate->full_name) : '',
@@ -68,7 +79,7 @@ class EmploymentExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
             $row->graduate?->department_name ?? '',
             $row->graduate?->graduation_year,
             $row->employment_status?->value,
-            $row->board_status?->value,
+            $currentEmployment?->employment_type?->label() ?? '',
         ];
     }
 
