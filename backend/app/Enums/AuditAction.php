@@ -26,6 +26,9 @@ enum AuditAction: string
     case BLACKLIST_ADDED = 'blacklist.added';
     case BLACKLIST_REMOVED = 'blacklist.removed';
 
+    // ─── System settings ─────────────────────────────────────
+    case MAINTENANCE_MODE_TOGGLED = 'maintenance.toggled';
+
     public function label(): string
     {
         return match ($this) {
@@ -39,6 +42,7 @@ enum AuditAction: string
             self::GRADUATE_BATCH_UPDATED => 'Graduates batch updated',
             self::BLACKLIST_ADDED => 'Added to blacklist',
             self::BLACKLIST_REMOVED => 'Removed from blacklist',
+            self::MAINTENANCE_MODE_TOGGLED => 'Maintenance mode toggled',
         };
     }
 

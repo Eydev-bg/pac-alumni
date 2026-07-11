@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'])->group(function () {
+Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni', 'maintenance'])->group(function () {
 
     // ─── Dashboard ────────────────────────────────────────
     Route::get('/dashboard', [AlumniController::class, 'dashboard'])

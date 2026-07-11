@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { tokenStorage } from '../utils/storage';
+import { MAINTENANCE } from '../config/constants';
 
 /**
  * Configured Axios instance.
@@ -52,6 +53,24 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // ─── Maintenance mode (503) ──────────────────────────
+    // The backend blocks non-admin (Alumni/Employer) routes with a 503 carrying
+    // a `maintenance` flag while maintenance mode is on. Admins never receive
+    // this (they bypass the middleware), so this only affects blocked users.
+    // Stash the custom message and route them to the clean maintenance page.
+    if (
+      error.response?.status === 503 &&
+      error.response.data?.maintenance
+    ) {
+      const message =
+        error.response.data.message || MAINTENANCE.FALLBACK_MESSAGE;
+      sessionStorage.setItem(MAINTENANCE.MESSAGE_KEY, message);
+      if (window.location.pathname !== MAINTENANCE.ROUTE) {
+        window.location.href = MAINTENANCE.ROUTE;
+      }
+      return Promise.reject(error);
+    }
 
     // If 401 and not already retrying and not the refresh/login endpoint
     if (

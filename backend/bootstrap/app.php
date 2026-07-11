@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'account.status' => \App\Http\Middleware\CheckAccountStatus::class,
+            'maintenance' => \App\Http\Middleware\CheckMaintenanceMode::class,
         ]);
 
         // SECURITY: Trust the configured reverse proxy / load balancer so

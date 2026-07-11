@@ -7,10 +7,12 @@
 import { useState } from "react";
 import RegistrationSettingsPage from "../verification/RegistrationSettingsPage";
 import AccountSettingsPage from "./AccountSettingsPage";
+import SystemSettingsPage from "./SystemSettingsPage";
 import Card from "../../../ui/Card";
 
 const TABS = [
   { key: "registration", label: "Registration" },
+  { key: "system", label: "System" },
   { key: "account", label: "Account" },
 ];
 
@@ -52,6 +54,7 @@ export default function SettingsPage() {
 
         {/* Active tab content */}
         {activeTab === "registration" && <RegistrationSettingsPage />}
+        {activeTab === "system" && <SystemSettingsPage />}
         {activeTab === "account" && <AccountSettingsPage />}
       </div>
     </>

@@ -59,6 +59,10 @@ const adminApi = {
   // ─── Phase 4: Verification & Registration ─────────────
   getRegistrationSettings: () => api.get('/admin/registration/settings'),
   updateRegistrationSettings: (data) => api.put('/admin/registration/settings', data),
+
+  // ─── System Settings: Maintenance Mode ─────────────────
+  getMaintenanceSettings: () => api.get('/admin/settings/maintenance'),
+  updateMaintenanceSettings: (data) => api.put('/admin/settings/maintenance', data),
   getVerificationLogs: (params = {}) => api.get('/admin/verification/logs', { params }),
   getVerifiedList: (params = {}) => api.get('/admin/verification/verified', { params }),
   getRejectedList: (params = {}) => api.get('/admin/verification/rejected', { params }),

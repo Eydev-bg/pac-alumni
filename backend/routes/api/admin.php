@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\Admin\LoginActivityLogController;
 use App\Http\Controllers\Api\Admin\NotificationController;
 use App\Http\Controllers\Api\Admin\ReminderController;
 use App\Http\Controllers\Api\Admin\ReportController;
+use App\Http\Controllers\Api\Admin\SettingsController;
 use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Api\Admin\VerificationController;
 use Illuminate\Support\Facades\Route;
@@ -119,6 +120,13 @@ Route::prefix('admin')
         Route::apiResource('graduates', GraduateController::class)
             ->only(['index', 'show', 'update', 'destroy'])
             ->names('graduates');
+
+        // ─── System Settings — Maintenance Mode ──────────
+        Route::get('/settings/maintenance', [SettingsController::class, 'getMaintenance'])
+            ->name('settings.maintenance.show');
+
+        Route::put('/settings/maintenance', [SettingsController::class, 'updateMaintenance'])
+            ->name('settings.maintenance.update');
 
         // ─── Verification & Registration (Phase 4) ───────
         Route::get('/registration/settings', [VerificationController::class, 'getSettings'])

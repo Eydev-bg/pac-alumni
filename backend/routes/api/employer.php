@@ -29,7 +29,9 @@ Route::prefix('employer')->group(function () {
         ->name('employer.login');
 
     // ─── Protected (JWT + active account + employer role) ─
-    Route::middleware(['auth:api', 'account.status', 'role:employer'])->group(function () {
+    // `maintenance` blocks employer access while maintenance mode is on; admins
+    // bypass it inside the middleware, so this never affects the admin panel.
+    Route::middleware(['auth:api', 'account.status', 'role:employer', 'maintenance'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('employer.logout');
         Route::get('/me', [AuthController::class, 'me'])->name('employer.me');
 

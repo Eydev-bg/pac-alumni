@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import MaintenanceBanner from "./MaintenanceBanner";
+import { MaintenanceProvider } from "../../context/MaintenanceContext";
 
 /**
  * AdminLayout — main layout for all admin pages.
@@ -13,40 +15,47 @@ export default function AdminLayout() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-navy-950">
-      {/* Mobile sidebar overlay */}
-      {mobileSidebarOpen && (
+    <MaintenanceProvider>
+      <div className="min-h-screen bg-navy-950">
+        {/* Mobile sidebar overlay */}
+        {mobileSidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <Sidebar
+          open={sidebarOpen}
+          mobileOpen={mobileSidebarOpen}
+          onMobileClose={() => setMobileSidebarOpen(false)}
+        />
+
+        {/* Main Content Area */}
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setMobileSidebarOpen(false)}
-        />
-      )}
+          className={`transition-all duration-300 ${
+            sidebarOpen ? "lg:ml-64" : "lg:ml-20"
+          }`}
+        >
+          {/* Header */}
+          <Header
+            onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            onMobileMenuClick={() => setMobileSidebarOpen(true)}
+            variant="dark"
+          />
 
-      {/* Sidebar */}
-      <Sidebar
-        open={sidebarOpen}
-        mobileOpen={mobileSidebarOpen}
-        onMobileClose={() => setMobileSidebarOpen(false)}
-      />
+          {/* Maintenance-mode reminder (renders only when active) */}
+          <div className="mt-16">
+            <MaintenanceBanner />
+          </div>
 
-      {/* Main Content Area */}
-      <div
-        className={`transition-all duration-300 ${
-          sidebarOpen ? "lg:ml-64" : "lg:ml-20"
-        }`}
-      >
-        {/* Header */}
-        <Header
-          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          onMobileMenuClick={() => setMobileSidebarOpen(true)}
-          variant="dark"
-        />
-
-        {/* Page Content */}
-        <main className="p-4 sm:p-6 lg:p-8 mt-16">
-          <Outlet />
-        </main>
+          {/* Page Content */}
+          <main className="p-4 sm:p-6 lg:p-8">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </MaintenanceProvider>
   );
 }

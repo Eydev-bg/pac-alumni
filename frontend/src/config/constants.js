@@ -44,3 +44,13 @@ export const PAGINATION = {
 
 export const TOKEN_KEY = 'pac_auth_token';
 export const USER_KEY = 'pac_auth_user';
+
+// ─── Maintenance Mode ──────────────────────────────────────
+// Shared route + storage key + fallback copy so the axios interceptor and the
+// public maintenance page reference one source of truth (no magic strings).
+export const MAINTENANCE = {
+  ROUTE: '/maintenance',
+  MESSAGE_KEY: 'pac_maintenance_message',
+  FALLBACK_MESSAGE:
+    'The system is currently under maintenance. Please check back later.',
+};
