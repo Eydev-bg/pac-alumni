@@ -5,10 +5,7 @@ import "react-quill-new/dist/quill.snow.css";
 import adminApi from "../../../api/adminApi";
 import { storageUrl } from "../../../utils/formatters";
 import { useToast } from "../../../hooks/useToast";
-import {
-  TARGET_TYPES,
-  EDUCATION_LEVELS,
-} from "../../../config/announcementOptions";
+import { TARGET_TYPES } from "../../../config/announcementOptions";
 import Card from "../../../ui/Card";
 import Button from "../../../ui/Button";
 import Alert from "../../../ui/Alert";
@@ -60,21 +57,6 @@ function TargetValueSelect({
   courses,
   years,
 }) {
-  if (type === "education_level") {
-    return (
-      <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-navy-800">
-          Select level…
-        </option>
-        {EDUCATION_LEVELS.map((l) => (
-          <option key={l.value} value={l.value} className="bg-navy-800">
-            {l.label}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
   if (type === "department") {
     return (
       <select value={value} onChange={onChange} className={className}>
