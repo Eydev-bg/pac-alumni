@@ -12,13 +12,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni', 'employer') NOT NULL");
+        // MySQL/MariaDB-only syntax. On sqlite (test suite) the users table is
+        // created from the current UserRole enum, so no ALTER is needed.
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni', 'employer') NOT NULL");
+        }
     }
 
     public function down(): void
     {
         // Revert to the original two-value enum. Any 'employer' rows must be
         // removed/reassigned first or this will fail / truncate.
-        DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni') NOT NULL");
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni') NOT NULL");
+        }
     }
 };

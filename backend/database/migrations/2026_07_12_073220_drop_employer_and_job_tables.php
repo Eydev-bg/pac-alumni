@@ -26,13 +26,19 @@ return new class extends Migration
         // cannot fail on rows still holding the dropped value.
         DB::table('users')->where('role', 'employer')->delete();
 
-        DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni') NOT NULL DEFAULT 'alumni'");
+        // MySQL/MariaDB-only syntax. On sqlite (test suite) the users table is
+        // created from the current UserRole enum, so no ALTER is needed.
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni') NOT NULL DEFAULT 'alumni'");
+        }
     }
 
     public function down(): void
     {
         // The dropped tables held test-only data and are not restorable here.
         // Re-allow the enum value only so historical migrations stay replayable.
-        DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni', 'employer') NOT NULL");
+        if (in_array(DB::getDriverName(), ['mysql', 'mariadb'])) {
+            DB::statement("ALTER TABLE `users` MODIFY `role` ENUM('admin', 'alumni', 'employer') NOT NULL");
+        }
     }
 };

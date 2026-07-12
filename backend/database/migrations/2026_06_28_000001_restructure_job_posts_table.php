@@ -16,6 +16,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Only applicable to databases that were created with the legacy
+        // user-posted shape and migrated incrementally. Fresh installs get the
+        // employer-centric schema straight from the rewritten
+        // create_job_posts_table migration, so there is nothing to convert.
+        if (! Schema::hasColumn('job_posts', 'posted_by')) {
+            return;
+        }
+
         // The legacy user-posted job board is retired (Task 1.1). Its rows have
         // no owning employer and cannot map to the new schema, so clear them
         // before adding the NOT NULL employer_id column.
