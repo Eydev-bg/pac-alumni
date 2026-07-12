@@ -24,6 +24,32 @@ import {
   HiOutlineBookmark,
 } from "react-icons/hi2";
 
+// Extract short month / day-of-month / 12-hour time from an ISO string for the
+// compact date badge. Uses the native Date — no extra libraries.
+function dateParts(iso) {
+  const d = new Date(iso);
+  return {
+    mon: d.toLocaleString("en-US", { month: "short" }),
+    day: d.getDate(),
+    time: d.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  };
+}
+
+// True when two ISO datetimes fall on the same calendar day.
+function sameDay(a, b) {
+  const x = new Date(a);
+  const y = new Date(b);
+  return (
+    x.getFullYear() === y.getFullYear() &&
+    x.getMonth() === y.getMonth() &&
+    x.getDate() === y.getDate()
+  );
+}
+
 const PUBLISH_FILTERS = [
   { value: "", label: "All" },
   { value: "1", label: "Published" },
@@ -157,6 +183,7 @@ export default function EventListPage() {
     {
       key: "title",
       header: "Title",
+      cellClassName: "whitespace-nowrap",
       render: (a) => (
         <div className="flex items-center gap-2">
           {a.is_pinned && (
@@ -165,16 +192,19 @@ export default function EventListPage() {
               title="Pinned"
             />
           )}
-          <span className="font-medium text-slate-200">{a.title}</span>
+          <span className="font-medium text-slate-200 max-w-[200px] truncate whitespace-nowrap">
+            {a.title}
+          </span>
         </div>
       ),
     },
     {
       key: "audience",
       header: "Audience",
+      cellClassName: "whitespace-nowrap",
       render: (a) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-400">
-          <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500" />
+        <span className="inline-flex items-center gap-1 text-xs text-slate-400 whitespace-nowrap">
+          <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
           {targetLabel(a)}
         </span>
       ),
@@ -182,18 +212,42 @@ export default function EventListPage() {
     {
       key: "when",
       header: "When",
-      cellClassName: "text-xs text-slate-400",
-      render: (a) => (
-        <span>
-          {formatDate(a.start_datetime)} &rarr; {formatDate(a.end_datetime)}
-        </span>
-      ),
+      cellClassName: "whitespace-nowrap",
+      render: (a) => {
+        if (!a.start_datetime)
+          return <span className="text-xs text-slate-500">—</span>;
+        const s = dateParts(a.start_datetime);
+        const multiDay =
+          a.end_datetime && !sameDay(a.start_datetime, a.end_datetime);
+        let secondary = `${s.mon} ${s.day}`;
+        if (multiDay) {
+          const e = dateParts(a.end_datetime);
+          secondary = `${s.mon} ${s.day} – ${e.mon} ${e.day}`;
+        } else if (a.end_datetime) {
+          secondary = `${s.time} – ${dateParts(a.end_datetime).time}`;
+        }
+        return (
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <span className="font-bold text-sm text-gold-500 bg-white/[0.06] rounded-md px-1.5 py-0.5 min-w-[28px] text-center">
+              {s.day}
+            </span>
+            <span className="text-xs text-slate-400 whitespace-nowrap">
+              {secondary}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: "location",
       header: "Location",
-      cellClassName: "text-slate-300",
-      render: (a) => a.location,
+      cellClassName: "whitespace-nowrap",
+      render: (a) => (
+        <span className="inline-flex items-center gap-1.5 max-w-[180px] text-sm text-slate-300 whitespace-nowrap">
+          <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+          <span className="truncate">{a.location}</span>
+        </span>
+      ),
     },
     {
       key: "status",
@@ -212,14 +266,29 @@ export default function EventListPage() {
     {
       key: "rsvps",
       header: "RSVPs",
-      cellClassName: "text-xs text-slate-400",
-      render: (a) =>
-        `${a.going_count ?? 0} going / ${a.interested_count ?? 0} interested`,
+      cellClassName: "whitespace-nowrap",
+      render: (a) => {
+        const going = a.going_count ?? 0;
+        const interested = a.interested_count ?? 0;
+        if (!going && !interested) {
+          return <span className="text-xs text-slate-500">No RSVPs</span>;
+        }
+        return (
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <span className="bg-emerald-500/15 text-emerald-400 text-[0.65rem] px-1.5 py-0.5 rounded-full">
+              {going} going
+            </span>
+            <span className="bg-gold-500/15 text-gold-400 text-[0.65rem] px-1.5 py-0.5 rounded-full">
+              {interested} interested
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: "created_at",
       header: "Created",
-      cellClassName: "text-xs text-slate-500",
+      cellClassName: "text-xs text-slate-500 whitespace-nowrap",
       render: (a) => formatDate(a.created_at),
     },
     {
@@ -284,7 +353,7 @@ export default function EventListPage() {
           <div>
             <h1 className="text-2xl font-bold text-white">Events</h1>
             <p className="text-sm text-slate-400 mt-1">
-              Create and broadcast targeted events to alumni
+              Create and manage alumni events with RSVP tracking
             </p>
           </div>
           <Button as={Link} to="/admin/events/new" icon={HiOutlinePlus}>
@@ -327,7 +396,7 @@ export default function EventListPage() {
             description:
               search || publishFilter !== ""
                 ? "Try adjusting your search or filters."
-                : "Create your first event to reach your alumni.",
+                : "Create your first event to engage your alumni.",
           }}
         />
       </div>

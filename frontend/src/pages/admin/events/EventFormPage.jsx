@@ -9,7 +9,14 @@ import { TARGET_TYPES } from "../../../config/eventOptions";
 import Card from "../../../ui/Card";
 import Button from "../../../ui/Button";
 import Alert from "../../../ui/Alert";
-import { HiOutlineArrowLeft, HiOutlinePhoto, HiOutlineXMark } from "react-icons/hi2";
+import {
+  HiOutlineArrowLeft,
+  HiOutlinePhoto,
+  HiOutlineXMark,
+  HiOutlineCalendarDays,
+  HiOutlineDocumentText,
+  HiOutlineUsers,
+} from "react-icons/hi2";
 
 const QUILL_MODULES = {
   toolbar: [
@@ -58,6 +65,18 @@ function isoToLocalInput(iso) {
   const d = new Date(iso);
   const tzOffset = d.getTimezoneOffset() * 60000;
   return new Date(d - tzOffset).toISOString().slice(0, 16);
+}
+
+// Section heading shown above each form card.
+function SectionLabel({ icon: Icon, children }) {
+  return (
+    <div className="flex items-center gap-2 mb-2">
+      <Icon className="w-4 h-4 text-gold-500" />
+      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+        {children}
+      </h2>
+    </div>
+  );
 }
 
 function TargetValueSelect({
@@ -321,184 +340,204 @@ export default function EventFormPage() {
           </Alert>
         )}
 
-        <Card className="space-y-6">
-          {/* Title */}
-          <div>
-            <label className={labelCls}>
-              Title <span className="text-red-400">*</span>
-            </label>
-            <input
-              value={form.title}
-              onChange={set("title")}
-              placeholder="e.g. Alumni Homecoming 2026"
-              className={inputCls}
-            />
-            {errFor("title")}
-          </div>
-
-          {/* Target selector */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-6">
+          {/* ── Basics: title + banner ── */}
+          <Card className="space-y-6">
+            {/* Title */}
             <div>
-              <label className={labelCls}>Audience</label>
-              <select
-                value={form.target_type}
-                onChange={handleTargetTypeChange}
+              <label className={labelCls}>
+                Title <span className="text-red-400">*</span>
+              </label>
+              <input
+                value={form.title}
+                onChange={set("title")}
+                placeholder="e.g. Alumni Homecoming 2026"
                 className={inputCls}
-              >
-                {TARGET_TYPES.map((t) => (
-                  <option key={t.value} value={t.value} className="bg-navy-800">
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+              />
+              {errFor("title")}
             </div>
 
-            {form.target_type !== "all" && (
-              <div>
-                <label className={labelCls}>
-                  Target <span className="text-red-400">*</span>
+            {/* Banner image */}
+            <div>
+              <label className={labelCls}>Banner Image (optional)</label>
+              {previewSrc ? (
+                <div className="relative inline-block">
+                  <img
+                    src={previewSrc}
+                    alt="Banner preview"
+                    className="max-h-44 rounded-xl border border-white/[0.08] object-cover"
+                  />
+                  {imagePreview && (
+                    <button
+                      type="button"
+                      onClick={clearImage}
+                      className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
+                      title="Remove selected image"
+                    >
+                      <HiOutlineXMark className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-gold-500/40 transition-colors">
+                  <HiOutlinePhoto className="w-8 h-8 text-slate-500" />
+                  <span className="text-xs text-slate-400">
+                    Click to upload (JPG, PNG, WEBP — max 4MB)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </label>
-                <TargetValueSelect
-                  type={form.target_type}
-                  value={form.target_value}
-                  onChange={set("target_value")}
-                  className={inputCls}
-                  departments={departments}
-                  courses={courses}
-                  years={years}
-                />
-                {errFor("target_value")}
-              </div>
-            )}
-          </div>
-
-          {/* Schedule */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelCls}>
-                Starts <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="datetime-local"
-                value={form.start_datetime}
-                onChange={set("start_datetime")}
-                className={inputCls}
-              />
-              {errFor("start_datetime")}
+              )}
+              {previewSrc && (
+                <label className="inline-block mt-2 text-xs font-semibold text-gold-500 cursor-pointer hover:text-gold-300">
+                  Change image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+              {errFor("image")}
             </div>
-            <div>
-              <label className={labelCls}>
-                Ends <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="datetime-local"
-                value={form.end_datetime}
-                min={form.start_datetime || undefined}
-                onChange={set("end_datetime")}
-                className={inputCls}
-              />
-              {errFor("end_datetime")}
-            </div>
-          </div>
+          </Card>
 
-          {/* Location */}
+          {/* ── Audience ── */}
           <div>
-            <label className={labelCls}>
-              Location <span className="text-red-400">*</span>
-            </label>
-            <input
-              value={form.location}
-              onChange={set("location")}
-              placeholder="e.g. PAC Gymnasium, Main Campus"
-              className={inputCls}
-            />
-            {errFor("location")}
-          </div>
-
-          {/* Banner image */}
-          <div>
-            <label className={labelCls}>Banner Image (optional)</label>
-            {previewSrc ? (
-              <div className="relative inline-block">
-                <img
-                  src={previewSrc}
-                  alt="Banner preview"
-                  className="max-h-44 rounded-xl border border-white/[0.08] object-cover"
-                />
-                {imagePreview && (
-                  <button
-                    type="button"
-                    onClick={clearImage}
-                    className="absolute -top-2 -right-2 p-1 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600"
-                    title="Remove selected image"
+            <SectionLabel icon={HiOutlineUsers}>Audience</SectionLabel>
+            <Card>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>Audience</label>
+                  <select
+                    value={form.target_type}
+                    onChange={handleTargetTypeChange}
+                    className={inputCls}
                   >
-                    <HiOutlineXMark className="w-4 h-4" />
-                  </button>
+                    {TARGET_TYPES.map((t) => (
+                      <option key={t.value} value={t.value} className="bg-navy-800">
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {form.target_type !== "all" && (
+                  <div>
+                    <label className={labelCls}>
+                      Target <span className="text-red-400">*</span>
+                    </label>
+                    <TargetValueSelect
+                      type={form.target_type}
+                      value={form.target_value}
+                      onChange={set("target_value")}
+                      className={inputCls}
+                      departments={departments}
+                      courses={courses}
+                      years={years}
+                    />
+                    {errFor("target_value")}
+                  </div>
                 )}
               </div>
-            ) : (
-              <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-gold-500/40 transition-colors">
-                <HiOutlinePhoto className="w-8 h-8 text-slate-500" />
-                <span className="text-xs text-slate-400">
-                  Click to upload (JPG, PNG, WEBP — max 4MB)
-                </span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-            {previewSrc && (
-              <label className="inline-block mt-2 text-xs font-semibold text-gold-500 cursor-pointer hover:text-gold-300">
-                Change image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-            {errFor("image")}
+            </Card>
           </div>
 
-          {/* Rich text content */}
+          {/* ── Event Details: schedule + location ── */}
           <div>
-            <label className={labelCls}>
-              Content <span className="text-red-400">*</span>
-            </label>
-            <div className="event-editor rounded-xl overflow-hidden bg-white">
-              <ReactQuill
-                theme="snow"
-                value={form.content}
-                onChange={(html) => setForm((f) => ({ ...f, content: html }))}
-                modules={QUILL_MODULES}
-                formats={QUILL_FORMATS}
-                placeholder="Write the event details here..."
-              />
-            </div>
-            {errFor("content")}
+            <SectionLabel icon={HiOutlineCalendarDays}>Event Details</SectionLabel>
+            <Card className="space-y-6">
+              {/* Schedule */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={labelCls}>
+                    Starts <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={form.start_datetime}
+                    onChange={set("start_datetime")}
+                    className={inputCls}
+                  />
+                  {errFor("start_datetime")}
+                </div>
+                <div>
+                  <label className={labelCls}>
+                    Ends <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={form.end_datetime}
+                    min={form.start_datetime || undefined}
+                    onChange={set("end_datetime")}
+                    className={inputCls}
+                  />
+                  {errFor("end_datetime")}
+                </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className={labelCls}>
+                  Location <span className="text-red-400">*</span>
+                </label>
+                <input
+                  value={form.location}
+                  onChange={set("location")}
+                  placeholder="e.g. PAC Gymnasium, Main Campus"
+                  className={inputCls}
+                />
+                {errFor("location")}
+              </div>
+            </Card>
           </div>
 
-          {/* Pin toggle */}
-          <label className="flex items-center gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.is_pinned}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, is_pinned: e.target.checked }))
-              }
-              className="w-4 h-4 rounded accent-gold-500"
-            />
-            <span className="text-sm text-slate-300">
-              Pin this event (shows at the top of the alumni feed)
-            </span>
-          </label>
+          {/* ── Content ── */}
+          <div>
+            <SectionLabel icon={HiOutlineDocumentText}>Content</SectionLabel>
+            <Card className="space-y-6">
+              {/* Rich text content */}
+              <div>
+                <label className={labelCls}>
+                  Details <span className="text-red-400">*</span>
+                </label>
+                <div className="event-editor rounded-xl overflow-hidden bg-white">
+                  <ReactQuill
+                    theme="snow"
+                    value={form.content}
+                    onChange={(html) => setForm((f) => ({ ...f, content: html }))}
+                    modules={QUILL_MODULES}
+                    formats={QUILL_FORMATS}
+                    placeholder="Write the event details here..."
+                  />
+                </div>
+                {errFor("content")}
+              </div>
+
+              {/* Pin toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.is_pinned}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, is_pinned: e.target.checked }))
+                  }
+                  className="w-4 h-4 rounded accent-gold-500"
+                />
+                <span className="text-sm text-slate-300">
+                  Pin this event (shows at the top of the alumni feed)
+                </span>
+              </label>
+            </Card>
+          </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2 border-t border-white/[0.06]">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2">
             <Button
               variant="secondary"
               onClick={() => navigate("/admin/events")}
@@ -518,7 +557,7 @@ export default function EventFormPage() {
               {saving ? "Saving..." : "Save & Publish"}
             </Button>
           </div>
-        </Card>
+        </div>
       </div>
 
       {/* Make the Quill editor area comfortably tall. */}

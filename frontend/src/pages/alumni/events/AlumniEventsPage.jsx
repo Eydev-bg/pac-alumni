@@ -1,17 +1,39 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Fragment } from "react";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
-import { formatDate, storageUrl } from "../../../utils/formatters";
+import Card from "../../../ui/Card";
+import { formatDate, storageUrl, cn } from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
 import {
   HiOutlineCalendarDays,
   HiOutlineXMark,
   HiOutlineUser,
   HiOutlineMapPin,
-  HiOutlineUsers,
   HiOutlineBookmark,
+  HiOutlineHandThumbUp,
+  HiOutlineStar,
 } from "react-icons/hi2";
+
+// Extract short month / day-of-month / 12-hour time from an ISO string for the
+// prominent date badge. Uses the native Date — no extra libraries.
+function dateParts(iso) {
+  const d = new Date(iso);
+  return {
+    mon: d.toLocaleString("en-US", { month: "short" }),
+    day: d.getDate(),
+    time: d.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }),
+  };
+}
+
+// True once the event's end has passed (compared against the live clock).
+function isPast(event) {
+  return event.end_datetime && new Date(event.end_datetime) < new Date();
+}
 
 // going_count tracks only "going" RSVPs, so adjust it when the caller's own
 // status crosses the going boundary (keeps the optimistic count accurate).
@@ -107,11 +129,11 @@ export default function AlumniEventsPage() {
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
-        <div className="text-slate-500 text-sm">Loading events…</div>
+        <div className="text-slate-400 text-sm">Loading events…</div>
       ) : items.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500 text-sm">
+        <Card className="p-10 text-center text-slate-400 text-sm">
           No events yet. Check back soon.
-        </div>
+        </Card>
       ) : (
         <div className="space-y-3">
           {items.map((a) => (
@@ -137,25 +159,70 @@ export default function AlumniEventsPage() {
   );
 }
 
-// Going / Interested toggle buttons built from RSVP_STATUSES.
-function RsvpControl({ event: a, onRsvp }) {
+// Prominent left-column date badge: month / day / time.
+function DateBadge({ iso, size = "md" }) {
+  if (!iso) return null;
+  const { mon, day, time } = dateParts(iso);
+  const dayCls = size === "lg" ? "text-2xl" : "text-xl";
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-white/[0.04] rounded-xl py-3">
+      <span className="text-[0.65rem] uppercase font-bold text-gold-500">
+        {mon}
+      </span>
+      <span className={`${dayCls} font-bold text-white leading-tight`}>
+        {day}
+      </span>
+      <span className="text-[0.65rem] text-slate-400">{time}</span>
+    </div>
+  );
+}
+
+function PinnedBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-400">
+      <HiOutlineBookmark className="w-3 h-3" /> Pinned
+    </span>
+  );
+}
+
+function PastBadge() {
+  return (
+    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-500">
+      Past event
+    </span>
+  );
+}
+
+// Going / Interested pill toggles built from RSVP_STATUSES.
+function RsvpControl({ event: a, onRsvp }) {
+  const base =
+    "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold border transition-colors";
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
       {RSVP_STATUSES.map((s) => {
         const activeState = a.my_rsvp === s.value;
+        const Icon = s.value === "going" ? HiOutlineHandThumbUp : HiOutlineStar;
+        const cls = activeState
+          ? s.value === "going"
+            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+            : "bg-gold-500/15 border-gold-500/30 text-gold-400"
+          : "bg-white/[0.06] border-white/[0.08] text-slate-400 hover:bg-white/[0.1]";
         return (
-          <button
-            key={s.value}
-            type="button"
-            onClick={() => onRsvp(a, s.value)}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
-              activeState
-                ? "bg-[#1a2e5a] text-white border-[#1a2e5a]"
-                : "bg-white text-slate-600 border-slate-200 hover:border-[#1a2e5a]/40 hover:text-[#1a2e5a]"
-            }`}
-          >
-            {s.label}
-          </button>
+          <Fragment key={s.value}>
+            <button
+              type="button"
+              onClick={() => onRsvp(a, s.value)}
+              className={`${base} ${cls}`}
+            >
+              <Icon className="w-4 h-4" />
+              {s.label}
+            </button>
+            {s.value === "going" && (
+              <span className="text-xs text-slate-500">
+                ({a.going_count ?? 0} going)
+              </span>
+            )}
+          </Fragment>
         );
       })}
     </div>
@@ -163,59 +230,77 @@ function RsvpControl({ event: a, onRsvp }) {
 }
 
 function EventCard({ event: a, onOpen, onRsvp }) {
+  const past = isPast(a);
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 transition-all hover:shadow-sm">
-      <button onClick={onOpen} className="w-full text-left block">
-        <div className="flex items-center gap-2 flex-wrap">
-          {a.is_pinned && (
-            <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
-              <HiOutlineBookmark className="w-3 h-3" /> Pinned
-            </span>
-          )}
-          <h3 className="text-sm font-bold text-slate-900 truncate">{a.title}</h3>
-        </div>
-        <p className="mt-1 text-xs text-slate-500 line-clamp-2 event-snippet">
-          {stripHtml(a.content)}
-        </p>
-        <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-400">
-          {a.start_datetime && (
-            <span className="flex items-center gap-1">
-              <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-              {formatDate(a.start_datetime)}
-            </span>
-          )}
-          {a.location && (
-            <span className="flex items-center gap-1">
-              <HiOutlineMapPin className="w-3.5 h-3.5" /> {a.location}
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <HiOutlineUsers className="w-3.5 h-3.5" /> {a.going_count ?? 0} going
-          </span>
-          {a.posted_by && (
-            <span className="flex items-center gap-1">
-              <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
-            </span>
-          )}
-        </div>
-      </button>
+    <Card
+      className={cn(
+        "transition-all hover:border-white/[0.12]",
+        past && "opacity-75",
+      )}
+    >
+      <div className="flex flex-row gap-4">
+        {/* LEFT: date badge */}
+        <DateBadge iso={a.start_datetime} />
 
-      <div className="mt-3 pt-3 border-t border-slate-100">
-        <RsvpControl event={a} onRsvp={onRsvp} />
+        {/* RIGHT: content */}
+        <div className="flex-1 min-w-0">
+          <button onClick={onOpen} className="w-full text-left block">
+            <div className="flex items-center gap-2 flex-wrap">
+              {a.is_pinned && <PinnedBadge />}
+              {past && <PastBadge />}
+              <h3 className="text-sm font-bold text-white truncate">
+                {a.title}
+              </h3>
+            </div>
+
+            {a.location && (
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-300">
+                <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
+                <span className="truncate">{a.location}</span>
+              </div>
+            )}
+
+            <p className="mt-1.5 text-xs text-slate-400 line-clamp-2 event-snippet">
+              {stripHtml(a.content)}
+            </p>
+
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-500">
+              {a.posted_by && (
+                <span className="flex items-center gap-1">
+                  <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                </span>
+              )}
+              {a.start_datetime && (
+                <span className="flex items-center gap-1">
+                  <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                  {formatDate(a.start_datetime)}
+                </span>
+              )}
+            </div>
+          </button>
+
+          {/* RSVP controls — hidden for events that have already ended. */}
+          {!past && (
+            <div className="mt-3 pt-3 border-t border-white/[0.06]">
+              <RsvpControl event={a} onRsvp={onRsvp} />
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function EventModal({ event: a, onClose, onRsvp }) {
+  const past = isPast(a);
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="flex min-h-full items-start justify-center p-4 py-10">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+        <div className="relative bg-navy-800 border border-white/10 rounded-2xl shadow-xl max-w-2xl w-full">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -229,57 +314,59 @@ function EventModal({ event: a, onClose, onRsvp }) {
           )}
 
           <div className="p-6">
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              {a.is_pinned && (
-                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
-                  <HiOutlineBookmark className="w-3 h-3" /> Pinned
-                </span>
-              )}
-            </div>
-            <h2 className="text-xl font-bold text-slate-900">{a.title}</h2>
-            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
-              {a.start_datetime && (
-                <span className="flex items-center gap-1">
-                  <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                  {formatDate(a.start_datetime)} &rarr; {formatDate(a.end_datetime)}
-                </span>
-              )}
-              {a.location && (
-                <span className="flex items-center gap-1">
-                  <HiOutlineMapPin className="w-3.5 h-3.5" /> {a.location}
-                </span>
-              )}
-              <span className="flex items-center gap-1">
-                <HiOutlineUsers className="w-3.5 h-3.5" /> {a.going_count ?? 0} going
-              </span>
-              {a.posted_by && (
-                <span className="flex items-center gap-1">
-                  <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
-                </span>
-              )}
+            <div className="flex items-start gap-4">
+              <DateBadge iso={a.start_datetime} size="lg" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  {a.is_pinned && <PinnedBadge />}
+                  {past && <PastBadge />}
+                </div>
+                <h2 className="text-xl font-bold text-white">{a.title}</h2>
+                {a.location && (
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-300">
+                    <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
+                    {a.location}
+                  </div>
+                )}
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-500">
+                  {a.start_datetime && (
+                    <span className="flex items-center gap-1">
+                      <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                      {formatDate(a.start_datetime)} &rarr; {formatDate(a.end_datetime)}
+                    </span>
+                  )}
+                  {a.posted_by && (
+                    <span className="flex items-center gap-1">
+                      <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <div className="mt-4">
-              <RsvpControl event={a} onRsvp={onRsvp} />
-            </div>
+            {!past && (
+              <div className="mt-4">
+                <RsvpControl event={a} onRsvp={onRsvp} />
+              </div>
+            )}
 
             <div
-              className="event-content mt-4 text-sm text-slate-700 leading-relaxed"
+              className="event-content mt-4 text-sm text-slate-300 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(a.content) }}
             />
           </div>
         </div>
       </div>
 
-      {/* Minimal styling for rendered rich-text content. */}
-      <style>{`.event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0}
-        .event-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0}
-        .event-content h3{font-size:1rem;font-weight:600;margin:.5rem 0}
+      {/* Minimal styling for rendered rich-text content (dark surface). */}
+      <style>{`.event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#fff}
+        .event-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0;color:#fff}
+        .event-content h3{font-size:1rem;font-weight:600;margin:.5rem 0;color:#fff}
         .event-content p{margin:.5rem 0}
         .event-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .event-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .event-content a{color:#1a2e5a;text-decoration:underline}
-        .event-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#475569;margin:.5rem 0}
+        .event-content a{color:#c8a84e;text-decoration:underline}
+        .event-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#94a3b8;margin:.5rem 0}
         .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
   );
