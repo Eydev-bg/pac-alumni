@@ -8,18 +8,17 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Enums\BoardExamStatus;
 use App\Enums\EducationLevel;
-use App\Enums\EmploymentStatus;
+use App\Enums\EmploymentType;
 use App\Models\AlumniProfile;
 use App\Models\BoardExamRecord;
 use App\Models\Course;
+use App\Models\EmploymentRecord;
 use App\Models\Graduate;
 use App\Models\User;
 use App\Services\Admin\DashboardCacheService;
-use App\Support\SqlExpression;
 use App\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -39,8 +38,7 @@ class DashboardController extends Controller
         $data = $this->dashboardCache->remember(fn () => [
             'stats' => $this->getStatsCards(),
             'graduates_per_year' => $this->getGraduatesPerYear(),
-            'alumni_registrations_per_month' => $this->getAlumniRegistrationsPerMonth(),
-            'participation' => $this->getParticipationStats(),
+            'employment_type_breakdown' => $this->getEmploymentTypeBreakdown(),
         ]);
 
         return $this->success($data, 'Dashboard data retrieved.');
@@ -77,20 +75,6 @@ class DashboardController extends Controller
             BoardExamRecord::where('status', BoardExamStatus::PASSER->value)
         );
 
-        // Board exam failed (unique graduates). A graduate who has BOTH a passer
-        // and a failed record counts as a passer only, so exclude any graduate
-        // who also has a passer record. A correlated whereNotExists keeps the
-        // passer ids in SQL instead of materialising them into PHP.
-        $boardFailed = $this->distinctGraduateCount(
-            BoardExamRecord::where('status', BoardExamStatus::FAILED->value)
-                ->whereNotExists(function ($sub) {
-                    $sub->select(DB::raw(1))
-                        ->from('board_exam_records as passers')
-                        ->whereColumn('passers.graduate_id', 'board_exam_records.graduate_id')
-                        ->where('passers.status', BoardExamStatus::PASSER->value);
-                })
-        );
-
         // Graduates in board program courses who have NO board exam record at all
         $boardProgramCourseIds = Course::boardPrograms()->pluck('id');
         $graduatesInBoardPrograms = Graduate::whereIn('course_id', $boardProgramCourseIds)->count();
@@ -122,7 +106,6 @@ class DashboardController extends Controller
             'active_recently' => $activeRecently,
             'inactive_alumni' => $inactiveAlumni,
             'board_passers' => $boardPassers,
-            'board_failed' => $boardFailed,
             'board_not_yet_taken' => $boardNotYetTaken,
             'board_program_total' => $graduatesInBoardPrograms,
             'board_passing_rate' => $graduatesInBoardPrograms > 0
@@ -157,66 +140,27 @@ class DashboardController extends Controller
     }
 
     /**
-     * Line Chart — Alumni registrations per month (last 12 months)
+     * Horizontal Bar Chart — current employment records grouped by type.
+     * Iterates the EmploymentType enum's cases so any new type added to the
+     * enum automatically appears; labels come from the enum (never hardcoded).
+     * Ordered by count desc.
      */
-    private function getAlumniRegistrationsPerMonth(): array
+    private function getEmploymentTypeBreakdown(): array
     {
-        $months = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $months->push([
-                'month' => $date->format('M Y'),
-                'month_key' => $date->format('Y-m'),
-            ]);
-        }
+        // Counts of current employment records keyed by the raw enum value.
+        $counts = EmploymentRecord::where('is_current', true)
+            ->selectRaw('employment_type, COUNT(*) as count')
+            ->groupBy('employment_type')
+            ->pluck('count', 'employment_type');
 
-        $monthKey = SqlExpression::monthKey('created_at');
-
-        $registrations = User::where('role', 'alumni')
-            ->where('created_at', '>=', now()->subMonths(12)->startOfMonth())
-            ->selectRaw("{$monthKey} as month_key, COUNT(*) as count")
-            ->groupBy('month_key')
-            ->pluck('count', 'month_key');
-
-        return $months->map(fn($m) => [
-            'month' => $m['month'],
-            'registrations' => $registrations[$m['month_key']] ?? 0,
-        ])->toArray();
-    }
-
-    /**
-     * Alumni Participation — how well alumni are engaging / reporting data.
-     * Surfaces the "low alumni participation" problem highlighted in tracer-study
-     * literature. Computed entirely from existing tables/columns.
-     */
-    private function getParticipationStats(): array
-    {
-        $totalRegistered = User::where('role', 'alumni')->count();
-
-        // Alumni who have reported a definite employment status (not "unknown")
-        $employmentKnown = AlumniProfile::whereIn('employment_status', [
-            EmploymentStatus::EMPLOYED->value,
-            EmploymentStatus::UNEMPLOYED->value,
-        ])->count();
-
-        // Profile considered "complete": has a location AND a reported employment status
-        $profileComplete = AlumniProfile::whereNotNull('current_location')
-            ->where('current_location', '!=', '')
-            ->where('employment_status', '!=', EmploymentStatus::UNKNOWN->value)
-            ->count();
-
-        // Divide-by-zero guarded percentage helper
-        $rate = fn (int $count): float => $totalRegistered > 0
-            ? round(($count / $totalRegistered) * 100, 1)
-            : 0;
-
-        return [
-            'total_registered' => $totalRegistered,
-            'employment_known' => $employmentKnown,
-            'employment_known_rate' => $rate($employmentKnown),
-            'profile_complete' => $profileComplete,
-            'profile_complete_rate' => $rate($profileComplete),
-        ];
+        return collect(EmploymentType::cases())
+            ->map(fn (EmploymentType $type) => [
+                'type' => $type->label(),
+                'count' => (int) ($counts[$type->value] ?? 0),
+            ])
+            ->sortByDesc('count')
+            ->values()
+            ->toArray();
     }
 
     /**
