@@ -15,9 +15,19 @@ export const EMPLOYMENT_COLORS = {
   Unknown: "#475569",
 };
 
+// Fixed color per employment type — keys match EmploymentType::label() from the backend.
+export const EMPLOYMENT_TYPE_COLORS = {
+  Local: "#c8a84e", // gold
+  International: "#3b82f6", // blue
+  "Self-employed": "#22c55e", // green
+};
+
+// Unfilled track behind each horizontal employment-type bar (from the dashboard
+// design). Dark navy so the colored fill reads clearly on top.
+export const EMPLOYMENT_TYPE_TRACK = "#1c2438";
+
 // Fixed color per board exam status so the legend, tooltip and slices always agree.
 export const BOARD_COLORS = {
   Passers: "#22c55e", // green
-  Failed: "#ef4444", // red
   "Not Yet Taken": "#475569", // slate
 };

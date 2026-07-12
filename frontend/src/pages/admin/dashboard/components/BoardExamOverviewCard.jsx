@@ -11,7 +11,7 @@ function BoardExamOverviewCard({ pieData, legend, passers, passingRate }) {
       <div className="mb-2">
         <h2 className="text-[15px] font-bold text-white">Board Exam Overview</h2>
         <p className="text-[11px] text-slate-400 mt-0.5">
-          Passers · Failed · Not Yet Taken breakdown
+          Passers · Not Yet Taken breakdown
         </p>
       </div>
 
@@ -44,7 +44,7 @@ function BoardExamOverviewCard({ pieData, legend, passers, passingRate }) {
         )}
       </div>
 
-      {/* Legend — lists all three statuses so empty slices are still shown */}
+      {/* Legend — lists each status so empty slices are still shown */}
       <div className="flex items-center justify-center gap-4 pt-1 flex-wrap">
         {legend.map((item) => (
           <span key={item.name} className="flex items-center gap-1.5 text-[10px]">

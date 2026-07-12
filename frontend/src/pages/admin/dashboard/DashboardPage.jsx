@@ -5,11 +5,10 @@ import { useToast } from "../../../hooks/useToast";
 import adminApi from "../../../api/adminApi";
 import { HiOutlineUserGroup, HiOutlineAcademicCap } from "react-icons/hi2";
 import StatCard from "../../../ui/StatCard";
-import RegistrationTrendChart from "./components/RegistrationTrendChart";
+import EmploymentTypeChart from "./components/EmploymentTypeChart";
 import EmploymentOverviewCard from "./components/EmploymentOverviewCard";
 import BoardExamOverviewCard from "./components/BoardExamOverviewCard";
 import ReminderStatsSection from "./components/ReminderStatsSection";
-import ParticipationSection from "./components/ParticipationSection";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -48,21 +47,18 @@ export default function DashboardPage() {
   }, [toast]);
 
   // ─── Employment pie data (memoized) ────────────────────
-  // Employed comes straight from stats. When the participation payload is
-  // present we can derive an accurate Unemployed / Unknown split from it:
-  //   employment_known = employed + unemployed  →  unemployed = known − employed
-  //   unknown = total_registered − known
-  // Falling back to registered_alumni keeps the chart working if participation
-  // is missing (non-blocking, same pattern as reminderStats). Recomputes only
-  // when the dashboard payload changes.
+  // Employed comes straight from stats. Without a participation payload we
+  // can't split reported "Unemployed" from "Unknown", so everyone who isn't
+  // counted as employed falls into Unknown:
+  //   unemployed = 0
+  //   unknown = registered_alumni − employed
+  // Recomputes only when the dashboard payload changes.
   const employmentChart = useMemo(() => {
     if (!data) return null;
-    const { stats, participation } = data;
+    const { stats } = data;
     const employedCount = stats.employed_count || 0;
-    const totalAlumni =
-      participation?.total_registered ?? stats.registered_alumni ?? 0;
-    const employmentKnown = participation?.employment_known ?? employedCount;
-    const unemployedCount = Math.max(0, employmentKnown - employedCount);
+    const totalAlumni = stats.registered_alumni ?? 0;
+    const unemployedCount = 0;
     const unknownCount = Math.max(0, totalAlumni - employedCount - unemployedCount);
 
     const breakdown = [
@@ -87,7 +83,6 @@ export default function DashboardPage() {
 
     const breakdown = [
       { name: "Passers", value: stats.board_passers || 0 },
-      { name: "Failed", value: stats.board_failed || 0 },
       { name: "Not Yet Taken", value: stats.board_not_yet_taken || 0 },
     ];
 
@@ -116,7 +111,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { stats, alumni_registrations_per_month, participation } = data;
+  const { stats, employment_type_breakdown } = data;
 
   // Greeting based on time
   const now = new Date();
@@ -188,8 +183,11 @@ export default function DashboardPage() {
 
         {/* ═══ Charts Row ══════════════════════════════════ */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Registration Trend Bar Chart — full width */}
-          <RegistrationTrendChart data={alumni_registrations_per_month} />
+          {/* Employment Type Distribution — horizontal bar (full width) */}
+          <EmploymentTypeChart
+            data={employment_type_breakdown}
+            totalAlumni={stats.registered_alumni || 1}
+          />
 
           {/* Employment Overview pie — left */}
           <EmploymentOverviewCard
@@ -210,9 +208,6 @@ export default function DashboardPage() {
 
         {/* ═══ Automated Reminders ═════════════════════════ */}
         {reminderStats && <ReminderStatsSection stats={reminderStats} />}
-
-        {/* ═══ Alumni Participation ════════════════════════ */}
-        {participation && <ParticipationSection participation={participation} />}
       </div>
     </>
   );
