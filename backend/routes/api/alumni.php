@@ -3,7 +3,6 @@
 use App\Http\Controllers\Api\Alumni\AchievementFeedController;
 use App\Http\Controllers\Api\Alumni\AlumniAnnouncementController;
 use App\Http\Controllers\Api\Alumni\AlumniController;
-use App\Http\Controllers\Api\Alumni\AlumniJobController;
 use App\Http\Controllers\Api\Alumni\BoardExamController;
 use App\Http\Controllers\Api\Alumni\AlumniEventController;
 use App\Http\Controllers\Api\Alumni\EmploymentController;
@@ -55,16 +54,6 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
 
     Route::post('/employment', [EmploymentController::class, 'store'])
         ->name('alumni.employment.store');
-
-    // ─── Job Board (Phase 1.6) ────────────────────────────
-    Route::get('/jobs', [AlumniJobController::class, 'index'])
-        ->name('alumni.jobs.index');
-    Route::get('/my-applications', [AlumniJobController::class, 'myApplications'])
-        ->name('alumni.my-applications');
-    Route::get('/jobs/{id}', [AlumniJobController::class, 'show'])
-        ->whereNumber('id')->name('alumni.jobs.show');
-    Route::post('/jobs/{id}/apply', [AlumniJobController::class, 'apply'])
-        ->whereNumber('id')->name('alumni.jobs.apply');
 
     // ─── Announcements (Phase 2) ──────────────────────────
     Route::get('/announcements', [AlumniAnnouncementController::class, 'index'])

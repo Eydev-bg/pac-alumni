@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Blocks non-admin (Alumni / Employer) access while maintenance mode is on.
+ * Blocks non-admin (Alumni) access while maintenance mode is on.
  *
  * SAFETY: Admins ALWAYS bypass this check — even if the middleware is ever
  * attached to an admin route by mistake — so an administrator can never lock

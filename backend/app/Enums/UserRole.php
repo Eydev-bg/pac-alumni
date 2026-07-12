@@ -6,7 +6,6 @@ enum UserRole: string
 {
     case ADMIN = 'admin';
     case ALUMNI = 'alumni';
-    case EMPLOYER = 'employer';
 
     /**
      * Get human-readable label.
@@ -16,7 +15,6 @@ enum UserRole: string
         return match ($this) {
             self::ADMIN => 'Administrator',
             self::ALUMNI => 'Alumni',
-            self::EMPLOYER => 'Employer',
         };
     }
 
@@ -32,8 +30,7 @@ enum UserRole: string
      * Roles an admin may directly assign when creating/updating users.
      *
      * Excludes ADMIN (cannot create another admin through the user endpoint —
-     * see StoreUserRequest/UserService) and EMPLOYER (self-registers through the
-     * employer flow, which also creates a paired Employer record).
+     * see StoreUserRequest/UserService).
      */
     public static function assignableByAdmin(): array
     {

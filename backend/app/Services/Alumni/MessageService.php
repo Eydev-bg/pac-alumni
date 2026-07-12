@@ -50,7 +50,7 @@ class MessageService
             throw new \Exception('You cannot start a conversation with yourself.', 422);
         }
 
-        // Alumni-only messaging — no contacting admins or employers.
+        // Alumni-only messaging — no contacting admins.
         if ($recipient->role !== UserRole::ALUMNI) {
             throw new \Exception('You can only message fellow alumni.', 403);
         }

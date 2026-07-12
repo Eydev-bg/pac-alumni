@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\AdminEmployerController;
-use App\Http\Controllers\Api\Admin\AdminJobController;
 use App\Http\Controllers\Api\Admin\AnnouncementController;
 use App\Http\Controllers\Api\Admin\GraduateTracerController;
 use App\Http\Controllers\Api\Admin\AlumniSearchController;
@@ -221,33 +219,6 @@ Route::prefix('admin')
             Route::get('/employment/export', [ReportController::class, 'exportEmployment'])->name('employment.export')->middleware('throttle:10,1');
             Route::get('/alumni-id-list/export', [ReportController::class, 'exportAlumniIdList'])->name('alumni-id-list.export')->middleware('throttle:10,1');
         });
-
-        // ─── Employer Management (Phase 1.5) ─────────────
-        Route::get('/employers', [AdminEmployerController::class, 'index'])
-            ->name('employers.index');
-        Route::get('/employers/{id}', [AdminEmployerController::class, 'show'])
-            ->whereNumber('id')->name('employers.show');
-        Route::patch('/employers/{id}/suspend', [AdminEmployerController::class, 'suspend'])
-            ->whereNumber('id')->name('employers.suspend');
-        Route::patch('/employers/{id}/activate', [AdminEmployerController::class, 'activate'])
-            ->whereNumber('id')->name('employers.activate');
-        Route::patch('/employers/{id}/deactivate', [AdminEmployerController::class, 'deactivate'])
-            ->whereNumber('id')->name('employers.deactivate');
-        Route::delete('/employers/{id}', [AdminEmployerController::class, 'destroy'])
-            ->whereNumber('id')->name('employers.destroy');
-
-        // ─── Job Post Moderation (Phase 1.5) ─────────────
-        // Replaces the legacy user-posted job board (employer-centric module).
-        Route::get('/job-posts', [AdminJobController::class, 'index'])
-            ->name('job-posts.index');
-        Route::get('/job-posts/{id}', [AdminJobController::class, 'show'])
-            ->whereNumber('id')->name('job-posts.show');
-        Route::patch('/job-posts/{id}/approve', [AdminJobController::class, 'approve'])
-            ->whereNumber('id')->name('job-posts.approve');
-        Route::patch('/job-posts/{id}/reject', [AdminJobController::class, 'reject'])
-            ->whereNumber('id')->name('job-posts.reject');
-        Route::delete('/job-posts/{id}', [AdminJobController::class, 'destroy'])
-            ->whereNumber('id')->name('job-posts.destroy');
 
         // ─── Announcement Module (Phase 2) ───────────────
         Route::get('/announcements', [AnnouncementController::class, 'index'])

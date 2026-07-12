@@ -117,11 +117,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasOne(AlumniProfile::class);
     }
 
-    public function employer(): \Illuminate\Database\Eloquent\Relations\HasOne
-    {
-        return $this->hasOne(Employer::class);
-    }
-
     // ─── Accessors ───────────────────────────────────────────
     public function getFullNameAttribute(): string
     {
