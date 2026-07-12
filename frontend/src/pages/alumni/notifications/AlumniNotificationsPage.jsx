@@ -1,0 +1,152 @@
+// ═══════════════════════════════════════════════════════════
+//  FILE LOCATION: frontend/src/pages/alumni/notifications/AlumniNotificationsPage.jsx
+// ═══════════════════════════════════════════════════════════
+
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import alumniApi from "../../../api/alumniApi";
+import Pagination from "../../../components/common/Pagination";
+import { useToast } from "../../../hooks/useToast";
+import { formatDate } from "../../../utils/formatters";
+import { PAGINATION } from "../../../config/constants";
+import { HiOutlineBell, HiOutlineCheckCircle } from "react-icons/hi2";
+
+export default function AlumniNotificationsPage() {
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [notifications, setNotifications] = useState([]);
+  const [meta, setMeta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const fetch = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await alumniApi.getNotifications({
+        page,
+        per_page: PAGINATION.LOGS_PER_PAGE,
+      });
+      setNotifications(res.data.data);
+      setMeta(res.data.meta);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Failed to load notifications.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [page, toast]);
+
+  useEffect(() => {
+    fetch();
+  }, [fetch]);
+
+  const handleMarkAllRead = async () => {
+    try {
+      await alumniApi.markAllNotificationsRead();
+      toast.success("All notifications marked as read.");
+      fetch();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to mark as read.");
+    }
+  };
+
+  // Mark read; job_posting notifications deep-link to the job detail page.
+  const handleOpen = async (n) => {
+    if (!n.is_read) {
+      try {
+        await alumniApi.markNotificationRead(n.id);
+        setNotifications((prev) =>
+          prev.map((x) => (x.id === n.id ? { ...x, is_read: true } : x)),
+        );
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to mark as read.");
+      }
+    }
+    if (n.data?.job_posting_id) {
+      navigate(`/alumni/careers/${n.data.job_posting_id}`);
+    }
+  };
+
+  return (
+    <div className="max-w-[900px] mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Notifications</h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Updates and alerts from PAC Alumni
+          </p>
+        </div>
+        <button
+          onClick={handleMarkAllRead}
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+        >
+          <HiOutlineCheckCircle className="w-4 h-4" /> Mark All Read
+        </button>
+      </div>
+
+      {/* Notifications List */}
+      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1a2e5a] mb-3" />
+            <p className="text-sm text-slate-500">Loading notifications...</p>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <HiOutlineBell className="w-12 h-12 text-slate-300 mb-4" />
+            <h3 className="text-sm font-semibold text-slate-700 mb-1">
+              No notifications
+            </h3>
+            <p className="text-sm text-slate-500 max-w-sm">
+              You're all caught up!
+            </p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {notifications.map((n) => (
+              <div
+                key={n.id}
+                className={`p-4 flex items-start gap-3 transition-colors cursor-pointer ${
+                  !n.is_read
+                    ? "bg-[#c8a84e]/[0.06] hover:bg-[#c8a84e]/[0.1]"
+                    : "hover:bg-slate-50"
+                }`}
+                onClick={() => handleOpen(n)}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                    !n.is_read ? "bg-[#c8a84e]" : "bg-transparent"
+                  }`}
+                />
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm ${
+                      !n.is_read
+                        ? "font-semibold text-slate-800"
+                        : "text-slate-500"
+                    }`}
+                  >
+                    {n.title}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    {n.message}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {formatDate(n.created_at)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {meta && (
+          <div className="px-4 pb-4">
+            <Pagination meta={meta} onPageChange={setPage} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

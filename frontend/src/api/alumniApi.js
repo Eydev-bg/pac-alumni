@@ -137,6 +137,32 @@ const alumniApi = {
   searchMessageRecipients(search = '') {
     return api.get('/alumni/messages/recipients', { params: { search } });
   },
+
+  // ─── Job Postings (Phase 3) ────────────────────────────
+  getJobPostings(params = {}) {
+    return api.get('/alumni/job-postings', { params });
+  },
+
+  getJobPosting(id) {
+    return api.get(`/alumni/job-postings/${id}`);
+  },
+
+  // ─── Notifications (Phase 3) ───────────────────────────
+  getNotifications(params = {}) {
+    return api.get('/alumni/notifications', { params });
+  },
+
+  getUnreadCount() {
+    return api.get('/alumni/notifications/unread-count');
+  },
+
+  markNotificationRead(id) {
+    return api.patch(`/alumni/notifications/${id}/read`);
+  },
+
+  markAllNotificationsRead() {
+    return api.patch('/alumni/notifications/read-all');
+  },
 };
 
 export default alumniApi;

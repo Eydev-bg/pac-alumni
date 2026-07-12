@@ -103,6 +103,16 @@ export default function AlumniLayout() {
       ],
     },
     {
+      section: "Careers",
+      items: [
+        {
+          name: "Careers",
+          path: "/alumni/careers",
+          icon: HiOutlineBriefcase,
+        },
+      ],
+    },
+    {
       section: "Community",
       items: [
         {

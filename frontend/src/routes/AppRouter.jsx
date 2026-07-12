@@ -35,6 +35,8 @@ const AnnouncementListPage = lazy(() => import("../pages/admin/announcements/Ann
 const AnnouncementFormPage = lazy(() => import("../pages/admin/announcements/AnnouncementFormPage"));
 const EventListPage = lazy(() => import("../pages/admin/events/EventListPage"));
 const EventFormPage = lazy(() => import("../pages/admin/events/EventFormPage"));
+const JobPostingListPage = lazy(() => import("../pages/admin/jobs/JobPostingListPage"));
+const JobPostingFormPage = lazy(() => import("../pages/admin/jobs/JobPostingFormPage"));
 const SettingsPage = lazy(() => import("../pages/admin/settings/SettingsPage"));
 
 // ─── Alumni pages ────────────────────────────────────────
@@ -43,6 +45,9 @@ const AlumniProfilePageView = lazy(() => import("../pages/alumni/profile/AlumniP
 const AlumniEmploymentPage = lazy(() => import("../pages/alumni/employment/AlumniEmploymentPage"));
 const AlumniBoardExamPage = lazy(() => import("../pages/alumni/board-exam/AlumniBoardExamPage"));
 const AlumniAnnouncementsPage = lazy(() => import("../pages/alumni/announcements/AlumniAnnouncementsPage"));
+const AlumniNotificationsPage = lazy(() => import("../pages/alumni/notifications/AlumniNotificationsPage"));
+const AlumniCareerCenterPage = lazy(() => import("../pages/alumni/jobs/AlumniCareerCenterPage"));
+const AlumniJobDetailPage = lazy(() => import("../pages/alumni/jobs/AlumniJobDetailPage"));
 const AlumniEventsPage = lazy(() => import("../pages/alumni/events/AlumniEventsPage"));
 const AlumniInboxPage = lazy(() => import("../pages/alumni/messages/AlumniInboxPage"));
 const AlumniConversationPage = lazy(() => import("../pages/alumni/messages/AlumniConversationPage"));
@@ -102,6 +107,9 @@ export default function AppRouter() {
                 <Route path="events" element={<EventListPage />} />
                 <Route path="events/new" element={<EventFormPage />} />
                 <Route path="events/:id/edit" element={<EventFormPage />} />
+                <Route path="jobs" element={<JobPostingListPage />} />
+                <Route path="jobs/new" element={<JobPostingFormPage />} />
+                <Route path="jobs/:id/edit" element={<JobPostingFormPage />} />
               </Route>
             </Route>
           </Route>
@@ -116,7 +124,10 @@ export default function AppRouter() {
                 <Route path="employment" element={<AlumniEmploymentPage />} />
                 <Route path="board-exam" element={<AlumniBoardExamPage />} />
                 <Route path="announcements" element={<AlumniAnnouncementsPage />} />
+                <Route path="notifications" element={<AlumniNotificationsPage />} />
                 <Route path="events" element={<AlumniEventsPage />} />
+                <Route path="careers" element={<AlumniCareerCenterPage />} />
+                <Route path="careers/:id" element={<AlumniJobDetailPage />} />
                 <Route path="messages" element={<AlumniInboxPage />} />
                 <Route path="messages/:id" element={<AlumniConversationPage />} />
               </Route>

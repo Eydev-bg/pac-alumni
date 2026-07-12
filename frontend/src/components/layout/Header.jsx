@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import adminApi from "../../api/adminApi";
+import alumniApi from "../../api/alumniApi";
+import { timeAgo } from "../../utils/formatters";
 import {
   HiOutlineBars3,
   HiOutlineArrowRightOnRectangle,
@@ -26,6 +28,9 @@ export default function Header({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Recent notifications shown in the alumni bell dropdown (fetched on open).
+  const [recent, setRecent] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(false);
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
 
@@ -46,13 +51,14 @@ export default function Header({
   }, []);
 
   // Fetch unread notification count on mount and poll every 60 seconds.
-  // Admin-only: the endpoint is admin-scoped and 403s for other roles.
+  // Role-aware: admin and alumni each have their own scoped endpoint.
   useEffect(() => {
-    if (user?.role !== "admin") return;
+    if (user?.role !== "admin" && user?.role !== "alumni") return;
+    const notifApi = user.role === "admin" ? adminApi : alumniApi;
     let active = true;
     const fetchUnreadCount = async () => {
       try {
-        const res = await adminApi.getUnreadCount();
+        const res = await notifApi.getUnreadCount();
         if (active) setUnreadCount(res.data.data.count ?? 0);
       } catch {
         // silently ignore — count stays at previous value
@@ -65,6 +71,40 @@ export default function Header({
       clearInterval(interval);
     };
   }, [user?.role]);
+
+  // Load the few most recent notifications whenever the alumni opens the bell.
+  useEffect(() => {
+    if (!bellOpen || user?.role !== "alumni") return;
+    let active = true;
+    setRecentLoading(true);
+    alumniApi
+      .getNotifications({ per_page: 5 })
+      .then((res) => {
+        if (active) setRecent(res.data.data);
+      })
+      .catch(() => {})
+      .finally(() => active && setRecentLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [bellOpen, user?.role]);
+
+  // Mark an alumni notification read; job_posting notifications deep-link to
+  // the job detail page.
+  const openAlumniNotification = async (n) => {
+    setBellOpen(false);
+    if (!n.is_read) {
+      try {
+        await alumniApi.markNotificationRead(n.id);
+        setUnreadCount((c) => Math.max(0, c - 1));
+      } catch {
+        // Non-fatal — navigation still proceeds.
+      }
+    }
+    if (n.data?.job_posting_id) {
+      navigate(`/alumni/careers/${n.data.job_posting_id}`);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -167,6 +207,94 @@ export default function Header({
             >
               <HiOutlineClipboardDocumentCheck className="w-4 h-4 flex-shrink-0" />
               <span>Verification</span>
+            </button>
+          </div>
+        )}
+      </div>
+      )}
+
+      {/* Notification bell — alumni (light theme, recent list + deep links) */}
+      {user?.role === "alumni" && (
+      <div className="relative" ref={bellRef}>
+        <button
+          className="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+          onClick={() => setBellOpen(!bellOpen)}
+        >
+          <HiOutlineBell className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </button>
+
+        {/* Bell dropdown */}
+        {bellOpen && (
+          <div className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg">
+            <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
+              <p className="text-sm font-semibold text-slate-700">
+                Notifications
+              </p>
+              {unreadCount > 0 && (
+                <span className="w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </div>
+
+            {recentLoading ? (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
+                Loading…
+              </p>
+            ) : recent.length === 0 ? (
+              <p className="px-4 py-6 text-center text-sm text-slate-400">
+                No notifications yet.
+              </p>
+            ) : (
+              <div className="max-h-72 overflow-y-auto">
+                {recent.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => openAlumniNotification(n)}
+                    className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer hover:bg-slate-50 ${
+                      !n.is_read ? "bg-[#c8a84e]/[0.06]" : ""
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                        !n.is_read ? "bg-[#c8a84e]" : "bg-transparent"
+                      }`}
+                    />
+                    <span className="flex-1 min-w-0">
+                      <span
+                        className={`block text-sm truncate ${
+                          !n.is_read
+                            ? "font-semibold text-slate-800"
+                            : "text-slate-600"
+                        }`}
+                      >
+                        {n.title}
+                      </span>
+                      <span className="block text-xs text-slate-500 truncate">
+                        {n.message}
+                      </span>
+                      <span className="block text-[11px] text-slate-400 mt-0.5">
+                        {timeAgo(n.created_at)}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                navigate("/alumni/notifications");
+                setBellOpen(false);
+              }}
+              className="w-full px-4 py-2.5 text-sm font-medium text-[#1a2e5a] hover:bg-slate-50 transition-colors border-t border-slate-100"
+            >
+              See all notifications
             </button>
           </div>
         )}
