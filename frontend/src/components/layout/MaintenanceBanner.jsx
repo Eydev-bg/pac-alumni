@@ -17,7 +17,7 @@ export default function MaintenanceBanner() {
       <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
       <p className="text-sm text-amber-200 flex-1">
         <span className="font-semibold">Maintenance mode is ON.</span>{" "}
-        Alumni and Employer users are currently blocked from the system.
+        Alumni users are currently blocked from the system.
       </p>
       <Link
         to="/admin/settings"

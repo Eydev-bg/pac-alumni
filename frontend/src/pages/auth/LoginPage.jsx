@@ -41,7 +41,6 @@ export default function LoginPage() {
   const ROLE_DASHBOARDS = {
     admin: "/admin/dashboard",
     alumni: "/alumni/dashboard",
-    employer: "/employer/dashboard",
   };
 
   const handleSubmit = async (e) => {
@@ -267,15 +266,6 @@ export default function LoginPage() {
               className="font-bold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
             >
               Sign Up
-            </a>
-          </p>
-          <p className="text-center text-[0.72rem] text-slate-400 mt-1">
-            Hiring?{" "}
-            <a
-              href="/employer/register"
-              className="font-semibold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
-            >
-              Register as an Employer
             </a>
           </p>
         </div>

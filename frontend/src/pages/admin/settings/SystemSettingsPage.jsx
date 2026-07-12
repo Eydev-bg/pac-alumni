@@ -80,7 +80,7 @@ export default function SystemSettingsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">System Settings</h1>
         <p className="text-sm text-slate-400 mt-1">
-          Control system-wide availability for Alumni and Employer users
+          Control system-wide availability for Alumni users
         </p>
       </div>
 
@@ -128,7 +128,7 @@ export default function SystemSettingsPage() {
               }`}
             >
               {enabled
-                ? "Alumni and Employer users are blocked. Admins retain full access."
+                ? "Alumni users are blocked. Admins retain full access."
                 : "All users have normal access to the system."}
             </p>
           </div>
@@ -159,7 +159,7 @@ export default function SystemSettingsPage() {
               Enable Maintenance Mode
             </p>
             <p className="text-xs text-slate-500 mt-0.5">
-              When enabled, Alumni and Employer users see a maintenance message.
+              When enabled, Alumni users see a maintenance message.
               Admins are never locked out.
             </p>
           </div>

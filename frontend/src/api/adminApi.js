@@ -107,21 +107,6 @@ const adminApi = {
   exportEmploymentReport:   (params = {}) => api.get('/admin/reports/employment/export', { params, responseType: 'blob' }),
   exportAlumniIdListReport: (params = {}) => api.get('/admin/reports/alumni-id-list/export', { params, responseType: 'blob' }),
 
-  // ─── Phase 1: Employer Management ──────────────────────
-  getEmployers: (params = {}) => api.get('/admin/employers', { params }),
-  getEmployer: (id) => api.get(`/admin/employers/${id}`),
-  suspendEmployer: (id, adminNotes = '') => api.patch(`/admin/employers/${id}/suspend`, { admin_notes: adminNotes }),
-  activateEmployer: (id) => api.patch(`/admin/employers/${id}/activate`),
-  deactivateEmployer: (id, adminNotes = '') => api.patch(`/admin/employers/${id}/deactivate`, { admin_notes: adminNotes }),
-  deleteEmployer: (id) => api.delete(`/admin/employers/${id}`),
-
-  // ─── Phase 1: Job Post Moderation ──────────────────────
-  getJobPosts: (params = {}) => api.get('/admin/job-posts', { params }),
-  getJobPost: (id) => api.get(`/admin/job-posts/${id}`),
-  approveJobPost: (id) => api.patch(`/admin/job-posts/${id}/approve`),
-  rejectJobPost: (id, adminNotes) => api.patch(`/admin/job-posts/${id}/reject`, { admin_notes: adminNotes }),
-  deleteJobPost: (id) => api.delete(`/admin/job-posts/${id}`),
-
   // ─── Phase 2: Announcements ────────────────────────────
   getAnnouncements: (params = {}) => api.get('/admin/announcements', { params }),
   getAnnouncement: (id) => api.get(`/admin/announcements/${id}`),

@@ -6,13 +6,11 @@
 export const USER_ROLES = {
   ADMIN: 'admin',
   ALUMNI: 'alumni',
-  EMPLOYER: 'employer',
 };
 
 export const USER_ROLE_LABELS = {
   [USER_ROLES.ADMIN]: 'Administrator',
   [USER_ROLES.ALUMNI]: 'Alumni',
-  [USER_ROLES.EMPLOYER]: 'Employer',
 };
 
 // No assignable roles — admin creates admin accounts directly

@@ -2,7 +2,7 @@ import { MAINTENANCE } from "../config/constants";
 import { HiOutlineWrenchScrewdriver } from "react-icons/hi2";
 
 /**
- * Public maintenance page shown to blocked (Alumni/Employer) users while
+ * Public maintenance page shown to blocked (Alumni) users while
  * maintenance mode is on. The custom message is stashed in sessionStorage by
  * the axios 503 interceptor; falls back to a default if visited directly.
  */

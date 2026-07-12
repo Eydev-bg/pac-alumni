@@ -13,8 +13,6 @@ import {
   HiOutlineUser,
   HiOutlineClipboardDocumentCheck,
   HiOutlineBriefcase,
-  HiOutlineNewspaper,
-  HiOutlineClipboardDocumentList,
   HiOutlineMegaphone,
   HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftRight,
@@ -101,21 +99,6 @@ export default function AlumniLayout() {
           name: "Employment",
           path: "/alumni/employment",
           icon: HiOutlineBriefcase,
-        },
-      ],
-    },
-    {
-      section: "Careers",
-      items: [
-        {
-          name: "Job Board",
-          path: "/alumni/jobs",
-          icon: HiOutlineNewspaper,
-        },
-        {
-          name: "My Applications",
-          path: "/alumni/my-applications",
-          icon: HiOutlineClipboardDocumentList,
         },
       ],
     },

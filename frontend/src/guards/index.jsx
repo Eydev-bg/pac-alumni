@@ -5,7 +5,6 @@ import { USER_KEY } from "../config/constants";
 const ROLE_DASHBOARDS = {
   admin: "/admin/dashboard",
   alumni: "/alumni/dashboard",
-  employer: "/employer/dashboard",
 };
 
 /**

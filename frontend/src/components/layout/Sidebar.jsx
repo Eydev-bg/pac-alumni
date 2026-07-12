@@ -6,8 +6,6 @@ import {
   HiOutlineUserGroup,
   HiOutlineCog6Tooth,
   HiOutlinePresentationChartBar,
-  HiOutlineBriefcase,
-  HiOutlineBuildingOffice2,
   HiOutlineMegaphone,
   HiOutlineCalendarDays,
   HiOutlineTrash,
@@ -49,21 +47,6 @@ const navItems = [
         name: "Reports & Analytics",
         path: "/admin/analytics",
         icon: HiOutlinePresentationChartBar,
-      },
-    ],
-  },
-  {
-    section: "Employers & Jobs",
-    items: [
-      {
-        name: "Employers",
-        path: "/admin/employers",
-        icon: HiOutlineBuildingOffice2,
-      },
-      {
-        name: "Job Moderation",
-        path: "/admin/job-posts",
-        icon: HiOutlineBriefcase,
       },
     ],
   },

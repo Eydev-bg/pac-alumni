@@ -55,7 +55,7 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // ─── Maintenance mode (503) ──────────────────────────
-    // The backend blocks non-admin (Alumni/Employer) routes with a 503 carrying
+    // The backend blocks non-admin (Alumni) routes with a 503 carrying
     // a `maintenance` flag while maintenance mode is on. Admins never receive
     // this (they bypass the middleware), so this only affects blocked users.
     // Stash the custom message and route them to the clean maintenance page.

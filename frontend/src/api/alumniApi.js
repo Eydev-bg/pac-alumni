@@ -70,23 +70,6 @@ const alumniApi = {
     return api.post('/alumni/employment', data);
   },
 
-  // ─── Job Board (Phase 1.8) ─────────────────────────────
-  getJobs(params = {}) {
-    return api.get('/alumni/jobs', { params });
-  },
-
-  getJob(id) {
-    return api.get(`/alumni/jobs/${id}`);
-  },
-
-  applyToJob(id) {
-    return api.post(`/alumni/jobs/${id}/apply`);
-  },
-
-  getMyApplications(params = {}) {
-    return api.get('/alumni/my-applications', { params });
-  },
-
   // ─── Announcements (Phase 2) ───────────────────────────
   getAnnouncements(params = {}) {
     return api.get('/alumni/announcements', { params });
