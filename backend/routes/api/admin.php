@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminJobPostingController;
 use App\Http\Controllers\Api\Admin\AnnouncementController;
 use App\Http\Controllers\Api\Admin\GraduateTracerController;
 use App\Http\Controllers\Api\Admin\AlumniSearchController;
@@ -255,5 +256,22 @@ Route::prefix('admin')
             ->whereNumber('id')->name('events.archive');
         Route::patch('/events/{id}/pin', [EventController::class, 'togglePin'])
             ->whereNumber('id')->name('events.pin');
+
+        // ─── Job Postings Module (Phase 3) ───────────────
+        // Admin-managed postings; alumni apply via an external link.
+        Route::get('/job-postings', [AdminJobPostingController::class, 'index'])
+            ->name('job-postings.index');
+        Route::post('/job-postings', [AdminJobPostingController::class, 'store'])
+            ->name('job-postings.store');
+        Route::get('/job-postings/{id}', [AdminJobPostingController::class, 'show'])
+            ->whereNumber('id')->name('job-postings.show');
+        Route::match(['put', 'patch'], '/job-postings/{id}', [AdminJobPostingController::class, 'update'])
+            ->whereNumber('id')->name('job-postings.update');
+        Route::delete('/job-postings/{id}', [AdminJobPostingController::class, 'destroy'])
+            ->whereNumber('id')->name('job-postings.destroy');
+        Route::patch('/job-postings/{id}/publish', [AdminJobPostingController::class, 'publish'])
+            ->whereNumber('id')->name('job-postings.publish');
+        Route::patch('/job-postings/{id}/mark-expired', [AdminJobPostingController::class, 'markExpired'])
+            ->whereNumber('id')->name('job-postings.mark-expired');
 
     });

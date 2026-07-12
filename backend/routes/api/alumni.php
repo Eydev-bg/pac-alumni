@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\Alumni\AlumniAnnouncementController;
 use App\Http\Controllers\Api\Alumni\AlumniController;
 use App\Http\Controllers\Api\Alumni\BoardExamController;
 use App\Http\Controllers\Api\Alumni\AlumniEventController;
+use App\Http\Controllers\Api\Alumni\AlumniJobPostingController;
+use App\Http\Controllers\Api\Alumni\AlumniNotificationController;
 use App\Http\Controllers\Api\Alumni\EmploymentController;
 use App\Http\Controllers\Api\Alumni\MessageController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +76,23 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
         ->whereNumber('id')->name('alumni.events.rsvp');
     Route::delete('/events/{id}/rsvp', [AlumniEventController::class, 'cancelRsvp'])
         ->whereNumber('id')->name('alumni.events.rsvp.cancel');
+
+    // ─── Job Postings (Phase 3) ───────────────────────────
+    // Read-only: the Apply button redirects to an external link.
+    Route::get('/job-postings', [AlumniJobPostingController::class, 'index'])
+        ->name('alumni.job-postings.index');
+    Route::get('/job-postings/{id}', [AlumniJobPostingController::class, 'show'])
+        ->whereNumber('id')->name('alumni.job-postings.show');
+
+    // ─── Notifications (Phase 3) ──────────────────────────
+    Route::get('/notifications', [AlumniNotificationController::class, 'index'])
+        ->name('alumni.notifications.index');
+    Route::get('/notifications/unread-count', [AlumniNotificationController::class, 'unreadCount'])
+        ->name('alumni.notifications.unread-count');
+    Route::patch('/notifications/{id}/read', [AlumniNotificationController::class, 'markRead'])
+        ->name('alumni.notifications.mark-read');
+    Route::patch('/notifications/read-all', [AlumniNotificationController::class, 'markAllRead'])
+        ->name('alumni.notifications.read-all');
 
     // ─── Achievement Feed (Phase 3.1) ────────────────────
     Route::get('/achievement-feed', [AchievementFeedController::class, 'index'])
