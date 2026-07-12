@@ -147,7 +147,9 @@ export default function DepartmentDetailPage() {
                               Yes
                             </span>
                           ) : (
-                            <span className="text-[11px] text-slate-600">No</span>
+                            <span className="text-[11px] text-slate-600">
+                              No
+                            </span>
                           )}
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-400">
@@ -219,8 +221,8 @@ export default function DepartmentDetailPage() {
           <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 mb-6">
             <p className="text-sm text-slate-400">
               {dept.education_level === "elementary"
-                ? "Elementary departments do not have courses. Graduates are tracked directly under this department."
-                : "JHS/SHS departments do not have courses. Graduates are tracked directly under this department."}
+                ? "This department supports Graduate List and Graduation Trend tracking only."
+                : "This department supports Graduate List and Graduation Trend tracking only."}
             </p>
           </div>
         )}

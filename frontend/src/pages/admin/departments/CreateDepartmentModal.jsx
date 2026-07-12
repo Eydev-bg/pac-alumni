@@ -131,15 +131,15 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
         <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
           {isCollege ? (
             <p className="text-xs text-slate-400">
-              Board program settings are managed per Course, not per
-              Department. Create a Department first, then click the Department
-              name to manage and add Courses under it.
+              Board program settings are managed per Course, not per Department.
+              Create a Department first, then click the Department name to
+              manage and add Courses under it.
             </p>
           ) : (
             <p className="text-xs text-slate-400">
               {form.education_level === "elementary"
-                ? "Elementary departments do not have courses or board exams. Graduates are tracked directly under this department."
-                : "JHS/SHS departments do not have courses. Graduates are tracked directly under this department."}
+                ? "This department supports Graduate List and Graduation Trend tracking only."
+                : "This department supports Graduate List and Graduation Trend tracking only."}
             </p>
           )}
         </div>
