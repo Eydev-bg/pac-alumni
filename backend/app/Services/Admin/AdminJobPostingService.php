@@ -4,6 +4,8 @@ namespace App\Services\Admin;
 
 use App\Enums\JobStatus;
 use App\Enums\UserRole;
+use App\Jobs\SendContentPublishedEmails;
+use App\Models\ContentEmailLog;
 use App\Models\JobPosting;
 use App\Models\Notification;
 use App\Models\User;
@@ -70,9 +72,11 @@ class AdminJobPostingService
         ]);
 
         // Created directly as active — alumni should hear about it just as
-        // they would via publish().
+        // they would via publish(). Email is additive to the in-app bell;
+        // the job's content_email_logs check keeps it send-once.
         if ($activate) {
             $this->notifyAlumni($job);
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_JOB_POSTING, $job->id);
         }
 
         return $this->find($job->id);
@@ -124,6 +128,7 @@ class AdminJobPostingService
 
         if (!$wasActive) {
             $this->notifyAlumni($job);
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_JOB_POSTING, $job->id);
         }
 
         return $this->find($job->id);

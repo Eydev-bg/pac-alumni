@@ -2,7 +2,9 @@
 
 namespace App\Services\Admin;
 
+use App\Jobs\SendContentPublishedEmails;
 use App\Models\Announcement;
+use App\Models\ContentEmailLog;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -61,6 +63,12 @@ class AnnouncementService
             'published_at' => $publish ? now() : null,
         ]);
 
+        // Created directly as published — email the target audience. The
+        // job's content_email_logs check keeps it send-once per user.
+        if ($publish) {
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_ANNOUNCEMENT, $announcement->id);
+        }
+
         return $this->find($announcement->id);
     }
 
@@ -97,11 +105,21 @@ class AnnouncementService
     public function publish(int $id): Announcement
     {
         $announcement = $this->find($id);
+
+        // Email only on the transition into the published state — never on
+        // re-publishing something already live (mirrors published_at's
+        // "only first time" intent via the ?? now() below).
+        $wasPublished = $announcement->is_published;
+
         $announcement->update([
             'is_published' => true,
             'archived_at'  => null,
             'published_at' => $announcement->published_at ?? now(),
         ]);
+
+        if (!$wasPublished) {
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_ANNOUNCEMENT, $announcement->id);
+        }
 
         return $this->find($announcement->id);
     }

@@ -3,6 +3,8 @@
 namespace App\Services\Admin;
 
 use App\Enums\RsvpStatus;
+use App\Jobs\SendContentPublishedEmails;
+use App\Models\ContentEmailLog;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -71,6 +73,12 @@ class EventService
             'published_at'   => $publish ? now() : null,
         ]);
 
+        // Created directly as published — email the target audience. The
+        // job's content_email_logs check keeps it send-once per user.
+        if ($publish) {
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_EVENT, $event->id);
+        }
+
         return $this->find($event->id);
     }
 
@@ -107,11 +115,21 @@ class EventService
     public function publish(int $id): Event
     {
         $event = $this->find($id);
+
+        // Email only on the transition into the published state — never on
+        // re-publishing something already live (mirrors published_at's
+        // "only first time" intent via the ?? now() below).
+        $wasPublished = $event->is_published;
+
         $event->update([
             'is_published' => true,
             'archived_at'  => null,
             'published_at' => $event->published_at ?? now(),
         ]);
+
+        if (!$wasPublished) {
+            SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_EVENT, $event->id);
+        }
 
         return $this->find($event->id);
     }
