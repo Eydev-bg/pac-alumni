@@ -11,8 +11,9 @@ const REMINDER_TYPE_META = {
   login_reminder: { icon: HiOutlineUserPlus, color: "text-blue-400", bg: "bg-blue-500/15" },
   employment_update: { icon: HiOutlineBriefcase, color: "text-gold-500", bg: "bg-gold-500/15" },
   profile_completion: { icon: HiOutlineClipboardDocumentList, color: "text-emerald-400", bg: "bg-emerald-500/15" },
-  announcement: { icon: HiOutlineEnvelope, color: "text-violet-400", bg: "bg-violet-500/15" },
 };
+
+const DEFAULT_TYPE_META = { icon: HiOutlineEnvelope, color: "text-slate-400", bg: "bg-slate-500/15" };
 
 // Memoized: re-renders only when the reminder `stats` prop changes.
 function ReminderStatsSection({ stats }) {
@@ -76,7 +77,7 @@ function ReminderStatsSection({ stats }) {
           </thead>
           <tbody>
             {byType.map((row) => {
-              const meta = REMINDER_TYPE_META[row.type] || REMINDER_TYPE_META.announcement;
+              const meta = REMINDER_TYPE_META[row.type] || DEFAULT_TYPE_META;
               const Icon = meta.icon;
               return (
                 <tr

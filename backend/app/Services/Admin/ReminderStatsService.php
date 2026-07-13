@@ -19,7 +19,6 @@ class ReminderStatsService
         EmailReminderLog::TYPE_LOGIN => 'Login Reminders',
         EmailReminderLog::TYPE_EMPLOYMENT => 'Employment Updates',
         EmailReminderLog::TYPE_PROFILE => 'Profile Completion',
-        EmailReminderLog::TYPE_ANNOUNCEMENT => 'Announcements',
     ];
 
     /**

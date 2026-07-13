@@ -17,7 +17,6 @@ class EmailReminderLog extends Model
     public const TYPE_LOGIN = 'login_reminder';
     public const TYPE_EMPLOYMENT = 'employment_update';
     public const TYPE_PROFILE = 'profile_completion';
-    public const TYPE_ANNOUNCEMENT = 'announcement';
 
     protected $fillable = [
         'user_id',
