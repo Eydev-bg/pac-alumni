@@ -42,7 +42,11 @@ export function RoleGuard({ roles = [] }) {
   const { user, loading, isAuthenticated } = useAuth();
 
   if (loading) return <LoadingScreen />;
-  if (!isAuthenticated) return <Outlet />;
+  // SECURITY (defense in depth): never fail open. RoleGuard is always nested
+  // inside ProtectedRoute today, but if it is ever mounted on its own an
+  // unauthenticated user must still be blocked — send them to /login rather
+  // than rendering the protected child route.
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   // Try to get role from user object or sessionStorage fallback
   let userRole = user?.role;

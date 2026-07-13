@@ -19,6 +19,7 @@ class BatchUpdateGraduatesRequest extends FormRequest
             'data' => ['required', 'array'],
             'data.graduation_year' => ['sometimes', 'integer', 'min:1950', 'max:2099'],
             'data.department_id' => ['sometimes', 'nullable', 'integer', 'exists:departments,id'],
+            'data.course_id' => ['sometimes', 'nullable', 'integer', 'exists:courses,id'],
             'data.education_level' => ['sometimes', 'string', 'in:elementary,jhs,shs,college'],
         ];
     }

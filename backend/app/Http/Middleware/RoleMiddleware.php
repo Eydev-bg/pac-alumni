@@ -14,7 +14,8 @@ class RoleMiddleware
     /**
      * Handle an incoming request.
      *
-     * Usage in routes: middleware('role:admin') or middleware('role:admin,dept_head')
+     * Usage in routes: middleware('role:admin') or middleware('role:admin,alumni')
+     * Valid roles are defined by the UserRole enum (admin, alumni).
      *
      * @param string $roles Comma-separated list of allowed roles
      */
