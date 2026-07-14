@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import useModalA11y from "../../../hooks/useModalA11y";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import {
   HiOutlineMegaphone,
@@ -161,14 +162,27 @@ function AnnouncementCard({ announcement: a, onOpen }) {
 }
 
 function AnnouncementModal({ announcement: a, onClose }) {
+  const panelRef = useModalA11y(onClose);
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div className="flex min-h-full items-start justify-center p-4 py-10">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full">
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="announcement-modal-title"
+          tabIndex={-1}
+          className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none"
+        >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors z-10"
+            aria-label="Close"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -189,7 +203,9 @@ function AnnouncementModal({ announcement: a, onClose }) {
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-bold text-slate-900">{a.title}</h2>
+            <h2 id="announcement-modal-title" className="text-xl font-bold text-slate-900">
+              {a.title}
+            </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
               {a.posted_by && (
                 <span className="flex items-center gap-1">

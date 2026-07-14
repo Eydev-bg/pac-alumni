@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
+import useModalA11y from "../../../hooks/useModalA11y";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
 import {
@@ -262,15 +263,31 @@ function NewMessageModal({ onClose, onStarted }) {
     }
   };
 
+  const panelRef = useModalA11y(onClose);
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 py-16">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-message-modal-title"
+        tabIndex={-1}
+        className="relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden focus:outline-none"
+      >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <h3 className="text-base font-bold text-slate-900">New Message</h3>
+          <h3 id="new-message-modal-title" className="text-base font-bold text-slate-900">
+            New Message
+          </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 transition-colors"
+            aria-label="Close"
+            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 transition-colors"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
