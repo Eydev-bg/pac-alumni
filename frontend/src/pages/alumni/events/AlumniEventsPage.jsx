@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback, Fragment } from "react";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
-import Card from "../../../ui/Card";
 import { formatDate, storageUrl, cn } from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
 import {
@@ -129,11 +128,11 @@ export default function AlumniEventsPage() {
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
-        <div className="text-slate-400 text-sm">Loading events…</div>
+        <div className="text-slate-500 text-sm">Loading events…</div>
       ) : items.length === 0 ? (
-        <Card className="p-10 text-center text-slate-400 text-sm">
+        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500 text-sm">
           No events yet. Check back soon.
-        </Card>
+        </div>
       ) : (
         <div className="space-y-3">
           {items.map((a) => (
@@ -165,11 +164,11 @@ function DateBadge({ iso, size = "md" }) {
   const { mon, day, time } = dateParts(iso);
   const dayCls = size === "lg" ? "text-2xl" : "text-xl";
   return (
-    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-white/[0.04] rounded-xl py-3">
+    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-[#1a2e5a]/[0.06] rounded-xl py-3">
       <span className="text-[0.65rem] uppercase font-bold text-gold-500">
         {mon}
       </span>
-      <span className={`${dayCls} font-bold text-white leading-tight`}>
+      <span className={`${dayCls} font-bold text-slate-800 leading-tight`}>
         {day}
       </span>
       <span className="text-[0.65rem] text-slate-400">{time}</span>
@@ -179,7 +178,7 @@ function DateBadge({ iso, size = "md" }) {
 
 function PinnedBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-gold-500/15 text-gold-400">
+    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
       <HiOutlineBookmark className="w-3 h-3" /> Pinned
     </span>
   );
@@ -187,7 +186,7 @@ function PinnedBadge() {
 
 function PastBadge() {
   return (
-    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-500">
+    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
       Past event
     </span>
   );
@@ -204,9 +203,9 @@ function RsvpControl({ event: a, onRsvp }) {
         const Icon = s.value === "going" ? HiOutlineHandThumbUp : HiOutlineStar;
         const cls = activeState
           ? s.value === "going"
-            ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-            : "bg-gold-500/15 border-gold-500/30 text-gold-400"
-          : "bg-white/[0.06] border-white/[0.08] text-slate-400 hover:bg-white/[0.1]";
+            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+            : "bg-[#c8a84e]/10 border-[#c8a84e]/30 text-[#a8893a]"
+          : "bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200";
         return (
           <Fragment key={s.value}>
             <button
@@ -232,9 +231,12 @@ function RsvpControl({ event: a, onRsvp }) {
 function EventCard({ event: a, onOpen, onRsvp }) {
   const past = isPast(a);
   return (
-    <Card
+    <div
       className={cn(
-        "transition-all hover:border-white/[0.12]",
+        "bg-white rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md",
+        a.is_pinned
+          ? "border-[#c8a84e]/40 ring-1 ring-[#c8a84e]/20"
+          : "border-slate-200",
         past && "opacity-75",
       )}
     >
@@ -248,19 +250,19 @@ function EventCard({ event: a, onOpen, onRsvp }) {
             <div className="flex items-center gap-2 flex-wrap">
               {a.is_pinned && <PinnedBadge />}
               {past && <PastBadge />}
-              <h3 className="text-sm font-bold text-white truncate">
+              <h3 className="text-sm font-bold text-slate-800 truncate">
                 {a.title}
               </h3>
             </div>
 
             {a.location && (
-              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-300">
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-600">
                 <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
                 <span className="truncate">{a.location}</span>
               </div>
             )}
 
-            <p className="mt-1.5 text-xs text-slate-400 line-clamp-2 event-snippet">
+            <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 event-snippet">
               {stripHtml(a.content)}
             </p>
 
@@ -281,13 +283,13 @@ function EventCard({ event: a, onOpen, onRsvp }) {
 
           {/* RSVP controls — hidden for events that have already ended. */}
           {!past && (
-            <div className="mt-3 pt-3 border-t border-white/[0.06]">
+            <div className="mt-3 pt-3 border-t border-slate-100">
               <RsvpControl event={a} onRsvp={onRsvp} />
             </div>
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -295,12 +297,12 @@ function EventModal({ event: a, onClose, onRsvp }) {
   const past = isPast(a);
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="flex min-h-full items-start justify-center p-4 py-10">
-        <div className="relative bg-navy-800 border border-white/10 rounded-2xl shadow-xl max-w-2xl w-full">
+        <div className="relative bg-white border border-slate-200 rounded-2xl shadow-xl max-w-2xl w-full">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -321,14 +323,14 @@ function EventModal({ event: a, onClose, onRsvp }) {
                   {a.is_pinned && <PinnedBadge />}
                   {past && <PastBadge />}
                 </div>
-                <h2 className="text-xl font-bold text-white">{a.title}</h2>
+                <h2 className="text-xl font-bold text-slate-900">{a.title}</h2>
                 {a.location && (
-                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-300">
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
                     <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
                     {a.location}
                   </div>
                 )}
-                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-500">
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
                   {a.start_datetime && (
                     <span className="flex items-center gap-1">
                       <HiOutlineCalendarDays className="w-3.5 h-3.5" />
@@ -351,22 +353,22 @@ function EventModal({ event: a, onClose, onRsvp }) {
             )}
 
             <div
-              className="event-content mt-4 text-sm text-slate-300 leading-relaxed"
+              className="event-content mt-4 text-sm text-slate-700 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(a.content) }}
             />
           </div>
         </div>
       </div>
 
-      {/* Minimal styling for rendered rich-text content (dark surface). */}
-      <style>{`.event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#fff}
-        .event-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0;color:#fff}
-        .event-content h3{font-size:1rem;font-weight:600;margin:.5rem 0;color:#fff}
+      {/* Minimal styling for rendered rich-text content (light surface). */}
+      <style>{`.event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#1e293b}
+        .event-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0;color:#1e293b}
+        .event-content h3{font-size:1rem;font-weight:600;margin:.5rem 0;color:#1e293b}
         .event-content p{margin:.5rem 0}
         .event-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .event-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .event-content a{color:#c8a84e;text-decoration:underline}
-        .event-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#94a3b8;margin:.5rem 0}
+        .event-content a{color:#1a2e5a;text-decoration:underline}
+        .event-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#64748b;margin:.5rem 0}
         .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
   );
