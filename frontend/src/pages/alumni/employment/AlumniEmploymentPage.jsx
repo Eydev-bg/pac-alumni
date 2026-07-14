@@ -340,10 +340,17 @@ export default function AlumniEmploymentPage() {
           <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-5">
             {/* Status Selection */}
             <div>
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
+              <label
+                id="employment-status-label"
+                className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
+              >
                 Employment Status <span className="text-red-400">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div
+                role="group"
+                aria-labelledby="employment-status-label"
+                className="grid grid-cols-2 gap-3"
+              >
                 <button
                   type="button"
                   onClick={() =>
@@ -479,13 +486,18 @@ export default function AlumniEmploymentPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Company Name */}
                   <div>
-                    <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                    <label
+                      htmlFor="employment-company"
+                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                    >
                       Company Name <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <HiOutlineBuildingOffice2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
+                        id="employment-company"
                         type="text"
+                        autoComplete="organization"
                         value={formData.company_name}
                         onChange={(e) =>
                           setFormData({
@@ -511,13 +523,18 @@ export default function AlumniEmploymentPage() {
 
                   {/* Job Title */}
                   <div>
-                    <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                    <label
+                      htmlFor="employment-job-title"
+                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                    >
                       Job Title <span className="text-red-400">*</span>
                     </label>
                     <div className="relative">
                       <HiOutlineBriefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <input
+                        id="employment-job-title"
                         type="text"
+                        autoComplete="organization-title"
                         value={formData.job_title}
                         onChange={(e) =>
                           setFormData({
@@ -545,10 +562,14 @@ export default function AlumniEmploymentPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Industry */}
                   <div>
-                    <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                    <label
+                      htmlFor="employment-industry"
+                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                    >
                       Industry <span className="text-red-400">*</span>
                     </label>
                     <select
+                      id="employment-industry"
                       value={formData.industry}
                       onChange={(e) =>
                         setFormData({ ...formData, industry: e.target.value })
@@ -575,10 +596,17 @@ export default function AlumniEmploymentPage() {
 
                   {/* Employment Type */}
                   <div>
-                    <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                    <label
+                      id="employment-type-label"
+                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                    >
                       Employment Type <span className="text-red-400">*</span>
                     </label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div
+                      role="group"
+                      aria-labelledby="employment-type-label"
+                      className="grid grid-cols-3 gap-2"
+                    >
                       {Object.entries(typeConfig).map(([key, cfg]) => {
                         const TypeIcon = cfg.icon;
                         const selected = formData.employment_type === key;
@@ -617,7 +645,10 @@ export default function AlumniEmploymentPage() {
 
                 {/* Start Date */}
                 <div className="max-w-xs">
-                  <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                  <label
+                    htmlFor="employment-start-date"
+                    className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                  >
                     Start Date{" "}
                     <span className="text-slate-400 font-normal">
                       (Optional)
@@ -626,6 +657,7 @@ export default function AlumniEmploymentPage() {
                   <div className="relative">
                     <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
+                      id="employment-start-date"
                       type="date"
                       value={formData.start_date}
                       onChange={(e) =>

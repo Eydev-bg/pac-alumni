@@ -333,10 +333,17 @@ export default function AlumniBoardExamPage() {
           <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-5">
             {/* Status Selection */}
             <div>
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
+              <label
+                id="board-exam-result-label"
+                className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
+              >
                 Exam Result <span className="text-red-400">*</span>
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div
+                role="group"
+                aria-labelledby="board-exam-result-label"
+                className="grid grid-cols-2 gap-3"
+              >
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, status: "passer" })}
@@ -456,12 +463,16 @@ export default function AlumniBoardExamPage() {
 
             {/* Exam Year */}
             <div>
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+              <label
+                htmlFor="board-exam-year"
+                className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+              >
                 Exam Year <span className="text-red-400">*</span>
               </label>
               <div className="relative">
                 <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <select
+                  id="board-exam-year"
                   value={formData.exam_year}
                   onChange={(e) =>
                     setFormData({ ...formData, exam_year: e.target.value })
@@ -489,7 +500,10 @@ export default function AlumniBoardExamPage() {
 
             {/* Proof Upload (Optional) */}
             <div>
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+              <label
+                htmlFor="board-exam-proof"
+                className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+              >
                 Proof Document{" "}
                 <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
@@ -534,10 +548,12 @@ export default function AlumniBoardExamPage() {
                 </div>
               )}
               <input
+                id="board-exam-proof"
                 ref={fileInputRef}
                 type="file"
                 accept=".jpeg,.jpg,.png,.pdf"
                 className="hidden"
+                aria-label="Upload proof document"
                 onChange={handleFileSelect}
               />
               {fieldErrors.proof_file && (

@@ -375,6 +375,7 @@ export default function AlumniProfilePage() {
                 type="file"
                 accept="image/jpeg,image/jpg,image/png,image/webp"
                 className="hidden"
+                aria-label="Upload profile picture"
                 onChange={handlePictureSelect}
               />
 
@@ -442,13 +443,18 @@ export default function AlumniProfilePage() {
             <div className="space-y-4">
               {/* Phone */}
               <div>
-                <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                <label
+                  htmlFor="profile-phone"
+                  className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                >
                   Phone Number
                 </label>
                 <div className="relative">
                   <HiOutlinePhone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                   <input
+                    id="profile-phone"
                     type="tel"
+                    autoComplete="tel"
                     value={editForm.phone}
                     onChange={(e) =>
                       setEditForm({ ...editForm, phone: e.target.value })
@@ -471,12 +477,17 @@ export default function AlumniProfilePage() {
 
               {/* Location */}
               <div>
-                <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5">
+                <label
+                  htmlFor="profile-location"
+                  className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                >
                   Current Location
                 </label>
                 <div className="relative">
                   <HiOutlineMapPin className="absolute left-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
                   <textarea
+                    id="profile-location"
+                    autoComplete="street-address"
                     value={editForm.current_location}
                     onChange={(e) =>
                       setEditForm({
