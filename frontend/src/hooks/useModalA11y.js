@@ -23,10 +23,12 @@ const FOCUSABLE =
  */
 export default function useModalA11y(onClose) {
   const panelRef = useRef(null);
+  // Capture the trigger element during the first render — before the modal
+  // DOM is committed, so an autoFocus input inside the modal can't shadow it.
+  const previousFocusRef = useRef(document.activeElement);
 
   // Initial focus on open + focus restoration on close (mount/unmount).
   useEffect(() => {
-    const previouslyFocused = document.activeElement;
     const panel = panelRef.current;
     // Skip if focus already landed inside (e.g. an autoFocus input) — the
     // autoFocus attribute applies at commit time, before effects run.
@@ -35,9 +37,15 @@ export default function useModalA11y(onClose) {
       (first || panel).focus();
     }
     return () => {
-      if (previouslyFocused instanceof HTMLElement) {
-        previouslyFocused.focus();
-      }
+      const previouslyFocused = previousFocusRef.current;
+      // Deferred so StrictMode's dev-only mount→cleanup→remount cycle (panel
+      // still in the DOM) doesn't steal focus from an autoFocus input; on a
+      // real close the panel is disconnected by the time this runs.
+      queueMicrotask(() => {
+        if (!panel?.isConnected && previouslyFocused instanceof HTMLElement) {
+          previouslyFocused.focus();
+        }
+      });
     };
   }, []);
 
