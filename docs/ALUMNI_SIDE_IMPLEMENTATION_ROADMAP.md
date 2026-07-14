@@ -176,14 +176,14 @@ Two sub-tasks: **(2A)** a shared modal accessibility wrapper, **(2B)** form labe
 ### Acceptance Criteria
 - [x] All three modals close on Escape.
 - [x] While a modal is open, keyboard focus stays inside it (focus trap).
-- [ ] On close, focus returns to the trigger button. *(Works for Announcement and Event modals; FAILS for NewMessageModal — its autoFocus input is captured as the "previous focus" before the hook's effect runs, so focus drops to body on close. Known 2A follow-up.)*
+- [x] On close, focus returns to the trigger button. *(Initially failed for NewMessageModal due to its autoFocus input; fixed in the useModalA11y hook and runtime-verified on all three modals.)*
 - [x] Each modal has `role="dialog"`, `aria-modal="true"`, `aria-labelledby`.
 - [x] Each form input has an associated label or `aria-label`.
 - [x] Clicking a label → focuses the corresponding input.
 - [x] No visual regression in modals or forms.
 
 ### QA / Testing Checklist
-- [ ] Keyboard-only: open each modal, Tab through it, Escape to close → focus returns. *(Tab trap and Escape verified on all three; focus return fails on NewMessageModal — see Acceptance Criteria note.)*
+- [x] Keyboard-only: open each modal, Tab through it, Escape to close → focus returns. *(Runtime-verified on all three modals at 320px: Tab trap both directions, Escape close, focus restored to trigger, autoFocus preserved in NewMessageModal.)*
 - [ ] Screen reader (VoiceOver/NVDA) smoke test: the modal role and title are announced; field labels are read. *(Not yet performed.)*
 - [x] Overlay-click-to-close still works.
 - [x] Message send (Enter-to-send in ConversationThread) is **not** affected.
