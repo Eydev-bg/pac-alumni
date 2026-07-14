@@ -100,21 +100,21 @@ Presentational only. **No** logic, state, API, or data-flow changes. RSVP toggle
 9. Verify that `stripHtml`, `dateParts`, `isPast`, `applyGoingDelta`, and the entire RSVP handler are **unchanged**.
 
 ### Acceptance Criteria
-- [ ] The Events page uses white cards and light text — no navy glass panel.
-- [ ] The Events page is visually consistent with the Announcements and Careers pages (side-by-side comparison).
-- [ ] RSVP toggle still works (Going/Interested/cancel) with optimistic update and revert-on-failure.
-- [ ] The event modal opens/closes; rich-text renders correctly on the light surface.
-- [ ] Pinned/past badges and the going count are preserved.
-- [ ] No new console warnings/errors.
+- [x] The Events page uses white cards and light text — no navy glass panel.
+- [x] The Events page is visually consistent with the Announcements and Careers pages (side-by-side comparison).
+- [x] RSVP toggle still works (Going/Interested/cancel) with optimistic update and revert-on-failure.
+- [x] The event modal opens/closes; rich-text renders correctly on the light surface.
+- [x] Pinned/past badges and the going count are preserved.
+- [x] No new console warnings/errors.
 
 ### QA / Testing Checklist
-- [ ] 320px, 375px, 768px, 1024px, desktop — no horizontal scroll or overflow.
-- [ ] RSVP "Going" → count +1; tap again → cancel, count −1; toggle to "Interested".
-- [ ] Simulate a network failure on RSVP (offline) → the UI reverts.
-- [ ] Open the modal of an event with an image and rich-text body → correct render, readable text.
-- [ ] Past event → no RSVP controls, shows the "Past event" badge.
-- [ ] Pagination works when there is more than 1 page.
-- [ ] Frontend build/lint: no new errors.
+- [x] 320px, 375px, 768px, 1024px, desktop — no horizontal scroll or overflow.
+- [x] RSVP "Going" → count +1; tap again → cancel, count −1; toggle to "Interested".
+- [x] Simulate a network failure on RSVP (offline) → the UI reverts.
+- [x] Open the modal of an event with an image and rich-text body → correct render, readable text.
+- [x] Past event → no RSVP controls, shows the "Past event" badge.
+- [x] Pagination works when there is more than 1 page.
+- [x] Frontend build/lint: no new errors. *(Build clean; ESLint is not runnable in this repo — config exists but its packages were never installed. Pre-existing.)*
 
 ### Git Commit Recommendation
 ```
@@ -174,21 +174,21 @@ Two sub-tasks: **(2A)** a shared modal accessibility wrapper, **(2B)** form labe
 7. Ensure every interactive element has a visible `:focus` state (Tailwind `focus:ring` — many already have it; complete the missing ones).
 
 ### Acceptance Criteria
-- [ ] All three modals close on Escape.
-- [ ] While a modal is open, keyboard focus stays inside it (focus trap).
-- [ ] On close, focus returns to the trigger button.
-- [ ] Each modal has `role="dialog"`, `aria-modal="true"`, `aria-labelledby`.
-- [ ] Each form input has an associated label or `aria-label`.
-- [ ] Clicking a label → focuses the corresponding input.
-- [ ] No visual regression in modals or forms.
+- [x] All three modals close on Escape.
+- [x] While a modal is open, keyboard focus stays inside it (focus trap).
+- [ ] On close, focus returns to the trigger button. *(Works for Announcement and Event modals; FAILS for NewMessageModal — its autoFocus input is captured as the "previous focus" before the hook's effect runs, so focus drops to body on close. Known 2A follow-up.)*
+- [x] Each modal has `role="dialog"`, `aria-modal="true"`, `aria-labelledby`.
+- [x] Each form input has an associated label or `aria-label`.
+- [x] Clicking a label → focuses the corresponding input.
+- [x] No visual regression in modals or forms.
 
 ### QA / Testing Checklist
-- [ ] Keyboard-only: open each modal, Tab through it, Escape to close → focus returns.
-- [ ] Screen reader (VoiceOver/NVDA) smoke test: the modal role and title are announced; field labels are read.
-- [ ] Overlay-click-to-close still works.
-- [ ] Message send (Enter-to-send in ConversationThread) is **not** affected.
-- [ ] Mobile: modals still open/close correctly.
-- [ ] Lint/build: no new errors.
+- [ ] Keyboard-only: open each modal, Tab through it, Escape to close → focus returns. *(Tab trap and Escape verified on all three; focus return fails on NewMessageModal — see Acceptance Criteria note.)*
+- [ ] Screen reader (VoiceOver/NVDA) smoke test: the modal role and title are announced; field labels are read. *(Not yet performed.)*
+- [x] Overlay-click-to-close still works.
+- [x] Message send (Enter-to-send in ConversationThread) is **not** affected.
+- [x] Mobile: modals still open/close correctly.
+- [x] Lint/build: no new errors. *(Build clean; ESLint not runnable — pre-existing, see Phase 1 note.)*
 
 ### Git Commit Recommendation
 ```
