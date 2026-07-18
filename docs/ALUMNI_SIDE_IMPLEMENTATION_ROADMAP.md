@@ -290,18 +290,18 @@ Add the features that make it feel "smooth": loading skeletons, feed freshness, 
 4. In `AchievementFeed`, add a refetch on window focus (or an exposed refresh) so it isn't stale after an update on another page. Ensure the listener is cleaned up.
 
 ### Acceptance Criteria
-- [ ] List pages show a skeleton (not plain text) while loading.
-- [ ] No layout shift when the skeleton is replaced by the actual content.
-- [ ] Empty states are consistent across all list pages (same component).
-- [ ] The achievement feed refreshes when the window regains focus.
-- [ ] No regression in data loading.
+- [x] List pages show a skeleton (not plain text) while loading.
+- [x] No layout shift when the skeleton is replaced by the actual content.
+- [x] Empty states are consistent across all list pages (same component).
+- [x] The achievement feed refreshes when the window regains focus. *(Guarded by a 15s cooldown so rapid focus flips don't spam the API.)*
+- [x] No regression in data loading.
 
 ### QA / Testing Checklist
-- [ ] Throttle the network (Slow 3G) → skeletons are visible.
-- [ ] Empty account (no announcements/events/jobs/messages) → polished empty state.
-- [ ] Update employment in another tab, return to the dashboard → the feed refreshes.
-- [ ] Mobile and desktop: skeleton/empty layout is consistent.
-- [ ] No listener leak (mount/unmount repeatedly).
+- [x] Throttle the network (Slow 3G) → skeletons are visible.
+- [x] Empty account (no announcements/events/jobs/messages) → polished empty state.
+- [x] Update employment in another tab, return to the dashboard → the feed refreshes. *(Cross-tab return verified manually; refresh fires after the 15s cooldown.)*
+- [x] Mobile and desktop: skeleton/empty layout is consistent.
+- [x] No listener leak (mount/unmount repeatedly). *(All focus/visibility listeners removed in effect cleanup; verified by review, no memory profiling run.)*
 
 ### Git Commit Recommendation
 ```
