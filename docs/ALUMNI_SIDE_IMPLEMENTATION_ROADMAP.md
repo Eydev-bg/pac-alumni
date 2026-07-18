@@ -338,16 +338,16 @@ Make pagination/search state robust (URL-synced) and fix the small responsive ed
 4. Replace the one-time `window.innerWidth < 1024` check with a `matchMedia` listener so desktop/mobile routing is reactive on resize.
 
 ### Acceptance Criteria
-- [ ] Refresh on page 2 of Careers → stays on page 2.
-- [ ] The search term is in the URL and restored on refresh (if scoped).
-- [ ] The inbox has no overflow/cutoff at 320–375px.
-- [ ] Resizing from desktop→mobile (or vice versa) produces correct routing behavior.
+- [x] Refresh on page 2 of Careers → stays on page 2.
+- [x] The search term is in the URL and restored on refresh (if scoped). *(Typing uses history replace so keystrokes don't pile up entries; a new search resets to page 1.)*
+- [x] The inbox has no overflow/cutoff at 320–375px.
+- [x] Resizing from desktop→mobile (or vice versa) produces correct routing behavior. *(Desktop→mobile with an open panel thread hands off to the standalone conversation page.)*
 
 ### QA / Testing Checklist
-- [ ] Change the page, refresh, use the back button → correct position.
-- [ ] Inbox on a small viewport → the list and input are reachable.
-- [ ] Resize the window across the 1024px boundary → correct open behavior.
-- [ ] No regression in conversation open (desktop panel vs mobile page).
+- [x] Change the page, refresh, use the back button → correct position.
+- [x] Inbox on a small viewport → the list and input are reachable.
+- [x] Resize the window across the 1024px boundary → correct open behavior.
+- [x] No regression in conversation open (desktop panel vs mobile page).
 
 ### Git Commit Recommendation
 ```
