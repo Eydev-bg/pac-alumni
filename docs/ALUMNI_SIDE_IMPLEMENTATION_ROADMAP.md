@@ -238,19 +238,19 @@ Remove the redundant dashboard fetch in the layout and make polling efficient (p
 6. Ensure all have `clearInterval` and listener cleanup (no leaks).
 
 ### Acceptance Criteria
-- [ ] `AlumniLayout` **no longer** calls the full `getDashboard()` for nav gating.
-- [ ] The "Board Exam" nav item still shows/hides correctly.
-- [ ] Polling pauses when the tab is in the background; resumes on focus.
-- [ ] Unread badges (Header bell, sidebar Announcements/Messages) are still accurate.
-- [ ] The number of duplicate unread requests is reduced (verify in the Network tab).
+- [x] `AlumniLayout` **no longer** calls the full `getDashboard()` for nav gating.
+- [x] The "Board Exam" nav item still shows/hides correctly.
+- [x] Polling pauses when the tab is in the background; resumes on focus.
+- [x] Unread badges (Header bell, sidebar Announcements/Messages) are still accurate.
+- [x] The number of duplicate unread requests is reduced (verify in the Network tab).
 
 ### QA / Testing Checklist
-- [ ] Network tab: confirm the duplicate dashboard request on Alumni shell load is gone.
-- [ ] Board-program alumni → the Board Exam nav appears; non-board → hidden.
-- [ ] Switch tabs (background) → polling stops; return → polling resumes.
-- [ ] Send a message to an account → the unread badge on the other side increases within the poll interval.
-- [ ] No stale or double-counted unread.
-- [ ] No React "state update on unmounted component" warning.
+- [x] Network tab: confirm the duplicate dashboard request on Alumni shell load is gone.
+- [x] Board-program alumni → the Board Exam nav appears; non-board → hidden.
+- [x] Switch tabs (background) → polling stops; return → polling resumes.
+- [x] Send a message to an account → the unread badge on the other side increases within the poll interval.
+- [x] No stale or double-counted unread.
+- [x] No React "state update on unmounted component" warning.
 
 ### Git Commit Recommendation
 ```
