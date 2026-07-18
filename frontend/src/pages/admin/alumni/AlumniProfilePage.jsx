@@ -6,7 +6,6 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import StatusBadge from "../../../components/common/StatusBadge";
-import { LoadingSpinner } from "../../../components/common/LoadingSpinner";
 import {
   HiOutlineArrowLeft,
   HiOutlineIdentification,
