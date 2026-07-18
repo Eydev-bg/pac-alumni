@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import alumniApi from "../../../api/alumniApi";
+import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { storageUrl } from "../../../utils/formatters";
 import {
   HiOutlineArrowLeft,
@@ -98,12 +99,11 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
     load(true);
   }, [conversationId, load]);
 
-  // Auto-refresh every 30 seconds (polling).
-  useEffect(() => {
-    if (!conversationId) return;
-    const interval = setInterval(() => load(false), 30000);
-    return () => clearInterval(interval);
-  }, [conversationId, load]);
+  // Auto-refresh every 30 seconds — paused while the tab is hidden,
+  // catches up immediately on return.
+  useVisibilityPolling(() => load(false), 30000, {
+    enabled: !!conversationId,
+  });
 
   // Auto-scroll to the latest message when the list grows.
   useEffect(() => {

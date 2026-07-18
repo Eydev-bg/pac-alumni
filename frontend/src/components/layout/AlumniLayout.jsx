@@ -3,11 +3,11 @@
 //  Alumni sidebar layout — Dashboard + Profile + Board Exam
 // ═══════════════════════════════════════════════════════════
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import Header from "./Header";
 import { useAuth } from "../../hooks/useAuth";
-import alumniApi from "../../api/alumniApi";
+import { UnreadProvider, useUnread } from "../../context/UnreadContext";
 import {
   HiOutlineHome,
   HiOutlineXMark,
@@ -20,41 +20,22 @@ import {
 } from "react-icons/hi2";
 
 export default function AlumniLayout() {
+  return (
+    <UnreadProvider>
+      <AlumniLayoutInner />
+    </UnreadProvider>
+  );
+}
+
+function AlumniLayoutInner() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
-  const [unreadMessages, setUnreadMessages] = useState(0);
   const { user } = useAuth();
   // Board Exam nav gating — sourced from the auth user payload, no extra fetch.
   const isBoardProgram = user?.is_board_program === true;
-
-  // Unread announcement count for the sidebar badge. Polls periodically so
-  // the badge stays roughly in sync while the alumni navigates around.
-  useEffect(() => {
-    const fetchUnread = () =>
-      alumniApi
-        .getAnnouncementsUnreadCount()
-        .then((res) => setUnreadAnnouncements(res.data.data.unread_count))
-        .catch(() => {});
-
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Unread message count for the sidebar badge (Phase 3.3). Polls every 30s to
-  // stay in sync with the inbox's own auto-refresh.
-  useEffect(() => {
-    const fetchUnread = () =>
-      alumniApi
-        .getMessagesUnreadCount()
-        .then((res) => setUnreadMessages(res.data.data.unread_count))
-        .catch(() => {});
-
-    fetchUnread();
-    const interval = setInterval(fetchUnread, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  // Sidebar badge counts from the shared background-aware polling source.
+  const { announcements: unreadAnnouncements, messages: unreadMessages } =
+    useUnread();
 
   const navItems = [
     {

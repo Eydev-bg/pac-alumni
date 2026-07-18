@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import useModalA11y from "../../../hooks/useModalA11y";
+import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
 import {
@@ -60,11 +61,9 @@ export default function AlumniInboxPage() {
     load(true);
   }, [load]);
 
-  // Auto-refresh the conversation list every 30 seconds (polling).
-  useEffect(() => {
-    const interval = setInterval(() => load(false), 30000);
-    return () => clearInterval(interval);
-  }, [load]);
+  // Auto-refresh the conversation list every 30 seconds — paused while the
+  // tab is hidden, catches up immediately on return.
+  useVisibilityPolling(() => load(false), 30000);
 
   // Desktop opens the thread in the right panel; mobile navigates to the
   // standalone full-screen conversation page.

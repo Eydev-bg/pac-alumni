@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { useUnread } from "../../context/UnreadContext";
 import adminApi from "../../api/adminApi";
 import alumniApi from "../../api/alumniApi";
 import { timeAgo } from "../../utils/formatters";
@@ -25,9 +26,14 @@ export default function Header({
 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  // Shared alumni unread source (null in layouts without UnreadProvider,
+  // e.g. the admin layout — admin keeps its own poll below).
+  const unread = useUnread();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [adminUnreadCount, setAdminUnreadCount] = useState(0);
+  const unreadCount =
+    user?.role === "alumni" ? (unread?.notifications ?? 0) : adminUnreadCount;
   // Recent notifications shown in the alumni bell dropdown (fetched on open).
   const [recent, setRecent] = useState([]);
   const [recentLoading, setRecentLoading] = useState(false);
@@ -51,15 +57,14 @@ export default function Header({
   }, []);
 
   // Fetch unread notification count on mount and poll every 60 seconds.
-  // Role-aware: admin and alumni each have their own scoped endpoint.
+  // Admin only — the alumni count comes from the shared UnreadContext.
   useEffect(() => {
-    if (user?.role !== "admin" && user?.role !== "alumni") return;
-    const notifApi = user.role === "admin" ? adminApi : alumniApi;
+    if (user?.role !== "admin") return;
     let active = true;
     const fetchUnreadCount = async () => {
       try {
-        const res = await notifApi.getUnreadCount();
-        if (active) setUnreadCount(res.data.data.count ?? 0);
+        const res = await adminApi.getUnreadCount();
+        if (active) setAdminUnreadCount(res.data.data.count ?? 0);
       } catch {
         // silently ignore — count stays at previous value
       }
@@ -96,7 +101,7 @@ export default function Header({
     if (!n.is_read) {
       try {
         await alumniApi.markNotificationRead(n.id);
-        setUnreadCount((c) => Math.max(0, c - 1));
+        unread?.decrementNotifications();
       } catch {
         // Non-fatal — navigation still proceeds.
       }
