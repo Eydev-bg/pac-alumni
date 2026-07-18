@@ -6,6 +6,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import Header from "./Header";
+import { useAuth } from "../../hooks/useAuth";
 import alumniApi from "../../api/alumniApi";
 import {
   HiOutlineHome,
@@ -21,22 +22,11 @@ import {
 export default function AlumniLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [isBoardProgram, setIsBoardProgram] = useState(false);
   const [unreadAnnouncements, setUnreadAnnouncements] = useState(0);
   const [unreadMessages, setUnreadMessages] = useState(0);
-
-  // Check if alumni's course is a board program
-  useEffect(() => {
-    alumniApi
-      .getDashboard()
-      .then((res) => {
-        const course = res.data.data?.academic?.course;
-        if (course?.is_board_program) {
-          setIsBoardProgram(true);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const { user } = useAuth();
+  // Board Exam nav gating — sourced from the auth user payload, no extra fetch.
+  const isBoardProgram = user?.is_board_program === true;
 
   // Unread announcement count for the sidebar badge. Polls periodically so
   // the badge stays roughly in sync while the alumni navigates around.
