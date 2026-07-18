@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { USER_KEY } from "../config/constants";
 
 const ROLE_DASHBOARDS = {
   admin: "/admin/dashboard",
@@ -48,19 +47,10 @@ export function RoleGuard({ roles = [] }) {
   // than rendering the protected child route.
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  // Try to get role from user object or sessionStorage fallback
-  let userRole = user?.role;
-  if (!userRole) {
-    try {
-      const stored = sessionStorage.getItem(USER_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        userRole = parsed.role;
-      }
-    } catch (e) {
-      // ignore
-    }
-  }
+  // `isAuthenticated` is `!!token && !!user`, so `user` is non-null here and
+  // its role comes from the same API payload the old sessionStorage fallback
+  // was written from — the fallback could never know more than `user` does.
+  const userRole = user?.role;
 
   // Still no role? Show loading (will resolve on next render)
   if (!userRole) return <LoadingScreen />;
@@ -89,16 +79,9 @@ export function GuestRoute() {
   // Not authenticated — show the guest page (login, register, etc.)
   if (!isAuthenticated) return <Outlet />;
 
-  // Authenticated — figure out where to redirect
-  let role = user?.role;
-  if (!role) {
-    try {
-      const stored = sessionStorage.getItem(USER_KEY);
-      if (stored) role = JSON.parse(stored).role;
-    } catch (e) {
-      // ignore
-    }
-  }
+  // Authenticated — figure out where to redirect. `user` is non-null here
+  // (isAuthenticated requires it); see RoleGuard for why no storage fallback.
+  const role = user?.role;
 
   // If we have a role and a matching dashboard, redirect there
   if (role && ROLE_DASHBOARDS[role]) {
