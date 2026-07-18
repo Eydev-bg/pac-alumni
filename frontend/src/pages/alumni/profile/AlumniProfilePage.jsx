@@ -26,7 +26,6 @@ import {
   HiOutlineXMark,
   HiOutlineArrowPath,
   HiOutlineBuildingOffice2,
-  HiOutlineDocumentText,
   HiOutlineShieldCheck,
 } from "react-icons/hi2";
 

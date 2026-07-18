@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import { useDebounce } from "../../../hooks/useDebounce";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
 import { formatDate, storageUrl } from "../../../utils/formatters";
@@ -31,27 +32,27 @@ export default function AlumniCareerCenterPage() {
   const page = Math.max(1, parseInt(searchParams.get("page"), 10) || 1);
   const search = (searchParams.get("search") || "").trim();
   const [searchInput, setSearchInput] = useState(search);
+  const debouncedSearch = useDebounce(searchInput, 400);
 
-  // Debounce the search input, then sync it to the URL. Typing replaces
-  // the history entry (no per-keystroke entries); a new search resets to
-  // page 1 by dropping the page param.
+  // Sync the debounced input to the URL. Typing replaces the history entry
+  // (no per-keystroke entries); a new search resets to page 1 by dropping
+  // the page param. The stale-guard skips writes while the debounced value
+  // lags the input (e.g. right after back/forward re-synced it).
   useEffect(() => {
-    const t = setTimeout(() => {
-      const trimmed = searchInput.trim();
-      if (trimmed === search) return;
-      setSearchParams(
-        (prev) => {
-          const next = new URLSearchParams(prev);
-          if (trimmed) next.set("search", trimmed);
-          else next.delete("search");
-          next.delete("page");
-          return next;
-        },
-        { replace: true },
-      );
-    }, 400);
-    return () => clearTimeout(t);
-  }, [searchInput, search, setSearchParams]);
+    const trimmed = debouncedSearch.trim();
+    if (trimmed === search) return;
+    if (trimmed !== searchInput.trim()) return;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (trimmed) next.set("search", trimmed);
+        else next.delete("search");
+        next.delete("page");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [debouncedSearch, searchInput, search, setSearchParams]);
 
   // Back/forward can change the URL search independently — reflect it in
   // the input. Kept as-is while it trims to the same value so a trailing

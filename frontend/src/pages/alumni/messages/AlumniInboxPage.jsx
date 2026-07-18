@@ -3,11 +3,12 @@
 //  Phase 3.3 — Two-panel inbox (conversation list + thread).
 // ═══════════════════════════════════════════════════════════
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import useModalA11y from "../../../hooks/useModalA11y";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
+import { useDebounce } from "../../../hooks/useDebounce";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
 import SkeletonCard from "../../../components/common/SkeletonCard";
@@ -252,21 +253,17 @@ function NewMessageModal({ onClose, onStarted }) {
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState("");
-  const debounceRef = useRef(null);
+  const debouncedSearch = useDebounce(search, 300);
 
   // Debounced recipient search.
   useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setLoading(true);
-      alumniApi
-        .searchMessageRecipients(search)
-        .then((res) => setResults(res.data.data ?? []))
-        .catch(() => setResults([]))
-        .finally(() => setLoading(false));
-    }, 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [search]);
+    setLoading(true);
+    alumniApi
+      .searchMessageRecipients(debouncedSearch)
+      .then((res) => setResults(res.data.data ?? []))
+      .catch(() => setResults([]))
+      .finally(() => setLoading(false));
+  }, [debouncedSearch]);
 
   const start = async (recipient) => {
     if (starting) return;

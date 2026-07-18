@@ -6,7 +6,7 @@ import Pagination from "../../../components/common/Pagination";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
-import { formatDate, storageUrl, cn } from "../../../utils/formatters";
+import { formatDate, storageUrl, cn, stripHtml } from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
 import {
   HiOutlineCalendarDays,
@@ -407,9 +407,4 @@ function EventModal({ event: a, onClose, onRsvp }) {
         .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
   );
-}
-
-function stripHtml(html) {
-  if (!html) return "";
-  return html.replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }

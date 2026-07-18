@@ -59,6 +59,14 @@ export function truncate(str, length = 50) {
 }
 
 /**
+ * Strip HTML tags/entities down to plain text (for list snippets).
+ */
+export function stripHtml(html) {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/**
  * Conditional class names (like clsx).
  */
 export function cn(...classes) {
