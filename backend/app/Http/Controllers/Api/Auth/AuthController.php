@@ -10,6 +10,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
 use App\Http\Resources\Admin\UserResource;
 use App\Models\PasswordReset;
+use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\AuthService;
 use App\Services\Auth\PasswordResetService;
@@ -30,6 +31,20 @@ class AuthController extends Controller
     ) {}
 
     /**
+     * Eager-load the academic chain for alumni so UserResource can expose
+     * `is_board_program` (used by the Alumni layout for Board Exam nav gating)
+     * without the frontend fetching the full dashboard.
+     */
+    protected function withBoardProgramFlag(User $user): User
+    {
+        if (!$user->isAdmin()) {
+            $user->loadMissing('alumniProfile.graduate.course');
+        }
+
+        return $user;
+    }
+
+    /**
      * POST /api/auth/login
      */
     public function login(LoginRequest $request): JsonResponse
@@ -46,7 +61,7 @@ class AuthController extends Controller
                 'token' => $result['token'],
                 'token_type' => $result['token_type'],
                 'expires_in' => $result['expires_in'],
-                'user' => new UserResource($result['user']),
+                'user' => new UserResource($this->withBoardProgramFlag($result['user'])),
             ], 'Login successful.');
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 401);
@@ -85,7 +100,7 @@ class AuthController extends Controller
     public function me(): JsonResponse
     {
         return $this->success(
-            new UserResource(auth('api')->user()),
+            new UserResource($this->withBoardProgramFlag(auth('api')->user())),
             'User profile retrieved.'
         );
     }

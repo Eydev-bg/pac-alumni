@@ -23,6 +23,12 @@ class UserResource extends JsonResource
             'profile_picture' => $this->profile_picture,
             'status' => $this->status?->value ?? $this->attributes['status'] ?? 'active',
             'status_label' => $this->status?->label() ?? ucfirst($this->attributes['status'] ?? 'active'),
+            // Only present when the caller eager-loaded the academic chain
+            // (auth login/me) — admin user lists omit it, so no N+1 there.
+            'is_board_program' => $this->when(
+                $this->relationLoaded('alumniProfile'),
+                fn() => (bool) $this->alumniProfile?->graduate?->course?->is_board_program
+            ),
             'email_verified_at' => $this->email_verified_at?->toISOString(),
             'last_login_at' => $this->last_login_at?->toISOString(),
             'last_login_ip' => $this->when(
