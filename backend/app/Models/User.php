@@ -147,11 +147,20 @@ class User extends Authenticatable implements JWTSubject
             return $query;
         }
 
-        return $query->where(function ($q) use ($search) {
-            $q->where('first_name', 'LIKE', "%{$search}%")
-                ->orWhere('last_name', 'LIKE', "%{$search}%")
-                ->orWhere('email', 'LIKE', "%{$search}%");
-        });
+        // Multi-word support ("Juan Dela Cruz"): every term must match at
+        // least one name column, but each term may match a different one.
+        $terms = array_filter(explode(' ', trim($search)));
+
+        foreach ($terms as $term) {
+            $query->where(function ($q) use ($term) {
+                $q->where('first_name', 'LIKE', "%{$term}%")
+                    ->orWhere('last_name', 'LIKE', "%{$term}%")
+                    ->orWhere('middle_name', 'LIKE', "%{$term}%")
+                    ->orWhere('email', 'LIKE', "%{$term}%");
+            });
+        }
+
+        return $query;
     }
 
     // ─── Helper Methods ──────────────────────────────────────
