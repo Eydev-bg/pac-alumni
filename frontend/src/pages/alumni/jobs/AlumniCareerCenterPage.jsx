@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
 import SkeletonCard from "../../../components/common/SkeletonCard";
@@ -25,18 +25,50 @@ export default function AlumniCareerCenterPage() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  // 5A: page and search live in the URL so refresh and back/forward
+  // restore the list position and query.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get("page"), 10) || 1);
+  const search = (searchParams.get("search") || "").trim();
+  const [searchInput, setSearchInput] = useState(search);
 
-  // Debounce the search input so we don't fire a request per keystroke.
+  // Debounce the search input, then sync it to the URL. Typing replaces
+  // the history entry (no per-keystroke entries); a new search resets to
+  // page 1 by dropping the page param.
   useEffect(() => {
     const t = setTimeout(() => {
-      setSearch(searchInput.trim());
-      setPage(1);
+      const trimmed = searchInput.trim();
+      if (trimmed === search) return;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          if (trimmed) next.set("search", trimmed);
+          else next.delete("search");
+          next.delete("page");
+          return next;
+        },
+        { replace: true },
+      );
     }, 400);
     return () => clearTimeout(t);
-  }, [searchInput]);
+  }, [searchInput, search, setSearchParams]);
+
+  // Back/forward can change the URL search independently — reflect it in
+  // the input. Kept as-is while it trims to the same value so a trailing
+  // space mid-typing isn't eaten.
+  useEffect(() => {
+    setSearchInput((cur) => (cur.trim() === search ? cur : search));
+  }, [search]);
+
+  const handlePageChange = (p) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p > 1) next.set("page", String(p));
+      else next.delete("page");
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const load = useCallback(() => {
     setLoading(true);
@@ -116,7 +148,7 @@ export default function AlumniCareerCenterPage() {
           {items.map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
-          <Pagination meta={meta} onPageChange={setPage} />
+          <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
       )}
     </div>

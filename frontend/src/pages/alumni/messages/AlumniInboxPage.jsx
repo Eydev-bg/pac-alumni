@@ -43,12 +43,26 @@ function Avatar({ name, picture, size = "w-11 h-11" }) {
   );
 }
 
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
 export default function AlumniInboxPage() {
   const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [showCompose, setShowCompose] = useState(false);
+
+  // 5B: reactive breakpoint — matches Tailwind's lg, and updates on
+  // resize instead of being read once per click.
+  const [isDesktop, setIsDesktop] = useState(
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const onChange = (e) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   const load = useCallback((showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -71,14 +85,22 @@ export default function AlumniInboxPage() {
   // standalone full-screen conversation page.
   const openConversation = useCallback(
     (id) => {
-      if (window.innerWidth < 1024) {
+      if (!isDesktop) {
         navigate(`/alumni/messages/${id}`);
       } else {
         setSelectedId(id);
       }
     },
-    [navigate],
+    [navigate, isDesktop],
   );
+
+  // If a thread is open in the desktop panel when the viewport drops
+  // below the breakpoint, hand it off to the standalone mobile page.
+  useEffect(() => {
+    if (!isDesktop && selectedId) {
+      navigate(`/alumni/messages/${selectedId}`);
+    }
+  }, [isDesktop, selectedId, navigate]);
 
   const handleStarted = (conversation) => {
     setShowCompose(false);
@@ -114,7 +136,7 @@ export default function AlumniInboxPage() {
 
       {/* ━━━━ Two-panel layout ━━━━ */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex h-[calc(100vh-220px)] min-h-[480px]">
+        <div className="flex h-[calc(100dvh-220px)] min-h-[320px]">
           {/* ── Left: conversation list ── */}
           <div className="w-full lg:w-[360px] lg:border-r border-slate-200 flex flex-col">
             <div className="flex-1 overflow-y-auto">

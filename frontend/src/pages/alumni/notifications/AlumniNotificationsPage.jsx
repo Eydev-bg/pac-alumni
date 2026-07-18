@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
 import SkeletonCard from "../../../components/common/SkeletonCard";
@@ -19,7 +19,21 @@ export default function AlumniNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+
+  // 5A: the page number lives in the URL so refresh and back/forward
+  // restore the list position.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get("page"), 10) || 1);
+
+  const handlePageChange = (p) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p > 1) next.set("page", String(p));
+      else next.delete("page");
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -139,7 +153,7 @@ export default function AlumniNotificationsPage() {
         )}
         {meta && (
           <div className="px-4 pb-4">
-            <Pagination meta={meta} onPageChange={setPage} />
+            <Pagination meta={meta} onPageChange={handlePageChange} />
           </div>
         )}
       </div>

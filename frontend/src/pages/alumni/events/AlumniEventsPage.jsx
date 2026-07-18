@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, Fragment } from "react";
+import { useSearchParams } from "react-router-dom";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
@@ -51,8 +52,22 @@ export default function AlumniEventsPage() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [page, setPage] = useState(1);
   const [active, setActive] = useState(null);
+
+  // 5A: the page number lives in the URL so refresh and back/forward
+  // restore the list position.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get("page"), 10) || 1);
+
+  const handlePageChange = (p) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (p > 1) next.set("page", String(p));
+      else next.delete("page");
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const load = useCallback(() => {
     setLoading(true);
@@ -148,7 +163,7 @@ export default function AlumniEventsPage() {
               onRsvp={handleRsvp}
             />
           ))}
-          <Pagination meta={meta} onPageChange={setPage} />
+          <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
       )}
 
