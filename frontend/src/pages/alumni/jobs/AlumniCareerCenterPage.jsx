@@ -7,6 +7,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import { formatDate, storageUrl } from "../../../utils/formatters";
 import {
   HiOutlineBriefcase,
@@ -98,16 +100,17 @@ export default function AlumniCareerCenterPage() {
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
-        <div className="text-slate-500 text-sm">Loading job openings…</div>
+        <SkeletonCard variant="job" count={4} />
       ) : items.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-          <HiOutlineBriefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-500">
-            {search
+        <EmptyState
+          icon={HiOutlineBriefcase}
+          title={search ? "No matching job openings" : "No job openings yet"}
+          message={
+            search
               ? "No job openings match your search."
-              : "No job openings right now. Check back soon."}
-          </p>
-        </div>
+              : "No job openings right now. Check back soon."
+          }
+        />
       ) : (
         <div className="space-y-3">
           {items.map((job) => (

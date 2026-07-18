@@ -10,6 +10,8 @@ import useModalA11y from "../../../hooks/useModalA11y";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlinePencilSquare,
@@ -117,19 +119,14 @@ export default function AlumniInboxPage() {
           <div className="w-full lg:w-[360px] lg:border-r border-slate-200 flex flex-col">
             <div className="flex-1 overflow-y-auto">
               {loading ? (
-                <p className="p-6 text-center text-sm text-slate-400">
-                  Loading conversations…
-                </p>
+                <SkeletonCard variant="conversation" count={5} />
               ) : conversations.length === 0 ? (
-                <div className="p-8 text-center">
-                  <HiOutlineChatBubbleLeftRight className="w-10 h-10 mx-auto text-slate-300" />
-                  <p className="mt-3 text-sm font-medium text-slate-600">
-                    No conversations yet
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Start a chat with a fellow alumnus.
-                  </p>
-                </div>
+                <EmptyState
+                  bare
+                  icon={HiOutlineChatBubbleLeftRight}
+                  title="No conversations yet"
+                  message="Start a chat with a fellow alumnus."
+                />
               ) : (
                 <ul className="divide-y divide-slate-100">
                   {conversations.map((c) => {

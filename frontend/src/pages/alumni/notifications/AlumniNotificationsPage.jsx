@@ -6,6 +6,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import { useToast } from "../../../hooks/useToast";
 import { formatDate } from "../../../utils/formatters";
 import { PAGINATION } from "../../../config/constants";
@@ -89,20 +91,14 @@ export default function AlumniNotificationsPage() {
       {/* Notifications List */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1a2e5a] mb-3" />
-            <p className="text-sm text-slate-500">Loading notifications...</p>
-          </div>
+          <SkeletonCard variant="notification" count={5} />
         ) : notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <HiOutlineBell className="w-12 h-12 text-slate-300 mb-4" />
-            <h3 className="text-sm font-semibold text-slate-700 mb-1">
-              No notifications
-            </h3>
-            <p className="text-sm text-slate-500 max-w-sm">
-              You're all caught up!
-            </p>
-          </div>
+          <EmptyState
+            bare
+            icon={HiOutlineBell}
+            title="No notifications"
+            message="You're all caught up!"
+          />
         ) : (
           <div className="divide-y divide-slate-100">
             {notifications.map((n) => (

@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import {
@@ -94,11 +96,13 @@ export default function AlumniAnnouncementsPage() {
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
-        <div className="text-slate-500 text-sm">Loading announcements…</div>
+        <SkeletonCard variant="announcement" count={4} />
       ) : items.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500 text-sm">
-          No announcements yet. Check back soon.
-        </div>
+        <EmptyState
+          icon={HiOutlineMegaphone}
+          title="No announcements yet"
+          message="Check back soon for news and updates from PAC."
+        />
       ) : (
         <div className="space-y-3">
           {items.map((a) => (

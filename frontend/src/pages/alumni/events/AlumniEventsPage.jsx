@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback, Fragment } from "react";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
 import { formatDate, storageUrl, cn } from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
@@ -129,11 +131,13 @@ export default function AlumniEventsPage() {
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
-        <div className="text-slate-500 text-sm">Loading events…</div>
+        <SkeletonCard variant="event" count={3} />
       ) : items.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center text-slate-500 text-sm">
-          No events yet. Check back soon.
-        </div>
+        <EmptyState
+          icon={HiOutlineCalendarDays}
+          title="No events yet"
+          message="Check back soon for upcoming alumni events."
+        />
       ) : (
         <div className="space-y-3">
           {items.map((a) => (

@@ -5,7 +5,7 @@
 //  alumni can toggle the visibility of their OWN entries.
 // ═══════════════════════════════════════════════════════════
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
 import {
@@ -31,17 +31,47 @@ export default function AchievementFeed() {
   const [error, setError] = useState("");
   const [togglingId, setTogglingId] = useState(null);
 
-  const load = useCallback(() => {
-    setLoading(true);
+  const lastLoadAt = useRef(0);
+
+  // `background` refreshes swap the data in place: no spinner, and a
+  // failed refresh keeps the current items instead of showing an error.
+  const load = useCallback((background = false) => {
+    if (!background) setLoading(true);
+    lastLoadAt.current = Date.now();
     alumniApi
       .getAchievementFeed()
-      .then((res) => setItems(res.data.data))
-      .catch(() => setError("Failed to load the achievement feed."))
-      .finally(() => setLoading(false));
+      .then((res) => {
+        setItems(res.data.data);
+        setError("");
+      })
+      .catch(() => {
+        if (!background) setError("Failed to load the achievement feed.");
+      })
+      .finally(() => {
+        if (!background) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  // Phase 4B: refetch when the window/tab regains focus so the feed is
+  // not stale after an update made on another page or tab. Guarded by a
+  // cooldown so rapid focus flips don't spam the API.
+  useEffect(() => {
+    const COOLDOWN_MS = 15000;
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastLoadAt.current < COOLDOWN_MS) return;
+      load(true);
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, [load]);
 
   const handleToggle = async (id) => {
