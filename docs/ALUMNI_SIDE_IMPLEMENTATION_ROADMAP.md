@@ -384,16 +384,16 @@ Remove duplication and dead code for maintainability — no functional changes.
 4. **6C with care:** check whether it is safe to remove the direct `sessionStorage` read in the guards (relying on `useAuth()` + the `loading` gate). **Test the auth timing thoroughly** (hard refresh while logged in, deep link, logout). If there is a risk of an initial-load race, **leave it as is** and flag it for a separate discussion.
 
 ### Acceptance Criteria
-- [ ] Only one debounce implementation (`useDebounce`) remains.
-- [ ] No unused imports (lint clean).
-- [ ] Only one `stripHtml`, in `formatters.js`.
-- [ ] If the guards were changed: no auth regression on refresh/deep-link/logout.
+- [x] Only one debounce implementation (`useDebounce`) remains. *(NewMessageModal keeps its original 300ms cadence.)*
+- [x] No unused imports (lint clean). *(ESLint not runnable — pre-existing; verified via a full-src import scan instead. Also cleaned two admin-side files in a separate commit.)*
+- [x] Only one `stripHtml`, in `formatters.js`.
+- [x] If the guards were changed: no auth regression on refresh/deep-link/logout. *(Fallback removed after dead-code analysis; six auth flows runtime-verified.)*
 
 ### QA / Testing Checklist
-- [ ] Search debounce still works (Careers, NewMessageModal).
-- [ ] `npm run lint` / build is clean.
-- [ ] Announcements and Events snippet stripping is still correct.
-- [ ] Auth: hard refresh while logged in → stays authenticated; logout → redirect to /login; deep link → correct guard.
+- [x] Search debounce still works (Careers, NewMessageModal). *(One request per typing pause; back/forward stale-guard verified. Full-name recipient search additionally fixed in User::scopeSearch — separate backend commit.)*
+- [x] `npm run lint` / build is clean. *(Build clean; ESLint not runnable — pre-existing.)*
+- [x] Announcements and Events snippet stripping is still correct.
+- [x] Auth: hard refresh while logged in → stays authenticated; logout → redirect to /login; deep link → correct guard.
 
 ### Git Commit Recommendation
 ```
