@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Enums\BoardStatus;
 use App\Models\Graduate;
 use App\Repositories\Contracts\GraduateRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -155,11 +156,31 @@ class GraduateRepository implements GraduateRepositoryInterface
             ->byDepartment($departmentId)
             ->byCourse($courseId)
             ->when($boardStatus, function ($q) use ($boardStatus) {
-                $q->whereHas(
-                    'user',
-                    fn($u) =>
-                    $u->whereHas('alumniProfile', fn($ap) => $ap->where('board_status', $boardStatus))
-                );
+                // Query the source of truth (course board-program flag +
+                // board_exam_records) rather than the derived board_status column,
+                // which never persists 'not_taken'.
+                $passed = BoardStatus::PASSED->value;
+                match ($boardStatus) {
+                    // Passed the board exam (record is the source of truth).
+                    'passed' => $q->whereHas(
+                        'boardExamRecords',
+                        fn($r) => $r->where('status', $passed)
+                    ),
+                    // In a board program but no passed record yet — includes
+                    // registered alumni with no record and unregistered graduates.
+                    'not_taken' => $q
+                        ->whereHas('course', fn($c) => $c->where('is_board_program', true))
+                        ->whereDoesntHave(
+                            'boardExamRecords',
+                            fn($r) => $r->where('status', $passed)
+                        ),
+                    // Course has no board exam.
+                    'not_applicable' => $q->whereHas(
+                        'course',
+                        fn($c) => $c->where('is_board_program', false)
+                    ),
+                    default => null,
+                };
             })
             ->when($employmentStatus, function ($q) use ($employmentStatus) {
                 $q->whereHas(

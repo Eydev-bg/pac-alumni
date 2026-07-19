@@ -76,6 +76,11 @@ class Graduate extends Model
         return $this->hasMany(EmploymentRecord::class);
     }
 
+    public function boardExamRecords(): HasMany
+    {
+        return $this->hasMany(BoardExamRecord::class);
+    }
+
     // ─── Accessors ───────────────────────────────────────
     public function getFullNameAttribute(): string
     {
