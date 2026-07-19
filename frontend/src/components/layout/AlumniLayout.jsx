@@ -34,8 +34,7 @@ function AlumniLayoutInner() {
   // Board Exam nav gating — sourced from the auth user payload, no extra fetch.
   const isBoardProgram = user?.is_board_program === true;
   // Sidebar badge counts from the shared background-aware polling source.
-  const { announcements: unreadAnnouncements, messages: unreadMessages } =
-    useUnread();
+  const { messages: unreadMessages } = useUnread();
 
   const navItems = [
     {
@@ -101,7 +100,6 @@ function AlumniLayoutInner() {
           name: "Announcements",
           path: "/alumni/announcements",
           icon: HiOutlineMegaphone,
-          badge: unreadAnnouncements,
         },
         {
           name: "Events",
