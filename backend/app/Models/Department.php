@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\DepartmentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
@@ -19,7 +18,6 @@ class Department extends Model
         'education_level',
         'is_board_program',
         'board_exam_name',
-        'dept_head_id',
         'status',
     ];
 
@@ -29,11 +27,6 @@ class Department extends Model
             'status' => DepartmentStatus::class,
             'is_board_program' => 'boolean',
         ];
-    }
-
-    public function deptHead(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'dept_head_id');
     }
 
     public function courses(): HasMany
@@ -89,10 +82,6 @@ class Department extends Model
     public function isActive(): bool
     {
         return $this->status === DepartmentStatus::ACTIVE;
-    }
-    public function hasDeptHead(): bool
-    {
-        return $this->dept_head_id !== null;
     }
     public function hasGraduates(): bool
     {

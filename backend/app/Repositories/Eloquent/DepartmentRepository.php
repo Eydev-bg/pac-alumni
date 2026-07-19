@@ -29,7 +29,7 @@ class DepartmentRepository implements DepartmentRepositoryInterface
         $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'asc';
 
         return $this->model->newQuery()
-            ->with(['deptHead:id,uuid,first_name,last_name,email', 'courses'])
+            ->with(['courses'])
             ->withCount(['courses', 'graduates', 'directGraduates'])
             ->search($search)
             ->when($status, fn($q) => $q->where('status', $status))
@@ -51,7 +51,7 @@ class DepartmentRepository implements DepartmentRepositoryInterface
     public function findById(int $id): ?Department
     {
         return $this->model
-            ->with(['deptHead:id,uuid,first_name,last_name,email', 'courses'])
+            ->with(['courses'])
             ->withCount(['courses', 'graduates', 'directGraduates'])
             ->find($id);
     }
@@ -63,26 +63,19 @@ class DepartmentRepository implements DepartmentRepositoryInterface
 
     public function create(array $data): Department
     {
-        $dept = $this->model->create($data);
-        return $dept->load('deptHead:id,uuid,first_name,last_name,email');
+        return $this->model->create($data);
     }
 
     public function update(Department $department, array $data): Department
     {
         $department->update($data);
-        return $department->fresh()->load('deptHead:id,uuid,first_name,last_name,email');
+        return $department->fresh();
     }
 
     public function updateStatus(Department $department, DepartmentStatus $status): Department
     {
         $department->update(['status' => $status]);
         return $department->fresh();
-    }
-
-    public function assignHead(Department $department, ?int $userId): Department
-    {
-        $department->update(['dept_head_id' => $userId]);
-        return $department->fresh()->load('deptHead:id,uuid,first_name,last_name,email');
     }
 
     public function delete(Department $department): bool

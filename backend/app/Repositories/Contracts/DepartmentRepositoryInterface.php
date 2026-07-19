@@ -31,8 +31,6 @@ interface DepartmentRepositoryInterface
 
     public function updateStatus(Department $department, DepartmentStatus $status): Department;
 
-    public function assignHead(Department $department, ?int $userId): Department;
-
     public function delete(Department $department): bool;
 
     public function getGraduateCount(Department $department): int;
