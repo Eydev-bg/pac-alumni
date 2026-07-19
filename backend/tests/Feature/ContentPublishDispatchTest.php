@@ -156,20 +156,15 @@ class ContentPublishDispatchTest extends TestCase
 
     // ─── Job postings ────────────────────────────────────────
 
-    public function test_creating_active_job_posting_dispatches_and_still_notifies_in_app(): void
+    public function test_creating_active_job_posting_dispatches(): void
     {
-        $alumni = User::factory()->create();
-
         $job = (new AdminJobPostingService())
             ->create($this->admin, $this->jobData(['status' => JobStatus::ACTIVE->value]));
 
+        // Single-source design: create() only dispatches the job, which handles
+        // both email and in-app notifications. The in-app row creation itself is
+        // covered by SendContentPublishedEmailsTest.
         $this->assertDispatchedOnceFor(ContentEmailLog::TYPE_JOB_POSTING, $job->id);
-
-        // The in-app bell notification is additive and must survive the wiring.
-        $this->assertDatabaseHas('notifications', [
-            'user_id' => $alumni->id,
-            'type' => 'job_posting',
-        ]);
     }
 
     public function test_draft_job_posting_dispatches_only_on_first_publish(): void
