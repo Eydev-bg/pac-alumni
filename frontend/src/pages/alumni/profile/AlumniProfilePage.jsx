@@ -114,8 +114,7 @@ function StatusBadge({ value, label }) {
     employed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     unemployed: "bg-amber-50 text-amber-700 border-amber-200",
     unknown: "bg-slate-50 text-slate-500 border-slate-200",
-    passer: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    failed: "bg-red-50 text-red-600 border-red-200",
+    passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     not_taken: "bg-amber-50 text-amber-700 border-amber-200",
     not_applicable: "bg-slate-50 text-slate-500 border-slate-200",
   };

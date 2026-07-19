@@ -79,8 +79,7 @@ export default function AlumniDashboardPage() {
       employed: "bg-emerald-100 text-emerald-700",
       unemployed: "bg-amber-100 text-amber-700",
       unknown: "bg-slate-100 text-slate-500",
-      passer: "bg-emerald-100 text-emerald-700",
-      failed: "bg-red-100 text-red-600",
+      passed: "bg-emerald-100 text-emerald-700",
       not_taken: "bg-amber-100 text-amber-700",
       not_applicable: "bg-slate-100 text-slate-500",
     };
