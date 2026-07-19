@@ -607,6 +607,11 @@ export default function AlumniBoardExamPage() {
                         {rec.exam_name}
                       </h4>
                       <StatusBadge status={rec.status} label={rec.status_label} />
+                      {rec.is_current && (
+                        <span className="inline-flex items-center rounded-full bg-[#c8a84e]/15 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wide text-[#8a6d1f]">
+                          Current
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-4 mt-1.5 flex-wrap">
                       <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
