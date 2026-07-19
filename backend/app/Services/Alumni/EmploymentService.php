@@ -137,7 +137,7 @@ class EmploymentService
                 );
 
                 // ─── Feature 18: Auto-trigger notifications ──
-                $this->notifyAdminAndDeptHead($user, $graduate, $profile, 'employed', $record);
+                $this->notifyAdmins($user, $graduate, $profile, 'employed', $record);
 
                 // ─── Phase 3.1: Achievement feed entries ─────
                 AchievementFeed::recordEmployment($profile, $record, $user->full_name);
@@ -184,7 +184,7 @@ class EmploymentService
                 );
 
                 // ─── Notify ──────────────────────────────────
-                $this->notifyAdminAndDeptHead($user, $graduate, $profile, 'unemployed', null);
+                $this->notifyAdmins($user, $graduate, $profile, 'unemployed', null);
 
                 return [
                     'employment_status' => 'unemployed',
@@ -196,9 +196,9 @@ class EmploymentService
     }
 
     /**
-     * Feature 18: Notify Admin and Department Head about employment update.
+     * Feature 18: Notify Admins about employment update.
      */
-    private function notifyAdminAndDeptHead(User $alumni, $graduate, AlumniProfile $profile, string $status, ?EmploymentRecord $record): void
+    private function notifyAdmins(User $alumni, $graduate, AlumniProfile $profile, string $status, ?EmploymentRecord $record): void
     {
         $course = $graduate->course;
         $courseCode = $course?->code ?? 'N/A';
@@ -230,18 +230,6 @@ class EmploymentService
         foreach ($admins as $adminId) {
             Notification::create([
                 'user_id' => $adminId,
-                'type' => 'employment_update',
-                'title' => 'Employment Update',
-                'message' => $message,
-                'data' => $notificationData,
-            ]);
-        }
-
-        // ─── Notify Department Head ──────────────────────
-        $department = $course?->department;
-        if ($department && $department->dept_head_id) {
-            Notification::create([
-                'user_id' => $department->dept_head_id,
                 'type' => 'employment_update',
                 'title' => 'Employment Update',
                 'message' => $message,

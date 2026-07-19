@@ -5,7 +5,7 @@
 //  - Get board exam data (status, records, course info)
 //  - Submit/update board exam result
 //  - Upload proof document
-//  - Auto-trigger notifications to Admin & Department Head
+//  - Auto-trigger notifications to Admins
 // ═══════════════════════════════════════════════════════════
 
 namespace App\Services\Alumni;
@@ -16,7 +16,6 @@ use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\BoardExamRecord;
 use App\Models\Course;
-use App\Models\Department;
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
@@ -83,7 +82,7 @@ class BoardExamService
     /**
      * Submit or update a board exam result.
      * Also updates the alumni_profiles.board_status accordingly.
-     * Triggers notifications to Admin and Department Head.
+     * Triggers notifications to Admins.
      */
     public function submitBoardExam(User $user, array $data, ?UploadedFile $proofFile = null): array
     {
@@ -148,7 +147,7 @@ class BoardExamService
             $user->update(['last_profile_update_at' => now()]);
 
             // ─── Feature 12: Auto-trigger Notifications ──────
-            $this->notifyAdminAndDeptHead($user, $graduate, $course, $record);
+            $this->notifyAdmins($user, $graduate, $course, $record);
 
             // ─── Phase 3.1: Achievement feed entries ─────────
             if ($data['status'] === 'passed') {
@@ -173,9 +172,9 @@ class BoardExamService
     }
 
     /**
-     * Feature 12: Notify Admin and Department Head about board exam update.
+     * Feature 12: Notify Admins about board exam update.
      */
-    private function notifyAdminAndDeptHead(User $alumni, $graduate, Course $course, BoardExamRecord $record): void
+    private function notifyAdmins(User $alumni, $graduate, Course $course, BoardExamRecord $record): void
     {
         $title = 'Board Exam Update';
         $message = "{$alumni->full_name} ({$course->code} - Batch {$graduate->graduation_year}) "
@@ -200,18 +199,6 @@ class BoardExamService
         foreach ($admins as $adminId) {
             Notification::create([
                 'user_id' => $adminId,
-                'type' => 'board_exam_update',
-                'title' => $title,
-                'message' => $message,
-                'data' => $notificationData,
-            ]);
-        }
-
-        // ─── Notify Department Head ──────────────────────
-        $department = $course->department;
-        if ($department && $department->dept_head_id) {
-            Notification::create([
-                'user_id' => $department->dept_head_id,
                 'type' => 'board_exam_update',
                 'title' => $title,
                 'message' => $message,
