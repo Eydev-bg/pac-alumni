@@ -5,13 +5,13 @@ import { BOARD_COLORS } from "../constants";
 
 // ─── Board Exam Overview (pie) ───────────────────────────
 // Memoized: re-renders only when its derived props change.
-function BoardExamOverviewCard({ pieData, legend, passed }) {
+function BoardExamOverviewCard({ pieData, legend, passed, passingRate }) {
   return (
     <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
       <div className="mb-2">
         <h2 className="text-[15px] font-bold text-white">Board Exam Overview</h2>
         <p className="text-[11px] text-slate-400 mt-0.5">
-          Passed · Not Yet Taken breakdown
+          Passed · Not Yet Taken · Pass Rate
         </p>
       </div>
 
@@ -59,11 +59,20 @@ function BoardExamOverviewCard({ pieData, legend, passed }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 mt-auto pt-3">
+      <div className="grid grid-cols-2 gap-3 mt-auto pt-3">
         <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/15">
           <p className="text-xl font-bold text-green-500">{passed}</p>
           <p className="text-[10px] text-green-500/70 font-medium mt-0.5">
             Passed
+          </p>
+        </div>
+        <div className="text-center p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
+          <p className="text-xl font-bold text-white">{passingRate}%</p>
+          <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+            Pass Rate
+          </p>
+          <p className="text-[9px] text-slate-500 mt-0.5">
+            of board-program grads
           </p>
         </div>
       </div>

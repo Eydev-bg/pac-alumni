@@ -91,6 +91,9 @@ export default function DashboardPage() {
       legend: breakdown,
       pieData: breakdown.filter((d) => d.value > 0),
       passed: stats.board_passers || 0,
+      // Population-based: passed / total board-program graduates (meaningful,
+      // unlike the record-based AnalyticsService rate removed in Phase 2.2).
+      passingRate: stats.board_passing_rate || 0,
     };
   }, [data]);
 
@@ -201,6 +204,7 @@ export default function DashboardPage() {
             pieData={boardChart.pieData}
             legend={boardChart.legend}
             passed={boardChart.passed}
+            passingRate={boardChart.passingRate}
           />
         </div>
 
