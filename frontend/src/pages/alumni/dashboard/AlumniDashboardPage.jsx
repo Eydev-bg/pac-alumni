@@ -264,7 +264,7 @@ export default function AlumniDashboardPage() {
               label="Course"
               value={
                 academic.course
-                  ? `${academic.course.code} — ${academic.course.name}`
+                  ? `${academic.course.name}`
                   : "N/A"
               }
             />

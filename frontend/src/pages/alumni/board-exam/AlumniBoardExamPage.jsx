@@ -264,7 +264,7 @@ export default function AlumniBoardExamPage() {
                 {course.board_exam_name || "Board Examination"}
               </h1>
               <p className="text-sm text-white/60 mt-1">
-                {course.code} — {course.name}
+                {course.name}
               </p>
             </div>
             <div className="sm:text-right">
