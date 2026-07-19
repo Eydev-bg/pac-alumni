@@ -5,7 +5,7 @@
 
 namespace App\Services\Admin;
 
-use App\Enums\BoardExamStatus;
+use App\Enums\BoardStatus;
 use App\Enums\EducationLevel;
 use App\Models\AlumniProfile;
 use App\Models\BoardExamRecord;
@@ -119,10 +119,8 @@ class AnalyticsService
         if ($yearTo) $query->where('board_exam_records.exam_year', '<=', $yearTo);
         if ($departmentId) $query->where('graduates.department_id', $departmentId);
 
-        $totalTakers = (clone $query)->count();
-        $passers = (clone $query)->where('board_exam_records.status', BoardExamStatus::PASSER)->count();
-        $failed = (clone $query)->where('board_exam_records.status', BoardExamStatus::FAILED)->count();
-        $passingRate = $totalTakers > 0 ? round(($passers / $totalTakers) * 100, 1) : 0;
+        $totalRecords = (clone $query)->count();
+        $passed = (clone $query)->where('board_exam_records.status', BoardStatus::PASSED->value)->count();
 
         // By department
         $byDepartment = BoardExamRecord::query()
@@ -134,20 +132,17 @@ class AnalyticsService
             ->selectRaw("
                 departments.id as dept_id, departments.name as dept_name, departments.code as dept_code,
                 COUNT(*) as total_takers,
-                SUM(CASE WHEN board_exam_records.status = ? THEN 1 ELSE 0 END) as passers,
-                SUM(CASE WHEN board_exam_records.status = ? THEN 1 ELSE 0 END) as failed
-            ", [BoardExamStatus::PASSER->value, BoardExamStatus::FAILED->value])
+                SUM(CASE WHEN board_exam_records.status = ? THEN 1 ELSE 0 END) as passed
+            ", [BoardStatus::PASSED->value])
             ->groupBy('departments.id', 'departments.name', 'departments.code')
-            ->orderByDesc('passers')
+            ->orderByDesc('passed')
             ->get()
             ->map(fn($row) => [
                 'department_id' => $row->dept_id,
                 'department_name' => $row->dept_name,
                 'department_code' => $row->dept_code,
                 'total_takers' => $row->total_takers,
-                'passers' => (int) $row->passers,
-                'failed' => (int) $row->failed,
-                'passing_rate' => $row->total_takers > 0 ? round(($row->passers / $row->total_takers) * 100, 1) : 0,
+                'passed' => (int) $row->passed,
             ]);
 
         // By year — always join graduates so soft-deleted records are excluded
@@ -159,18 +154,15 @@ class AnalyticsService
             ->selectRaw("
                 exam_year,
                 COUNT(*) as total_takers,
-                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as passers,
-                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as failed
-            ", [BoardExamStatus::PASSER->value, BoardExamStatus::FAILED->value])
+                SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as passed
+            ", [BoardStatus::PASSED->value])
             ->groupBy('exam_year')
             ->orderBy('exam_year', 'desc')
             ->get();
 
         return [
-            'total_takers' => $totalTakers,
-            'passers' => $passers,
-            'failed' => $failed,
-            'passing_rate' => $passingRate,
+            'total_records' => $totalRecords,
+            'passed' => $passed,
             'by_department' => $byDepartment,
             'by_year' => $byYear,
         ];

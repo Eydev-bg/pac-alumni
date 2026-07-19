@@ -7,7 +7,7 @@
 
 namespace App\Services\Admin;
 
-use App\Enums\BoardExamStatus;
+use App\Enums\BoardStatus;
 use App\Enums\EducationLevel;
 use App\Models\Graduate;
 use App\Support\SqlExpression;
@@ -35,7 +35,7 @@ class GraduateTracerService
                 ->leftJoin('alumni_profiles as ap', 'ap.graduate_id', '=', 'g.id')
                 ->leftJoin('board_exam_records as ber', function ($join) {
                     $join->on('ber.graduate_id', '=', 'g.id')
-                        ->where('ber.status', '=', BoardExamStatus::PASSER->value);
+                        ->where('ber.status', '=', BoardStatus::PASSED->value);
                 })
                 ->whereNull('g.deleted_at')
                 ->where('g.education_level', EducationLevel::COLLEGE->value)
@@ -106,7 +106,7 @@ class GraduateTracerService
                 ->leftJoin('alumni_profiles as ap', 'ap.graduate_id', '=', 'g.id')
                 ->leftJoin('board_exam_records as ber', function ($join) {
                     $join->on('ber.graduate_id', '=', 'g.id')
-                        ->where('ber.status', '=', BoardExamStatus::PASSER->value);
+                        ->where('ber.status', '=', BoardStatus::PASSED->value);
                 })
                 ->whereNull('g.deleted_at')
                 ->where('g.education_level', EducationLevel::COLLEGE->value);

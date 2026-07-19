@@ -6,7 +6,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Enums\BoardExamStatus;
+use App\Enums\BoardStatus;
 use App\Enums\EducationLevel;
 use App\Enums\EmploymentType;
 use App\Models\AlumniProfile;
@@ -72,7 +72,7 @@ class DashboardController extends Controller
 
         // Board passers (unique graduates)
         $boardPassers = $this->distinctGraduateCount(
-            BoardExamRecord::where('status', BoardExamStatus::PASSER->value)
+            BoardExamRecord::where('status', BoardStatus::PASSED->value)
         );
 
         // Graduates in board program courses who have NO board exam record at all
