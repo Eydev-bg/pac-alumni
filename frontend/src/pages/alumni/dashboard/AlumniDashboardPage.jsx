@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
+import StatusBadge from "../../../components/common/StatusBadge";
 import AchievementFeed from "./AchievementFeed";
 import ProfileCompletion from "./ProfileCompletion";
 import {
@@ -73,15 +74,12 @@ export default function AlumniDashboardPage() {
 
   const { personal, academic, status, account } = data;
 
-  // Status badge helper
+  // Employment status badge helper (board statuses use the shared StatusBadge)
   const getStatusBadge = (value, label) => {
     const colors = {
       employed: "bg-emerald-100 text-emerald-700",
       unemployed: "bg-amber-100 text-amber-700",
       unknown: "bg-slate-100 text-slate-500",
-      passed: "bg-emerald-100 text-emerald-700",
-      not_taken: "bg-amber-100 text-amber-700",
-      not_applicable: "bg-slate-100 text-slate-500",
     };
     return (
       <span
@@ -203,7 +201,10 @@ export default function AlumniDashboardPage() {
                   Board Exam Status
                 </p>
                 <div className="mt-0.5">
-                  {getStatusBadge(status.board_status, status.board_label)}
+                  <StatusBadge
+                    status={status.board_status}
+                    label={status.board_label}
+                  />
                 </div>
               </div>
             </div>

@@ -178,11 +178,7 @@ export default function GraduateDetailPage() {
                     alumniProfile.board_status &&
                     alumniProfile.board_status !== "not_applicable" && (
                       <StatusBadge
-                        status={
-                          alumniProfile.board_status === "passed"
-                            ? "success"
-                            : "default"
-                        }
+                        status={alumniProfile.board_status}
                         label={`Board: ${alumniProfile.board_status?.replace("_", " ")}`}
                       />
                     )}
@@ -294,7 +290,7 @@ export default function GraduateDetailPage() {
                           </p>
                         </div>
                         <StatusBadge
-                          status={r.status === "passed" ? "success" : "default"}
+                          status={r.status}
                           label={r.status}
                         />
                       </div>

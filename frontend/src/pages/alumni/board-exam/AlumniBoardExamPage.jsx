@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
+import StatusBadge from "../../../components/common/StatusBadge";
 import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineCheckCircle,
@@ -271,10 +272,9 @@ export default function AlumniBoardExamPage() {
               <p className="text-[0.68rem] text-white/40 font-medium mb-1">
                 Current Status
               </p>
-              <StatusChip
-                value={current_status.board_status}
+              <StatusBadge
+                status={current_status.board_status}
                 label={current_status.board_label}
-                large
               />
             </div>
           </div>
@@ -606,7 +606,7 @@ export default function AlumniBoardExamPage() {
                       <h4 className="text-[0.82rem] font-bold text-slate-800">
                         {rec.exam_name}
                       </h4>
-                      <StatusChip value={rec.status} label={rec.status_label} />
+                      <StatusBadge status={rec.status} label={rec.status_label} />
                     </div>
                     <div className="flex items-center gap-4 mt-1.5 flex-wrap">
                       <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
@@ -677,21 +677,3 @@ export default function AlumniBoardExamPage() {
   );
 }
 
-// ─── Status Chip ─────────────────────────────────────────
-function StatusChip({ value, label, large }) {
-  const styles = {
-    passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    not_taken: "bg-slate-50 text-slate-600 border-slate-200",
-    not_applicable: "bg-slate-50 text-slate-500 border-slate-200",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center px-2.5 py-1 rounded-lg font-semibold border ${styles[value] || styles.not_applicable} ${
-        large ? "text-[0.78rem]" : "text-[0.68rem]"
-      }`}
-    >
-      {label}
-    </span>
-  );
-}

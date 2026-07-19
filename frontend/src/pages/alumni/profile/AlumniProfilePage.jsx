@@ -8,6 +8,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl } from "../../../utils/formatters";
+import StatusBadge from "../../../components/common/StatusBadge";
 import {
   HiOutlineUser,
   HiOutlineAcademicCap,
@@ -108,15 +109,13 @@ function InfoRow({ icon: Icon, label, value, highlight }) {
   );
 }
 
-// ─── Status Badge ────────────────────────────────────────
-function StatusBadge({ value, label }) {
+// ─── Employment Badge ────────────────────────────────────
+// Board statuses use the shared StatusBadge; this only handles employment.
+function EmploymentBadge({ value, label }) {
   const colors = {
     employed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     unemployed: "bg-amber-50 text-amber-700 border-amber-200",
     unknown: "bg-slate-50 text-slate-500 border-slate-200",
-    passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    not_taken: "bg-amber-50 text-amber-700 border-amber-200",
-    not_applicable: "bg-slate-50 text-slate-500 border-slate-200",
   };
 
   return (
@@ -636,7 +635,7 @@ export default function AlumniProfilePage() {
               </p>
             </div>
           </div>
-          <StatusBadge
+          <EmploymentBadge
             value={status.employment_status}
             label={status.employment_label}
           />
@@ -662,7 +661,7 @@ export default function AlumniProfilePage() {
               </div>
             </div>
             <StatusBadge
-              value={status.board_status}
+              status={status.board_status}
               label={status.board_label}
             />
             <p className="text-[0.68rem] text-slate-400 mt-3">

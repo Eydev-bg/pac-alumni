@@ -109,11 +109,7 @@ export default function AlumniProfilePage() {
                   label={`Employment: ${alumni_profile.employment_status}`}
                 />
                 <StatusBadge
-                  status={
-                    alumni_profile.board_status === "passed"
-                      ? "success"
-                      : "default"
-                  }
+                  status={alumni_profile.board_status}
                   label={`Board: ${alumni_profile.board_status?.replace("_", " ")}`}
                 />
               </div>
@@ -147,7 +143,7 @@ export default function AlumniProfilePage() {
                       </p>
                     </div>
                     <StatusBadge
-                      status={r.status === "passed" ? "success" : "default"}
+                      status={r.status}
                       label={r.status}
                     />
                   </div>
