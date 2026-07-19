@@ -58,6 +58,7 @@ class BoardExamService
                 'exam_year' => $r->exam_year,
                 'status' => $r->status->value,
                 'status_label' => $r->status->label(),
+                'is_current' => $r->is_current,
                 'proof_file' => $r->proof_file,
                 'updated_by_alumni' => $r->updated_by_alumni,
                 'verified_at' => $r->verified_at?->toISOString(),
@@ -110,12 +111,19 @@ class BoardExamService
                 $proofPath = '/storage/' . $filename;
             }
 
+            // ─── Append-and-supersede (Phase 3.4) ────────────
+            // Every attempt is kept as history. Demote any existing records
+            // for this graduate, then create the new one as the current record.
+            BoardExamRecord::where('graduate_id', $graduate->id)
+                ->update(['is_current' => false]);
+
             // ─── Create board exam record ────────────────────
             $record = BoardExamRecord::create([
                 'graduate_id' => $graduate->id,
                 'exam_name' => $course->board_exam_name ?? $course->name . ' Board Exam',
                 'exam_year' => $data['exam_year'],
                 'status' => $data['status'],
+                'is_current' => true,
                 'proof_file' => $proofPath,
                 'updated_by_alumni' => true,
             ]);

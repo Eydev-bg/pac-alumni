@@ -16,6 +16,7 @@ class BoardExamRecord extends Model
         'exam_name',
         'exam_year',
         'status',
+        'is_current',
         'proof_file',
         'updated_by_alumni',
         'verified_by',
@@ -27,6 +28,7 @@ class BoardExamRecord extends Model
         return [
             'status' => BoardStatus::class,
             'exam_year' => 'integer',
+            'is_current' => 'boolean',
             'updated_by_alumni' => 'boolean',
             'verified_at' => 'datetime',
         ];
