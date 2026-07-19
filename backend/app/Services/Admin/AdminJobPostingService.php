@@ -3,11 +3,9 @@
 namespace App\Services\Admin;
 
 use App\Enums\JobStatus;
-use App\Enums\UserRole;
 use App\Jobs\SendContentPublishedEmails;
 use App\Models\ContentEmailLog;
 use App\Models\JobPosting;
-use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
@@ -72,10 +70,9 @@ class AdminJobPostingService
         ]);
 
         // Created directly as active — alumni should hear about it just as
-        // they would via publish(). Email is additive to the in-app bell;
-        // the job's content_email_logs check keeps it send-once.
+        // they would via publish(). Both channels (in-app bell + email) now
+        // come from the dispatched job, guarded send-once by content_email_logs.
         if ($activate) {
-            $this->notifyAlumni($job);
             SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_JOB_POSTING, $job->id);
         }
 
@@ -127,7 +124,6 @@ class AdminJobPostingService
         ]);
 
         if (!$wasActive) {
-            $this->notifyAlumni($job);
             SendContentPublishedEmails::dispatch(ContentEmailLog::TYPE_JOB_POSTING, $job->id);
         }
 
@@ -153,35 +149,6 @@ class AdminJobPostingService
         $job = $this->find($id);
         $this->deleteFile($job->company_logo);
         $job->delete();
-    }
-
-    /**
-     * Notify every alumni user about a newly published job posting.
-     * Bulk insert — one query regardless of alumni count.
-     */
-    private function notifyAlumni(JobPosting $job): void
-    {
-        $now = now();
-
-        $rows = User::query()
-            ->byRole(UserRole::ALUMNI)
-            ->pluck('id')
-            ->map(fn (int $userId) => [
-                'user_id'    => $userId,
-                'type'       => 'job_posting',
-                'title'      => 'New Job Opportunity',
-                'message'    => "{$job->job_position} at {$job->company_name}",
-                // Bulk insert bypasses Eloquent casts, so encode manually.
-                'data'       => json_encode(['job_posting_id' => $job->id]),
-                'is_read'    => false,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ])
-            ->all();
-
-        if (!empty($rows)) {
-            Notification::insert($rows);
-        }
     }
 
     /**

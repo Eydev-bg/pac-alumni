@@ -17,6 +17,7 @@ use App\Models\Announcement;
 use App\Models\ContentEmailLog;
 use App\Models\Event;
 use App\Models\JobPosting;
+use App\Models\Notification;
 use App\Models\User;
 use App\Services\ContentAudienceResolver;
 use Illuminate\Bus\Queueable;
@@ -120,9 +121,16 @@ class SendContentPublishedEmails implements ShouldQueue, ShouldBeUnique
 
             Mail::to($user->email)->queue($this->mailableFor($user, $item));
 
-            // Record only AFTER queue() succeeded, so a crash mid-chunk never
-            // marks unsent users as sent. Insert-only: a duplicate key means a
-            // racing worker already sent it — treat as "already sent", not fatal.
+            // Second channel, same guard: create the in-app bell notification
+            // alongside the email. Because it lives inside the alreadySent()
+            // guard, a re-dispatch or resumed chunk never double-creates it.
+            $this->createNotification($user, $item);
+
+            // Record only AFTER both channels fired, so a crash mid-chunk never
+            // marks unnotified users as done. One content_email_logs row now
+            // means "user has been notified about this item (email + in-app)".
+            // Insert-only: a duplicate key means a racing worker already did it
+            // — treat as "already sent", not fatal.
             try {
                 ContentEmailLog::record($user->id, $this->contentType, $this->contentId);
             } catch (UniqueConstraintViolationException) {
@@ -133,6 +141,40 @@ class SendContentPublishedEmails implements ShouldQueue, ShouldBeUnique
                 "Content email [{$this->contentType}:{$this->contentId}] failed for user {$user->id}: {$e->getMessage()}"
             );
         }
+    }
+
+    /**
+     * Create the in-app bell notification for one user, scoped to the same
+     * audience the email job already resolved (target scoping for
+     * announcements/events, jobPostingQuery() for jobs).
+     */
+    private function createNotification(User $user, Event|Announcement|JobPosting $item): void
+    {
+        [$title, $message, $data] = match ($this->contentType) {
+            ContentEmailLog::TYPE_ANNOUNCEMENT => [
+                'New Announcement',
+                $item->title,
+                ['announcement_id' => $item->id],
+            ],
+            ContentEmailLog::TYPE_EVENT => [
+                'New Event',
+                $item->title,
+                ['event_id' => $item->id],
+            ],
+            ContentEmailLog::TYPE_JOB_POSTING => [
+                'New Job Opportunity',
+                "{$item->job_position} at {$item->company_name}",
+                ['job_posting_id' => $item->id],
+            ],
+        };
+
+        Notification::create([
+            'user_id' => $user->id,
+            'type' => $this->contentType,
+            'title' => $title,
+            'message' => $message,
+            'data' => $data,
+        ]);
     }
 
     private function mailableFor(User $user, Event|Announcement|JobPosting $item): Mailable
