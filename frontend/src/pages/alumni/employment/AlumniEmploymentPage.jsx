@@ -139,8 +139,8 @@ export default function AlumniEmploymentPage() {
       resetForm();
       showToast(
         formData.employment_status === "employed"
-          ? "Employment updated! Admin and Department Head have been notified."
-          : "Status updated to Unemployed. Admin and Department Head have been notified.",
+          ? "Employment updated! The Admin team has been notified."
+          : "Status updated to Unemployed. The Admin team has been notified.",
       );
     } catch (err) {
       if (err.response?.status === 422) {
@@ -677,8 +677,7 @@ export default function AlumniEmploymentPage() {
                 <div className="flex items-start gap-2.5">
                   <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <p className="text-[0.72rem] text-blue-700 leading-relaxed">
-                    The <span className="font-semibold">Admin</span> and your{" "}
-                    <span className="font-semibold">Department Head</span> will
+                    The <span className="font-semibold">Admin</span> team will
                     be automatically notified about this employment update.
                   </p>
                 </div>
@@ -843,8 +842,8 @@ export default function AlumniEmploymentPage() {
               Keep your employment information up to date. When you add a new
               job, your previous position is automatically marked as ended. Your
               employment data is used for institutional reports and helps PAC
-              track the career outcomes of its graduates. The Admin and your
-              Department Head are notified of any updates.
+              track the career outcomes of its graduates. The Admin team is
+              notified of any updates.
             </p>
           </div>
         </div>

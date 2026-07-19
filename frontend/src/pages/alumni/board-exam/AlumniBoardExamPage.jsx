@@ -2,7 +2,7 @@
 //  FILE: frontend/src/pages/alumni/board-exam/AlumniBoardExamPage.jsx
 //  Board Exam Module — Features 9-12
 //  Mark board status, enter exam year, upload proof,
-//  auto-trigger notifications to Admin & Department Head.
+//  auto-trigger notifications to Admin.
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -125,7 +125,7 @@ export default function AlumniBoardExamPage() {
       setProofFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       showToast(
-        "Board exam result submitted successfully! Admin and Department Head have been notified.",
+        "Board exam result submitted successfully! The Admin team has been notified.",
       );
     } catch (err) {
       if (err.response?.status === 422) {
@@ -513,8 +513,7 @@ export default function AlumniBoardExamPage() {
                 <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                 <p className="text-[0.72rem] text-blue-700 leading-relaxed">
                   Upon submission, the{" "}
-                  <span className="font-semibold">Admin</span> and your{" "}
-                  <span className="font-semibold">Department Head</span> will be
+                  <span className="font-semibold">Admin</span> team will be
                   automatically notified about your board exam result.
                 </p>
               </div>
@@ -661,8 +660,8 @@ export default function AlumniBoardExamPage() {
               About Board Exam Records
             </h4>
             <p className="text-[0.72rem] text-slate-500 mt-1 leading-relaxed">
-              Your board exam results are shared with the Admin and your
-              Department Head for institutional tracking. Uploading proof
+              Your board exam results are shared with the Admin for
+              institutional tracking. Uploading proof
               documents (certificate, rating sheet) is optional but recommended
               for faster verification. You may submit multiple records if you
               have taken the exam more than once.
