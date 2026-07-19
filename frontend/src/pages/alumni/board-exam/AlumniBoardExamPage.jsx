@@ -229,7 +229,7 @@ export default function AlumniBoardExamPage() {
 
   const { course, current_status, records } = data;
   const hasRecords = records.length > 0;
-  const isPasser = current_status.board_status === "passer";
+  const isPassed = current_status.board_status === "passed";
 
   // Generate year options
   const currentYear = new Date().getFullYear();
@@ -281,8 +281,8 @@ export default function AlumniBoardExamPage() {
         </div>
       </div>
 
-      {/* ━━━━ Passer Congrats Banner ━━━━ */}
-      {isPasser && (
+      {/* ━━━━ Passed Congrats Banner ━━━━ */}
+      {isPassed && (
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200/60 p-5 sm:p-6">
           <div className="flex items-start gap-4">
             <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -342,27 +342,26 @@ export default function AlumniBoardExamPage() {
               <div
                 role="group"
                 aria-labelledby="board-exam-result-label"
-                className="grid grid-cols-2 gap-3"
               >
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, status: "passer" })}
-                  className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
-                    formData.status === "passer"
+                  onClick={() => setFormData({ ...formData, status: "passed" })}
+                  className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all duration-200 ${
+                    formData.status === "passed"
                       ? "border-emerald-400 bg-emerald-50 shadow-sm"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      formData.status === "passer"
+                      formData.status === "passed"
                         ? "bg-emerald-100"
                         : "bg-slate-100"
                     }`}
                   >
                     <HiOutlineCheckCircle
                       className={`w-5 h-5 ${
-                        formData.status === "passer"
+                        formData.status === "passed"
                           ? "text-emerald-600"
                           : "text-slate-400"
                       }`}
@@ -370,73 +369,18 @@ export default function AlumniBoardExamPage() {
                   </div>
                   <div className="text-left">
                     <p
-                      className={`text-sm font-bold ${formData.status === "passer" ? "text-emerald-800" : "text-slate-700"}`}
+                      className={`text-sm font-bold ${formData.status === "passed" ? "text-emerald-800" : "text-slate-700"}`}
                     >
-                      Passer
+                      Passed
                     </p>
                     <p
-                      className={`text-[0.68rem] ${formData.status === "passer" ? "text-emerald-600" : "text-slate-400"}`}
+                      className={`text-[0.68rem] ${formData.status === "passed" ? "text-emerald-600" : "text-slate-400"}`}
                     >
                       I passed the exam
                     </p>
                   </div>
-                  {formData.status === "passer" && (
+                  {formData.status === "passed" && (
                     <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, status: "failed" })}
-                  className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
-                    formData.status === "failed"
-                      ? "border-red-300 bg-red-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                  }`}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                      formData.status === "failed"
-                        ? "bg-red-100"
-                        : "bg-slate-100"
-                    }`}
-                  >
-                    <HiOutlineXCircle
-                      className={`w-5 h-5 ${
-                        formData.status === "failed"
-                          ? "text-red-500"
-                          : "text-slate-400"
-                      }`}
-                    />
-                  </div>
-                  <div className="text-left">
-                    <p
-                      className={`text-sm font-bold ${formData.status === "failed" ? "text-red-700" : "text-slate-700"}`}
-                    >
-                      Failed
-                    </p>
-                    <p
-                      className={`text-[0.68rem] ${formData.status === "failed" ? "text-red-500" : "text-slate-400"}`}
-                    >
-                      I did not pass
-                    </p>
-                  </div>
-                  {formData.status === "failed" && (
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
                       <svg
                         className="w-3 h-3 text-white"
                         fill="none"
@@ -649,10 +593,10 @@ export default function AlumniBoardExamPage() {
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      rec.status === "passer" ? "bg-emerald-50" : "bg-red-50"
+                      rec.status === "passed" ? "bg-emerald-50" : "bg-slate-50"
                     }`}
                   >
-                    {rec.status === "passer" ? (
+                    {rec.status === "passed" ? (
                       <HiOutlineTrophy className="w-5 h-5 text-emerald-600" />
                     ) : (
                       <HiOutlineXCircle className="w-5 h-5 text-red-500" />
@@ -741,9 +685,8 @@ export default function AlumniBoardExamPage() {
 // ─── Status Chip ─────────────────────────────────────────
 function StatusChip({ value, label, large }) {
   const styles = {
-    passer: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    failed: "bg-red-50 text-red-600 border-red-200",
-    not_taken: "bg-amber-50 text-amber-700 border-amber-200",
+    passed: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    not_taken: "bg-slate-50 text-slate-600 border-slate-200",
     not_applicable: "bg-slate-50 text-slate-500 border-slate-200",
   };
 
