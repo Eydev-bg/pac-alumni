@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
+import { formatDateOnly } from "../../../utils/formatters";
 import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
@@ -297,10 +298,7 @@ export default function AlumniEmploymentPage() {
                   <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600">
                     <HiOutlineCalendarDays className="w-3.5 h-3.5" />
                     Since{" "}
-                    {new Date(current_job.start_date).toLocaleDateString(
-                      "en-US",
-                      { year: "numeric", month: "short" },
-                    )}
+                    {formatDateOnly(current_job.start_date)}
                   </span>
                 )}
               </div>
@@ -800,18 +798,12 @@ export default function AlumniEmploymentPage() {
                         {rec.start_date && (
                           <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
                             <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                            {new Date(rec.start_date).toLocaleDateString(
-                              "en-US",
-                              { year: "numeric", month: "short" },
-                            )}
+                            {formatDateOnly(rec.start_date)}
                             {rec.end_date ? (
                               <>
                                 {" "}
                                 <HiOutlineChevronRight className="w-3 h-3" />{" "}
-                                {new Date(rec.end_date).toLocaleDateString(
-                                  "en-US",
-                                  { year: "numeric", month: "short" },
-                                )}
+                                {formatDateOnly(rec.end_date)}
                               </>
                             ) : (
                               <> — Present</>

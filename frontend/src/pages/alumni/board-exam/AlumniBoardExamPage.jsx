@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
-import { storageUrl } from "../../../utils/formatters";
+import { storageUrl, formatDateOnly } from "../../../utils/formatters";
 import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineCheckCircle,
@@ -616,11 +616,7 @@ export default function AlumniBoardExamPage() {
                       <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
                         <HiOutlineClock className="w-3.5 h-3.5" />
                         Submitted:{" "}
-                        {new Date(rec.created_at).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {formatDateOnly(rec.created_at)}
                       </span>
                       {rec.verified_at && (
                         <span className="inline-flex items-center gap-1 text-[0.7rem] text-emerald-600">

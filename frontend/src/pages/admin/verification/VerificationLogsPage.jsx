@@ -9,6 +9,7 @@ import adminApi from "../../../api/adminApi";
 import Pagination from "../../../components/common/Pagination";
 import { useToast } from "../../../hooks/useToast";
 import { periodToDateParams, PERIOD_OPTIONS } from "../../../utils/dateFilters";
+import { formatDateOnly } from "../../../utils/formatters";
 import { PAGINATION } from "../../../config/constants";
 import Select from "../../../ui/Select";
 import SearchInput from "../../../ui/SearchInput";
@@ -45,12 +46,7 @@ function formatDateLabel(dateKey) {
   if (dateKey === todayKey) return "Today";
   if (dateKey === yesterdayKey) return "Yesterday";
 
-  return new Date(dateKey + "T00:00:00").toLocaleDateString("en-PH", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  return formatDateOnly(dateKey + "T00:00:00");
 }
 
 function formatTime(dateStr) {
@@ -299,14 +295,7 @@ export default function VerificationLogsPage() {
                       {formatDateLabel(group.dateKey)}
                     </h3>
                     <span className="text-[11px] text-slate-500 font-medium">
-                      {new Date(group.dateKey + "T00:00:00").toLocaleDateString(
-                        "en-PH",
-                        {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        },
-                      )}
+                      {formatDateOnly(group.dateKey + "T00:00:00")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

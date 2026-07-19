@@ -8,7 +8,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
-import { storageUrl } from "../../../utils/formatters";
+import { storageUrl, formatDateOnly } from "../../../utils/formatters";
 import AchievementFeed from "./AchievementFeed";
 import ProfileCompletion from "./ProfileCompletion";
 import {
@@ -94,14 +94,7 @@ export default function AlumniDashboardPage() {
   };
 
   // Format date
-  const formatDate = (iso) => {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const formatDate = (iso) => formatDateOnly(iso);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
