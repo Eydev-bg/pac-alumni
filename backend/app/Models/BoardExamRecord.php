@@ -5,7 +5,7 @@
 
 namespace App\Models;
 
-use App\Enums\BoardExamStatus;
+use App\Enums\BoardStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,7 +25,7 @@ class BoardExamRecord extends Model
     protected function casts(): array
     {
         return [
-            'status' => BoardExamStatus::class,
+            'status' => BoardStatus::class,
             'exam_year' => 'integer',
             'updated_by_alumni' => 'boolean',
             'verified_at' => 'datetime',
