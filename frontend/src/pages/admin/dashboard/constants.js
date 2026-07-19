@@ -28,6 +28,6 @@ export const EMPLOYMENT_TYPE_TRACK = "#1c2438";
 
 // Fixed color per board exam status so the legend, tooltip and slices always agree.
 export const BOARD_COLORS = {
-  Passers: "#22c55e", // green
+  Passed: "#22c55e", // green
   "Not Yet Taken": "#475569", // slate
 };

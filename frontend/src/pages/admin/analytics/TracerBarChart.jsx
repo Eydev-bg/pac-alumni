@@ -3,7 +3,7 @@
 //  Vertical grouped bar chart — per year analytics
 //
 //  Non-board courses: 3 bars (Graduates, Registered, Employed)
-//  Board courses: 4 bars (Graduates, Registered, Board Passers, Employed)
+//  Board courses: 4 bars (Graduates, Registered, Board Passed, Employed)
 //
 //  Tooltip shows exact count on hover.
 // ═══════════════════════════════════════════════════════════
@@ -26,7 +26,7 @@ import Card from "../../../ui/Card";
 const COLORS = {
   graduates: "#3b82f6", // Blue — total imported graduates
   registered: "#10b981", // Green — registered in system
-  boardPassers: "#f59e0b", // Amber — board exam passers
+  boardPassed: "#f59e0b", // Amber — board exam passed
   employed: "#c8a84e", // Gold — employed alumni
   axisLabel: "#94a3b8", // slate-400 — x-axis labels
   axisTick: "#64748b", // slate-500 — y-axis ticks
@@ -96,7 +96,7 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
       year: String(row.batch_year),
       Graduates: row.total_graduates,
       Registered: row.registered,
-      ...(isBoardProgram ? { "Board Passers": row.board_passers } : {}),
+      ...(isBoardProgram ? { "Board Passed": row.board_passers } : {}),
       Employed: row.employed,
     }));
 
@@ -112,7 +112,7 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
         </h3>
         <p className="text-[11px] text-slate-400 mt-1">
           {isBoardProgram
-            ? "Graduates, Registered, Board Passers, and Employed per batch year"
+            ? "Graduates, Registered, Board Passed, and Employed per batch year"
             : "Graduates, Registered, and Employed per batch year"}
         </p>
       </div>
@@ -165,8 +165,8 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
             />
             {isBoardProgram && (
               <Bar
-                dataKey="Board Passers"
-                fill={COLORS.boardPassers}
+                dataKey="Board Passed"
+                fill={COLORS.boardPassed}
                 radius={[6, 6, 0, 0]}
                 animationDuration={800}
                 animationBegin={400}

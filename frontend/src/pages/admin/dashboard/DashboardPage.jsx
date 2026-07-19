@@ -82,7 +82,7 @@ export default function DashboardPage() {
     const { stats } = data;
 
     const breakdown = [
-      { name: "Passers", value: stats.board_passers || 0 },
+      { name: "Passed", value: stats.board_passers || 0 },
       { name: "Not Yet Taken", value: stats.board_not_yet_taken || 0 },
     ];
 
@@ -90,8 +90,7 @@ export default function DashboardPage() {
       // Legend always lists all three statuses so empty slices are still shown.
       legend: breakdown,
       pieData: breakdown.filter((d) => d.value > 0),
-      passers: stats.board_passers || 0,
-      passingRate: stats.board_passing_rate || 0,
+      passed: stats.board_passers || 0,
     };
   }, [data]);
 
@@ -201,8 +200,7 @@ export default function DashboardPage() {
           <BoardExamOverviewCard
             pieData={boardChart.pieData}
             legend={boardChart.legend}
-            passers={boardChart.passers}
-            passingRate={boardChart.passingRate}
+            passed={boardChart.passed}
           />
         </div>
 

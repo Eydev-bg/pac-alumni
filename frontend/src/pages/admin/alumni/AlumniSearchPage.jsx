@@ -188,11 +188,8 @@ export default function AlumniSearchPage() {
                 <option value="" className={optionClass}>
                   All Board Status
                 </option>
-                <option value="passer" className={optionClass}>
-                  Board Passer
-                </option>
-                <option value="failed" className={optionClass}>
-                  Board Failed
+                <option value="passed" className={optionClass}>
+                  Passed
                 </option>
                 <option value="not_taken" className={optionClass}>
                   Not Yet Taken

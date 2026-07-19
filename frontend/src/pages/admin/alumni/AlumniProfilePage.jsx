@@ -110,11 +110,9 @@ export default function AlumniProfilePage() {
                 />
                 <StatusBadge
                   status={
-                    alumni_profile.board_status === "passer"
+                    alumni_profile.board_status === "passed"
                       ? "success"
-                      : alumni_profile.board_status === "failed"
-                        ? "failed"
-                        : "blocked"
+                      : "default"
                   }
                   label={`Board: ${alumni_profile.board_status?.replace("_", " ")}`}
                 />
@@ -149,7 +147,7 @@ export default function AlumniProfilePage() {
                       </p>
                     </div>
                     <StatusBadge
-                      status={r.status === "passer" ? "success" : "failed"}
+                      status={r.status === "passed" ? "success" : "default"}
                       label={r.status}
                     />
                   </div>

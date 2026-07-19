@@ -24,8 +24,7 @@ import {
 const GRADUATES_PER_PAGE = 60;
 
 const BOARD_LABELS = {
-  passer: "Board Passers",
-  failed: "Board Failed",
+  passed: "Passed",
   not_taken: "Not Yet Taken",
 };
 const EMPLOYMENT_LABELS = {
@@ -34,8 +33,7 @@ const EMPLOYMENT_LABELS = {
   unknown: "Unknown",
 };
 const BOARD_OPTIONS = [
-  { value: "passer", label: "Board Passer" },
-  { value: "failed", label: "Board Failed" },
+  { value: "passed", label: "Passed" },
   { value: "not_taken", label: "Not Yet Taken" },
 ];
 const EMPLOYMENT_OPTIONS = [
