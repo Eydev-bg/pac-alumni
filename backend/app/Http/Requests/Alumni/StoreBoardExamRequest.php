@@ -6,7 +6,6 @@
 
 namespace App\Http\Requests\Alumni;
 
-use App\Enums\BoardExamStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +19,7 @@ class StoreBoardExamRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status'     => ['required', 'string', Rule::in(BoardExamStatus::values())],
+            'status'     => ['required', 'string', Rule::in(['passed'])],
             'exam_year'  => ['required', 'integer', 'min:1990', 'max:' . (date('Y') + 1)],
             'proof_file' => ['nullable', 'file', 'mimes:jpeg,jpg,png,pdf', 'max:5120'], // 5MB max
         ];
@@ -30,7 +29,7 @@ class StoreBoardExamRequest extends FormRequest
     {
         return [
             'status.required'    => 'Board exam status is required.',
-            'status.in'          => 'Status must be either passer or failed.',
+            'status.in'          => 'Board exam status must be Passed.',
             'exam_year.required' => 'Exam year is required.',
             'exam_year.min'      => 'Exam year must be 1990 or later.',
             'exam_year.max'      => 'Exam year cannot be in the future.',

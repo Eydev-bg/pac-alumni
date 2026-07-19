@@ -10,7 +10,6 @@
 
 namespace App\Services\Alumni;
 
-use App\Enums\BoardExamStatus;
 use App\Enums\BoardStatus;
 use App\Enums\UserRole;
 use App\Models\AchievementFeed;
@@ -123,15 +122,13 @@ class BoardExamService
             ]);
 
             // ─── Update alumni_profiles.board_status ─────────
-            $newBoardStatus = $data['status'] === 'passer'
-                ? BoardStatus::PASSER
-                : BoardStatus::FAILED;
+            // Alumni can only submit 'passed', so the profile always maps to
+            // the canonical PASSED value. (Append/supersede is_current logic
+            // is deferred to Phase 3.4.)
+            $newBoardStatus = BoardStatus::PASSED;
 
-            // If already a passer, keep passer status (don't downgrade)
-            if ($profile->board_status !== BoardStatus::PASSER || $data['status'] === 'passer') {
-                $oldStatus = $profile->board_status?->value;
-                $profile->update(['board_status' => $newBoardStatus]);
-            }
+            $oldStatus = $profile->board_status?->value;
+            $profile->update(['board_status' => $newBoardStatus]);
 
             // ─── Log profile activity ────────────────────────
             ProfileActivityLog::log(
@@ -154,7 +151,7 @@ class BoardExamService
             $this->notifyAdminAndDeptHead($user, $graduate, $course, $record);
 
             // ─── Phase 3.1: Achievement feed entries ─────────
-            if ($data['status'] === 'passer') {
+            if ($data['status'] === 'passed') {
                 AchievementFeed::recordBoardPassed($profile, $record, $user->full_name);
             }
             AchievementFeed::maybeRecordProfileCompleted($profile);
