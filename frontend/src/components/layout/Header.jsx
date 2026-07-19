@@ -94,8 +94,9 @@ export default function Header({
     };
   }, [bellOpen, user?.role]);
 
-  // Mark an alumni notification read; job_posting notifications deep-link to
-  // the job detail page.
+  // Mark an alumni notification read, then deep-link by content type. Jobs have
+  // a detail route; announcements/events have list pages only (no detail route),
+  // so they land on the list — mirroring the email links.
   const openAlumniNotification = async (n) => {
     setBellOpen(false);
     if (!n.is_read) {
@@ -108,6 +109,10 @@ export default function Header({
     }
     if (n.data?.job_posting_id) {
       navigate(`/alumni/careers/${n.data.job_posting_id}`);
+    } else if (n.data?.announcement_id) {
+      navigate("/alumni/announcements");
+    } else if (n.data?.event_id) {
+      navigate("/alumni/events");
     }
   };
 
