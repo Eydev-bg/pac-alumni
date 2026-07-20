@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 class AnalyticsService
 {
     /**
-     * Elementary Analytics (Feature 21) — Simple graduate counts per year
+     * Elementary Analytics — Simple graduate counts per year
      * Same structure as JHS/SHS for consistency in Admin Analytics
      */
     public function elementary(?int $yearFrom = null, ?int $yearTo = null): array
@@ -25,7 +25,7 @@ class AnalyticsService
     }
 
     /**
-     * JHS Analytics (Feature 22) — Simplified: graduate counts per year
+     * JHS Analytics — Simplified: graduate counts per year
      */
     public function jhs(?int $yearFrom = null, ?int $yearTo = null): array
     {
@@ -33,7 +33,7 @@ class AnalyticsService
     }
 
     /**
-     * SHS Analytics (Feature 23) — Simplified: graduate counts per year
+     * SHS Analytics — Simplified: graduate counts per year
      */
     public function shs(?int $yearFrom = null, ?int $yearTo = null): array
     {
@@ -41,7 +41,7 @@ class AnalyticsService
     }
 
     /**
-     * College Analytics — Graduate Count (Feature 24)
+     * College Analytics — Graduate Count
      */
     public function collegeGraduates(?int $yearFrom = null, ?int $yearTo = null, ?int $departmentId = null, ?int $courseId = null): array
     {
@@ -106,7 +106,7 @@ class AnalyticsService
     }
 
     /**
-     * College Analytics — Board Exam Tracking (Feature 25)
+     * College Analytics — Board Exam Tracking
      */
     public function boardExams(?int $yearFrom = null, ?int $yearTo = null, ?int $departmentId = null): array
     {
@@ -169,7 +169,7 @@ class AnalyticsService
     }
 
     /**
-     * College Analytics — Employment Tracking (Feature 26)
+     * College Analytics — Employment Tracking
      */
     public function employment(?int $yearFrom = null, ?int $yearTo = null, ?int $departmentId = null): array
     {

@@ -136,7 +136,7 @@ class EmploymentService
                     ]
                 );
 
-                // ─── Feature 18: Auto-trigger notifications ──
+                // ─── Auto-trigger notifications ──
                 $this->notifyAdmins($user, $graduate, $profile, 'employed', $record);
 
                 // ─── Phase 3.1: Achievement feed entries ─────
@@ -196,7 +196,7 @@ class EmploymentService
     }
 
     /**
-     * Feature 18: Notify Admins about employment update.
+     * Notify Admins about employment update.
      */
     private function notifyAdmins(User $alumni, $graduate, AlumniProfile $profile, string $status, ?EmploymentRecord $record): void
     {

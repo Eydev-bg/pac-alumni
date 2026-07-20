@@ -29,29 +29,29 @@ class AlumniSearchController extends Controller
             ->collegeOnly();
              
 
-        // Search by name (Feature 31)
+        // Search by name
         if ($request->filled('search')) {
             $query->search($request->search);
         }
 
-        // Filter by graduation year (Feature 32)
+        // Filter by graduation year
         if ($request->filled('graduation_year')) {
             $query->byYear($request->integer('graduation_year'));
         }
 
-        // Filter by department (Feature 33)
+        // Filter by department
         if ($request->filled('department_id')) {
             $query->byDepartment($request->integer('department_id'));
         }
 
-        // Advanced filter: Board Status (Feature 34)
+        // Advanced filter: Board Status
         if ($request->filled('board_status')) {
             $query->whereHas('user', function ($q) use ($request) {
                 $q->whereHas('alumniProfile', fn($ap) => $ap->where('board_status', $request->board_status));
             });
         }
 
-        // Advanced filter: Employment Status (Feature 35)
+        // Advanced filter: Employment Status
         if ($request->filled('employment_status')) {
             $query->whereHas('user', function ($q) use ($request) {
                 $q->whereHas('alumniProfile', fn($ap) => $ap->where('employment_status', $request->employment_status));

@@ -154,7 +154,7 @@ class BoardExamService
             // ─── Phase 4.1: Track profile activity for reminders ──
             $user->update(['last_profile_update_at' => now()]);
 
-            // ─── Feature 12: Auto-trigger Notifications ──────
+            // ─── Auto-trigger Notifications ──────
             $this->notifyAdmins($user, $graduate, $course, $record);
 
             // ─── Phase 3.1: Achievement feed entries ─────────
@@ -180,7 +180,7 @@ class BoardExamService
     }
 
     /**
-     * Feature 12: Notify Admins about board exam update.
+     * Notify Admins about board exam update.
      */
     private function notifyAdmins(User $alumni, $graduate, Course $course, BoardExamRecord $record): void
     {
