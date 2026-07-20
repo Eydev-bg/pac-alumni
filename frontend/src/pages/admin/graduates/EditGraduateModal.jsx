@@ -48,7 +48,7 @@ export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
       const payload = { ...form };
       if (!payload.course_id) payload.course_id = null;
       await adminApi.updateGraduate(graduate.id, payload);
-      toast.success("Graduate updated successfully.");
+      toast.success("Graduate updated.");
       onUpdated();
     } catch (err) {
       if (err.response?.status === 422) {

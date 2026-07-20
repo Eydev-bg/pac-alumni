@@ -65,10 +65,10 @@ export default function CourseFormModal({
     try {
       if (course) {
         await adminApi.updateCourse(course.id, form);
-        toast.success("Course updated successfully.");
+        toast.success("Course updated.");
       } else {
         await adminApi.createCourse(form);
-        toast.success("Course created successfully.");
+        toast.success("Course created.");
       }
       onSaved();
       onClose();

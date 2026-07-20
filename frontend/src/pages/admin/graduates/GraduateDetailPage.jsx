@@ -48,8 +48,8 @@ export default function GraduateDetailPage() {
           setAlumniData(null);
         }
       }
-    } catch {
-      toast.error("Graduate not found.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Graduate not found.");
       navigate("/admin/graduates");
     } finally {
       setLoading(false);

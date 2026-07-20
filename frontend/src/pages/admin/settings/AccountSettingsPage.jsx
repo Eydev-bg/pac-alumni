@@ -78,7 +78,7 @@ export default function AccountSettingsPage() {
       }
 
       setProfileSuccess(true);
-      toast.success("Profile updated successfully.");
+      toast.success("Profile updated.");
     } catch (err) {
       if (err.response?.status === 422) {
         setProfileErrors(err.response.data.errors || {});
@@ -132,7 +132,7 @@ export default function AccountSettingsPage() {
       }
 
       setPasswordSuccess(true);
-      toast.success("Password changed successfully.");
+      toast.success("Password changed.");
       setPasswordForm({
         current_password: "",
         password: "",
@@ -178,7 +178,7 @@ export default function AccountSettingsPage() {
 
         {profileSuccess && (
           <Alert variant="success" className="mb-4">
-            Profile updated successfully.
+            Profile updated.
           </Alert>
         )}
 
@@ -235,7 +235,7 @@ export default function AccountSettingsPage() {
 
         {passwordSuccess && (
           <Alert variant="success" className="mb-4">
-            Password changed successfully.
+            Password changed.
           </Alert>
         )}
 

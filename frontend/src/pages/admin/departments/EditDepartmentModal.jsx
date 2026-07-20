@@ -32,7 +32,7 @@ export default function EditDepartmentModal({ department, onClose, onUpdated }) 
     setLoading(true);
     try {
       await adminApi.updateDepartment(department.id, form);
-      toast.success("Department updated successfully.");
+      toast.success("Department updated.");
       onUpdated();
     } catch (err) {
       if (err.response?.status === 422) {

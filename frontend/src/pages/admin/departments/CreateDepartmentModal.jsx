@@ -45,7 +45,7 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
     setLoading(true);
     try {
       await adminApi.createDepartment(form);
-      toast.success("Department created successfully.");
+      toast.success("Department created.");
       onCreated();
     } catch (err) {
       if (err.response?.status === 422) {

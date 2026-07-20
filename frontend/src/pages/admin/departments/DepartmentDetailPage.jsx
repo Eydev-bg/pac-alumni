@@ -44,8 +44,8 @@ export default function DepartmentDetailPage() {
     try {
       const deptRes = await adminApi.getDepartment(id);
       setDept(deptRes.data.data);
-    } catch {
-      toast.error("Department not found.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Department not found.");
       navigate("/admin/departments");
     } finally {
       setLoading(false);
