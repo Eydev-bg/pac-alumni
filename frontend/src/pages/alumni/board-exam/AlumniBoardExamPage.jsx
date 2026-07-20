@@ -334,15 +334,11 @@ export default function AlumniBoardExamPage() {
             {/* Status Selection */}
             <div>
               <label
-                id="board-exam-result-label"
                 className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
               >
                 Exam Result <span className="text-red-400">*</span>
               </label>
-              <div
-                role="group"
-                aria-labelledby="board-exam-result-label"
-              >
+              <div>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, status: "passed" })}

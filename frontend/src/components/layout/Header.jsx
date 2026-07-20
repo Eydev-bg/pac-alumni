@@ -39,8 +39,22 @@ export default function Header({
   const [recentLoading, setRecentLoading] = useState(false);
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
+  const bellButtonRef = useRef(null);
 
   const dark = variant === "dark";
+
+  // Close the bell dropdown on Escape and return focus to the bell button.
+  useEffect(() => {
+    if (!bellOpen) return;
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        setBellOpen(false);
+        bellButtonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [bellOpen]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -161,6 +175,10 @@ export default function Header({
       {user?.role === "admin" && (
       <div className="relative" ref={bellRef}>
         <button
+          ref={bellButtonRef}
+          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+          aria-expanded={bellOpen}
+          aria-haspopup="true"
           className={`relative p-2 rounded-lg transition-colors ${
             dark
               ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
@@ -179,6 +197,7 @@ export default function Header({
         {/* Bell dropdown */}
         {bellOpen && (
           <div
+            role="menu"
             className={`absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 ${
               dark
                 ? "bg-navy-800 border border-white/[0.08] shadow-2xl"
@@ -186,6 +205,7 @@ export default function Header({
             }`}
           >
             <button
+              role="menuitem"
               onClick={() => {
                 navigate("/admin/notifications");
                 setBellOpen(false);
@@ -205,6 +225,7 @@ export default function Header({
               )}
             </button>
             <button
+              role="menuitem"
               onClick={() => {
                 navigate("/admin/verification/logs");
                 setBellOpen(false);
@@ -227,6 +248,10 @@ export default function Header({
       {user?.role === "alumni" && (
       <div className="relative" ref={bellRef}>
         <button
+          ref={bellButtonRef}
+          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+          aria-expanded={bellOpen}
+          aria-haspopup="true"
           className="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100"
           onClick={() => setBellOpen(!bellOpen)}
         >
@@ -240,7 +265,7 @@ export default function Header({
 
         {/* Bell dropdown */}
         {bellOpen && (
-          <div className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg">
+          <div role="menu" className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg">
             <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between">
               <p className="text-sm font-semibold text-slate-700">
                 Notifications
@@ -265,6 +290,7 @@ export default function Header({
                 {recent.map((n) => (
                   <button
                     key={n.id}
+                    role="menuitem"
                     onClick={() => openAlumniNotification(n)}
                     className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer hover:bg-slate-50 ${
                       !n.is_read ? "bg-[#c8a84e]/[0.06]" : ""
@@ -298,6 +324,7 @@ export default function Header({
             )}
 
             <button
+              role="menuitem"
               onClick={() => {
                 navigate("/alumni/notifications");
                 setBellOpen(false);
