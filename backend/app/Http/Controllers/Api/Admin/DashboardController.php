@@ -112,6 +112,8 @@ class DashboardController extends Controller
                 ? round(($boardPassers / $graduatesInBoardPrograms) * 100, 1)
                 : 0,
             'employment_rate' => $employmentRate,
+            'employment_known_count' => $totalProfiles,
+            'employment_total_profiles' => AlumniProfile::count(),
             'employed_count' => $employed,
             'new_alumni_this_month' => $thisMonthAlumni,
             'alumni_growth_percent' => $alumniGrowth,

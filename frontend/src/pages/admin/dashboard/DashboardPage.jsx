@@ -73,6 +73,9 @@ export default function DashboardPage() {
       pieData: breakdown.filter((d) => d.value > 0),
       employedCount,
       employmentRate: stats.employment_rate || 0,
+      // Context for the rate: how many profiles actually reported a status.
+      knownCount: stats.employment_known_count ?? 0,
+      totalProfiles: stats.employment_total_profiles ?? 0,
     };
   }, [data]);
 
@@ -197,6 +200,8 @@ export default function DashboardPage() {
             legend={employmentChart.legend}
             employedCount={employmentChart.employedCount}
             employmentRate={employmentChart.employmentRate}
+            knownCount={employmentChart.knownCount}
+            totalProfiles={employmentChart.totalProfiles}
           />
 
           {/* Board Exam Overview pie — right */}

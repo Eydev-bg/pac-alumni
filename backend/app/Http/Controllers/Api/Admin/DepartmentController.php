@@ -46,9 +46,11 @@ class DepartmentController extends Controller
      * GET /api/admin/departments/all
      * Get all active departments (for dropdowns, no pagination).
      */
-    public function all(): JsonResponse
+    public function all(Request $request): JsonResponse
     {
-        $departments = $this->deptService->allActive();
+        $departments = $this->deptService->allActive(
+            $request->string('education_level')->toString() ?: null
+        );
 
         return $this->success(
             DepartmentResource::collection($departments),

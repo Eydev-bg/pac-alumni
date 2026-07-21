@@ -19,7 +19,7 @@ interface DepartmentRepositoryInterface
         ?string $educationLevel = null
     ): LengthAwarePaginator;
 
-    public function all(?DepartmentStatus $status = null): Collection;
+    public function all(?DepartmentStatus $status = null, ?string $educationLevel = null): Collection;
 
     public function findById(int $id): ?Department;
 

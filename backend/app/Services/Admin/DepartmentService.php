@@ -39,10 +39,12 @@ class DepartmentService
 
     /**
      * Get all active departments (for dropdowns).
+     * Optionally filter by education_level (e.g. 'college') so audience
+     * dropdowns only show levels that actually have alumni accounts.
      */
-    public function allActive(): Collection
+    public function allActive(?string $educationLevel = null): Collection
     {
-        return $this->deptRepo->all(DepartmentStatus::ACTIVE);
+        return $this->deptRepo->all(DepartmentStatus::ACTIVE, $educationLevel);
     }
 
     public function findById(int $id): Department

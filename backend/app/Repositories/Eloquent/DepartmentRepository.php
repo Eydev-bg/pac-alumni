@@ -39,11 +39,12 @@ class DepartmentRepository implements DepartmentRepositoryInterface
             ->paginate($perPage);
     }
 
-    public function all(?DepartmentStatus $status = null): Collection
+    public function all(?DepartmentStatus $status = null, ?string $educationLevel = null): Collection
     {
         return $this->model->newQuery()
             ->with('courses')
             ->when($status, fn($q) => $q->where('status', $status))
+            ->byLevel($educationLevel)
             ->orderBy('name')
             ->get();
     }

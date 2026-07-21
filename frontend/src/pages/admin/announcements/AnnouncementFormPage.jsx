@@ -128,7 +128,7 @@ export default function AnnouncementFormPage() {
   // ── Load reference data for the target selector ──
   useEffect(() => {
     adminApi
-      .getAllDepartments()
+      .getAllDepartments({ education_level: "college" })
       .then((res) => setDepartments(res.data.data))
       .catch(() => {});
     adminApi

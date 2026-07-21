@@ -5,7 +5,14 @@ import { EMPLOYMENT_COLORS } from "../constants";
 
 // ─── Employment Overview (pie) ───────────────────────────
 // Memoized: re-renders only when its derived props change.
-function EmploymentOverviewCard({ pieData, legend, employedCount, employmentRate }) {
+function EmploymentOverviewCard({
+  pieData,
+  legend,
+  employedCount,
+  employmentRate,
+  knownCount = 0,
+  totalProfiles = 0,
+}) {
   return (
     <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
       <div className="mb-2">
@@ -74,6 +81,13 @@ function EmploymentOverviewCard({ pieData, legend, employedCount, employmentRate
           <p className="text-[10px] text-slate-400 font-medium mt-0.5">Rate</p>
         </div>
       </div>
+
+      {/* Disclaimer: the rate is over profiles that reported a status, not all. */}
+      {totalProfiles > 0 && (
+        <p className="text-xs text-slate-400 opacity-60 text-center mt-2">
+          Based on {knownCount.toLocaleString()} of {totalProfiles.toLocaleString()} alumni
+        </p>
+      )}
     </div>
   );
 }

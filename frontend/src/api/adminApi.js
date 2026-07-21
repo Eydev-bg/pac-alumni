@@ -24,7 +24,7 @@ const adminApi = {
 
   // ─── Phase 2: Department Management ────────────────────
   getDepartments: (params = {}) => api.get('/admin/departments', { params }),
-  getAllDepartments: () => api.get('/admin/departments/all'),
+  getAllDepartments: (params = {}) => api.get('/admin/departments/all', { params }),
   getDepartment: (id) => api.get(`/admin/departments/${id}`),
   createDepartment: (data) => api.post('/admin/departments', data),
   updateDepartment: (id, data) => api.put(`/admin/departments/${id}`, data),

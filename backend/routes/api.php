@@ -18,3 +18,6 @@ require __DIR__ . '/api/admin.php';
 
 // ─── Alumni Routes (Protected: auth + role:alumni) ───────
 require __DIR__ . '/api/alumni.php';
+
+// ─── Public Routes (No auth: landing stats, etc.) ────────
+require __DIR__ . '/api/public.php';
