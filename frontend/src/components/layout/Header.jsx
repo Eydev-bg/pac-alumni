@@ -132,7 +132,9 @@ export default function Header({
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login");
+    // Voluntary sign-out lands on the public landing page (not /login — that's
+    // reserved for the 401/token-expired redirect in the axios interceptor).
+    navigate("/");
   };
 
   return (
