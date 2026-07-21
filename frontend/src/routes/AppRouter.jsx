@@ -11,6 +11,7 @@ import AuthLayout from "../components/layout/AuthLayout";
 import AlumniLayout from "../components/layout/AlumniLayout";
 
 // ─── Public pages ────────────────────────────────────────
+const LandingPage = lazy(() => import("../pages/public/LandingPage"));
 const MaintenancePage = lazy(() => import("../pages/MaintenancePage"));
 
 // ─── Auth pages ──────────────────────────────────────────
@@ -59,7 +60,8 @@ export default function AppRouter() {
           shared LoadingScreen shows briefly while a route chunk loads. */}
       <Suspense fallback={<LoadingScreen />}>
         <Routes>
-          {/* ─── Public: Maintenance page (no auth/guard) ── */}
+          {/* ─── Public: Landing page + Maintenance (no auth/guard) ── */}
+          <Route path="/" element={<LandingPage />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
 
           {/* ─── Guest Routes ──────────────────────────── */}
