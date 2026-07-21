@@ -18,7 +18,7 @@ export default function HeroSection() {
   return (
     <section
       id="home"
-      className="scroll-mt-20 bg-[linear-gradient(140deg,var(--color-navy-900)_0%,var(--color-navy-800)_58%,var(--color-navy-950)_100%)] px-5 py-12 sm:px-8 lg:px-12 lg:py-16"
+      className="flex min-h-screen scroll-mt-20 flex-col justify-start bg-[linear-gradient(140deg,var(--color-navy-900)_0%,var(--color-navy-800)_58%,var(--color-navy-950)_100%)] px-5 pb-12 pt-24 sm:px-8 lg:px-12 lg:pb-16 lg:pt-28"
     >
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-8 md:flex-row md:gap-10">
@@ -28,7 +28,7 @@ export default function HeroSection() {
               Serving graduates since 1975
             </p>
             <h1
-              className="text-[28px] font-extrabold leading-[1.15] text-white sm:text-4xl"
+              className="text-3xl font-extrabold leading-[1.1] text-white md:text-[3.10rem]"
               style={SERIF}
             >
               Stay connected with{" "}
