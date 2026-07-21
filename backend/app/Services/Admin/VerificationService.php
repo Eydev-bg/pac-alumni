@@ -98,9 +98,11 @@ class VerificationService
             // Link graduate to user
             $graduate->update(['user_id' => $user->id]);
 
-            // Create alumni profile
-            $department = $graduate->department;
-            $boardStatus = ($department && $department->is_board_program)
+            // Create alumni profile. is_board_program is authoritative on the
+            // COURSE (the department flag is stale), so derive the default board
+            // status from the course — board-program grads start NOT_TAKEN.
+            $graduate->loadMissing('course');
+            $boardStatus = $graduate->course?->is_board_program
                 ? BoardStatus::NOT_TAKEN
                 : BoardStatus::NOT_APPLICABLE;
 

@@ -14,8 +14,10 @@ import {
   HiOutlineUserCircle,
 } from "react-icons/hi2";
 
-const NAVY = "#1a2e5a";
-const GOLD = "#c8a84e";
+// Alumni blue-accent theme (Phase A redesign): bubbles/avatar use the primary
+// blue; the send button uses the same accent.
+const NAVY = "#2563eb";
+const GOLD = "#2563eb";
 const MAX_LEN = 1000;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
@@ -227,7 +229,7 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
             }}
             rows={1}
             placeholder="Type a message…"
-            className="flex-1 resize-none rounded-2xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 focus:border-[#1a2e5a] max-h-32"
+            className="flex-1 resize-none rounded-2xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb] max-h-32"
           />
           <button
             type="submit"

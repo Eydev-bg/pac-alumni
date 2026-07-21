@@ -8,6 +8,7 @@ import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
 import { formatDate, storageUrl, cn, stripHtml } from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
+import { IconChip } from "../../../components/alumni/ui";
 import {
   HiOutlineCalendarDays,
   HiOutlineXMark,
@@ -38,6 +39,10 @@ function isPast(event) {
   return event.end_datetime && new Date(event.end_datetime) < new Date();
 }
 
+// Matches Tailwind's lg breakpoint — the tabs are a mobile treatment, so the
+// desktop list keeps showing every event regardless of the selected tab.
+const DESKTOP_QUERY = "(min-width: 1024px)";
+
 // going_count tracks only "going" RSVPs, so adjust it when the caller's own
 // status crosses the going boundary (keeps the optimistic count accurate).
 function applyGoingDelta(prevStatus, nextStatus, goingCount) {
@@ -53,6 +58,19 @@ export default function AlumniEventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [active, setActive] = useState(null);
+
+  // Batch 5: mobile-only Upcoming / Past tabs, split from the current page
+  // client-side (the payload carries start/end datetimes). Hidden on lg+.
+  const [tab, setTab] = useState("upcoming");
+  const [isDesktop, setIsDesktop] = useState(
+    () => window.matchMedia(DESKTOP_QUERY).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const onChange = (e) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // 5A: the page number lives in the URL so refresh and back/forward
   // restore the list position.
@@ -114,27 +132,21 @@ export default function AlumniEventsPage() {
     }
   };
 
+  // Desktop shows the full page; mobile splits it by the selected tab.
+  const visibleItems = isDesktop
+    ? items
+    : items.filter((e) => (tab === "past" ? isPast(e) : !isPast(e)));
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* ━━━━ Header ━━━━ */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1a2e5a] via-[#243a6e] to-[#1e3466] rounded-2xl shadow-lg">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/[0.03]" />
-        <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-[#c8a84e]/[0.06]" />
-        <div className="relative z-10 px-5 sm:px-8 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 flex-shrink-0">
-              <HiOutlineCalendarDays className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <p className="text-[0.72rem] text-[#c8a84e] font-semibold tracking-wider uppercase mb-1">
-                Stay Connected
-              </p>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Events</h1>
-              <p className="text-sm text-white/70 mt-0.5">
-                Upcoming events and gatherings for alumni.
-              </p>
-            </div>
-          </div>
+      <div className="flex items-center gap-3">
+        <IconChip icon={HiOutlineCalendarDays} color="blue" size="lg" />
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Events</h1>
+          <p className="text-sm text-slate-500">
+            Upcoming events and gatherings for alumni.
+          </p>
         </div>
       </div>
 
@@ -143,6 +155,26 @@ export default function AlumniEventsPage() {
           {error}
         </div>
       )}
+
+      {/* Mobile-only Upcoming / Past tabs */}
+      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 px-1">
+        {[
+          { key: "upcoming", label: "Upcoming" },
+          { key: "past", label: "Past" },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`relative -mb-px pb-2.5 text-sm font-semibold transition-colors ${
+              tab === t.key
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-slate-400 border-b-2 border-transparent"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
       {/* ━━━━ List ━━━━ */}
       {loading ? (
@@ -155,14 +187,20 @@ export default function AlumniEventsPage() {
         />
       ) : (
         <div className="space-y-3">
-          {items.map((a) => (
-            <EventCard
-              key={a.id}
-              event={a}
-              onOpen={() => setActive(a)}
-              onRsvp={handleRsvp}
-            />
-          ))}
+          {visibleItems.length === 0 ? (
+            <p className="lg:hidden text-center text-sm text-slate-400 py-10">
+              {tab === "past" ? "No past events." : "No upcoming events."}
+            </p>
+          ) : (
+            visibleItems.map((a) => (
+              <EventCard
+                key={a.id}
+                event={a}
+                onOpen={() => setActive(a)}
+                onRsvp={handleRsvp}
+              />
+            ))
+          )}
           <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
       )}
@@ -184,8 +222,8 @@ function DateBadge({ iso, size = "md" }) {
   const { mon, day, time } = dateParts(iso);
   const dayCls = size === "lg" ? "text-2xl" : "text-xl";
   return (
-    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-[#1a2e5a]/[0.06] rounded-xl py-3">
-      <span className="text-[0.65rem] uppercase font-bold text-gold-500">
+    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-blue-50 rounded-xl py-3">
+      <span className="text-[0.65rem] uppercase font-bold text-blue-600">
         {mon}
       </span>
       <span className={`${dayCls} font-bold text-slate-800 leading-tight`}>
@@ -198,7 +236,7 @@ function DateBadge({ iso, size = "md" }) {
 
 function PinnedBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
+    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
       <HiOutlineBookmark className="w-3 h-3" /> Pinned
     </span>
   );
@@ -224,7 +262,7 @@ function RsvpControl({ event: a, onRsvp }) {
         const cls = activeState
           ? s.value === "going"
             ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-            : "bg-[#c8a84e]/10 border-[#c8a84e]/30 text-[#a8893a]"
+            : "bg-blue-50 border-blue-200 text-blue-700"
           : "bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200";
         return (
           <Fragment key={s.value}>
@@ -255,7 +293,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
       className={cn(
         "bg-white rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md",
         a.is_pinned
-          ? "border-[#c8a84e]/40 ring-1 ring-[#c8a84e]/20"
+          ? "border-amber-300 ring-1 ring-amber-100"
           : "border-slate-200",
         past && "opacity-75",
       )}
@@ -277,7 +315,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
 
             {a.location && (
               <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-600">
-                <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
+                <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className="truncate">{a.location}</span>
               </div>
             )}
@@ -335,7 +373,7 @@ function EventModal({ event: a, onClose, onRsvp }) {
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -361,7 +399,7 @@ function EventModal({ event: a, onClose, onRsvp }) {
                 </h2>
                 {a.location && (
                   <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-                    <HiOutlineMapPin className="w-4 h-4 text-gold-500 flex-shrink-0" />
+                    <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
                     {a.location}
                   </div>
                 )}
@@ -402,8 +440,8 @@ function EventModal({ event: a, onClose, onRsvp }) {
         .event-content p{margin:.5rem 0}
         .event-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .event-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .event-content a{color:#1a2e5a;text-decoration:underline}
-        .event-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#64748b;margin:.5rem 0}
+        .event-content a{color:#2563eb;text-decoration:underline}
+        .event-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}
         .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
   );

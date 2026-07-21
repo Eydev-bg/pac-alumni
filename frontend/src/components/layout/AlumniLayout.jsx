@@ -1,22 +1,28 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/components/layout/AlumniLayout.jsx
-//  Alumni sidebar layout — Dashboard + Profile + Board Exam
+//  Alumni shell — blue light-SaaS redesign (Phase A).
+//  Flat sidebar nav + top header. Board Exam and Employment are
+//  folded into the unified My Profile page (Batch 3), so they are
+//  no longer standalone sidebar items; their routes still resolve.
 // ═══════════════════════════════════════════════════════════
 
 import { useState } from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import Header from "./Header";
+import MobileTabBar from "../alumni/MobileTabBar";
+import { Avatar } from "../alumni/ui";
 import { useAuth } from "../../hooks/useAuth";
 import { UnreadProvider, useUnread } from "../../context/UnreadContext";
 import {
   HiOutlineHome,
   HiOutlineXMark,
   HiOutlineUser,
-  HiOutlineClipboardDocumentCheck,
   HiOutlineBriefcase,
   HiOutlineMegaphone,
   HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftRight,
+  HiOutlineBell,
+  HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 
 export default function AlumniLayout() {
@@ -30,119 +36,73 @@ export default function AlumniLayout() {
 function AlumniLayoutInner() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { user } = useAuth();
-  // Board Exam nav gating — sourced from the auth user payload, no extra fetch.
-  const isBoardProgram = user?.is_board_program === true;
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  // A standalone conversation thread renders full-screen (its own input bar
+  // sits at the bottom), so the fixed bottom tab bar would cover it. Hide the
+  // bar and drop the tab-bar bottom padding on that route only.
+  const isFullScreenThread = /^\/alumni\/messages\/.+/.test(pathname);
   // Sidebar badge counts from the shared background-aware polling source.
-  const { messages: unreadMessages } = useUnread();
+  const { messages: unreadMessages, notifications: unreadNotifications } =
+    useUnread();
 
+  // Flat single-list nav (the redesign drops the grouped sections).
+  // Alumni Directory is deferred to Phase B and intentionally omitted.
+  // Settings / Help & Support have no alumni page today, so they're omitted
+  // rather than pointing at a route that doesn't exist.
   const navItems = [
+    { name: "Home", path: "/alumni/dashboard", icon: HiOutlineHome },
+    { name: "My Profile", path: "/alumni/profile", icon: HiOutlineUser },
+    { name: "Events", path: "/alumni/events", icon: HiOutlineCalendarDays },
     {
-      section: "Main",
-      items: [
-        {
-          name: "Dashboard",
-          path: "/alumni/dashboard",
-          icon: HiOutlineHome,
-        },
-      ],
+      name: "Announcements",
+      path: "/alumni/announcements",
+      icon: HiOutlineMegaphone,
+    },
+    { name: "Jobs", path: "/alumni/careers", icon: HiOutlineBriefcase },
+    {
+      name: "Messages",
+      path: "/alumni/messages",
+      icon: HiOutlineChatBubbleLeftRight,
+      badge: unreadMessages,
     },
     {
-      section: "My Profile",
-      items: [
-        {
-          name: "Edit Profile",
-          path: "/alumni/profile",
-          icon: HiOutlineUser,
-        },
-        // Only show Board Exam if course is a board program
-        ...(isBoardProgram
-          ? [
-              {
-                name: "Board Exam",
-                path: "/alumni/board-exam",
-                icon: HiOutlineClipboardDocumentCheck,
-              },
-            ]
-          : []),
-        {
-          name: "Employment",
-          path: "/alumni/employment",
-          icon: HiOutlineBriefcase,
-        },
-      ],
-    },
-    {
-      section: "Careers",
-      items: [
-        {
-          name: "Careers",
-          path: "/alumni/careers",
-          icon: HiOutlineBriefcase,
-        },
-      ],
-    },
-    {
-      section: "Community",
-      items: [
-        {
-          name: "Messages",
-          path: "/alumni/messages",
-          icon: HiOutlineChatBubbleLeftRight,
-          badge: unreadMessages,
-        },
-      ],
-    },
-    {
-      section: "Updates",
-      items: [
-        {
-          name: "Announcements",
-          path: "/alumni/announcements",
-          icon: HiOutlineMegaphone,
-        },
-        {
-          name: "Events",
-          path: "/alumni/events",
-          icon: HiOutlineCalendarDays,
-        },
-      ],
+      name: "Notifications",
+      path: "/alumni/notifications",
+      icon: HiOutlineBell,
+      badge: unreadNotifications,
     },
   ];
 
   const linkClasses = (isActive) =>
-    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+    `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
       isActive
-        ? "bg-[#1a2e5a]/10 text-[#1a2e5a]"
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        ? "bg-blue-50 text-blue-700"
+        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
     }`;
+
+  const handleLogout = async () => {
+    await logout();
+    // Voluntary sign-out lands on the public landing page (matches Header).
+    navigate("/");
+  };
 
   const sidebarContent = (
     <>
-      {/* ── Sidebar Header ── */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-200">
-        <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#1a2e5a] to-[#2a4177] flex items-center justify-center shadow-sm">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
+      {/* ── Brand ── */}
+      <div className="flex items-center gap-3 px-4 py-5">
+        <img
+          src="/pac-logo.jpg"
+          alt="PAC"
+          className="flex-shrink-0 w-9 h-9 rounded-xl object-cover shadow-sm"
+        />
         {sidebarOpen && (
           <div className="overflow-hidden">
-            <h2 className="text-sm font-bold text-slate-800 truncate">
+            <h2 className="text-base font-bold text-blue-700 leading-tight truncate">
               PAC Alumni
             </h2>
-            <p className="text-xs text-slate-400 truncate">Alumni Portal</p>
+            <p className="text-xs text-slate-400 truncate">Community</p>
           </div>
         )}
         <button
@@ -154,57 +114,129 @@ function AlumniLayoutInner() {
       </div>
 
       {/* ── Navigation ── */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
-        {navItems.map((section) => (
-          <div key={section.section}>
-            {sidebarOpen && (
-              <p className="px-3 mb-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                {section.section}
-              </p>
-            )}
-            <ul className="space-y-1">
-              {section.items.map((item) => (
-                <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    onClick={() => setMobileSidebarOpen(false)}
-                    className={({ isActive }) => linkClasses(isActive)}
-                    title={!sidebarOpen ? item.name : undefined}
-                  >
-                    <span className="relative flex-shrink-0">
-                      <item.icon className="w-5 h-5" />
-                      {/* Collapsed sidebar: show a dot indicator on the icon. */}
-                      {!sidebarOpen && item.badge > 0 && (
-                        <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#c8a84e] ring-2 ring-white" />
-                      )}
-                    </span>
-                    {sidebarOpen && <span className="flex-1">{item.name}</span>}
-                    {sidebarOpen && item.badge > 0 && (
-                      <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[0.65rem] font-bold text-white rounded-full bg-[#c8a84e]">
-                        {item.badge > 99 ? "99+" : item.badge}
-                      </span>
-                    )}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <nav className="flex-1 overflow-y-auto py-2 px-3">
+        <ul className="space-y-1">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                onClick={() => setMobileSidebarOpen(false)}
+                className={({ isActive }) => linkClasses(isActive)}
+                title={!sidebarOpen ? item.name : undefined}
+              >
+                <span className="relative flex-shrink-0">
+                  <item.icon className="w-5 h-5" />
+                  {/* Collapsed sidebar: show a dot indicator on the icon. */}
+                  {!sidebarOpen && item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white" />
+                  )}
+                </span>
+                {sidebarOpen && <span className="flex-1">{item.name}</span>}
+                {sidebarOpen && item.badge > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[0.65rem] font-bold text-white rounded-full bg-blue-600">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+
+        {/* Logout — grouped with nav but visually separated. */}
+        <div className="mt-2 pt-2 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            title={!sidebarOpen ? "Logout" : undefined}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+          >
+            <HiOutlineArrowRightOnRectangle className="w-5 h-5 flex-shrink-0" />
+            {sidebarOpen && <span className="flex-1 text-left">Logout</span>}
+          </button>
+        </div>
       </nav>
 
-      {/* ── Sidebar Footer ── */}
-      <div className="px-4 py-3 border-t border-slate-200">
-        {sidebarOpen && (
-          <p className="text-[0.6rem] text-slate-400 text-center">
-            PAC Alumni Tracking System
-          </p>
-        )}
+      {/* ── Promo card ── */}
+      {sidebarOpen && (
+        <div className="px-3 pb-4">
+          <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 p-4 text-white shadow-sm">
+            <p className="text-sm font-bold">Connect. Engage. Inspire.</p>
+            <p className="mt-1 text-xs text-blue-100 leading-relaxed">
+              Building a stronger PAC Alumni Community together.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  // Mobile drawer content (Batch 5): a profile header replaces the brand
+  // block, and nav labels always show (the desktop collapse state doesn't
+  // apply to the slide-in drawer). Matches the reference's full menu.
+  const mobileDrawerContent = (
+    <>
+      <div className="relative px-4 pt-5 pb-4">
+        <button
+          onClick={() => setMobileSidebarOpen(false)}
+          aria-label="Close menu"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+        >
+          <HiOutlineXMark className="w-5 h-5" />
+        </button>
+        <div className="flex items-center gap-3 pr-8">
+          <Avatar src={user?.profile_picture} name={user?.full_name} size="lg" />
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-slate-800 truncate">
+              {user?.full_name}
+            </p>
+            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+            <NavLink
+              to="/alumni/profile"
+              onClick={() => setMobileSidebarOpen(false)}
+              className="mt-0.5 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              View Profile
+            </NavLink>
+          </div>
+        </div>
       </div>
+      <div className="border-t border-slate-100" />
+
+      <nav className="flex-1 overflow-y-auto py-2 px-3">
+        <ul className="space-y-1">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <NavLink
+                to={item.path}
+                onClick={() => setMobileSidebarOpen(false)}
+                className={({ isActive }) => linkClasses(isActive)}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+                <span className="flex-1">{item.name}</span>
+                {item.badge > 0 && (
+                  <span className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[0.65rem] font-bold text-white rounded-full bg-blue-600">
+                    {item.badge > 99 ? "99+" : item.badge}
+                  </span>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-2 pt-2 border-t border-slate-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+          >
+            <HiOutlineArrowRightOnRectangle className="w-5 h-5 flex-shrink-0" />
+            <span className="flex-1 text-left">Logout</span>
+          </button>
+        </div>
+      </nav>
     </>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f5f7fb]">
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div
@@ -222,13 +254,13 @@ function AlumniLayoutInner() {
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar */}
+      {/* Mobile sidebar (drawer) */}
       <aside
         className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 flex flex-col ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {sidebarContent}
+        {mobileDrawerContent}
       </aside>
 
       {/* Main content */}
@@ -240,11 +272,19 @@ function AlumniLayoutInner() {
         <Header
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onMobileMenuClick={() => setMobileSidebarOpen(true)}
+          sidebarOpen={sidebarOpen}
         />
-        <main className="p-4 sm:p-6 lg:p-8 mt-16">
+        <main
+          className={`p-4 sm:p-6 lg:p-8 mt-16 ${
+            isFullScreenThread ? "" : "pb-24 lg:pb-8"
+          }`}
+        >
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile bottom tab bar — hidden on lg+ and on the full-screen thread */}
+      {!isFullScreenThread && <MobileTabBar />}
     </div>
   );
 }

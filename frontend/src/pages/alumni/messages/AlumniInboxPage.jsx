@@ -20,7 +20,7 @@ import {
   HiOutlineXMark,
 } from "react-icons/hi2";
 
-const NAVY = "#1a2e5a";
+const NAVY = "#2563eb";
 
 /** Circle avatar with the first letter of the name. */
 function Avatar({ name, picture, size = "w-11 h-11" }) {
@@ -128,7 +128,7 @@ export default function AlumniInboxPage() {
         <button
           onClick={() => setShowCompose(true)}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
-          style={{ background: "#c8a84e" }}
+          style={{ background: NAVY }}
         >
           <HiOutlinePencilSquare className="w-4 h-4" />
           <span className="hidden sm:inline">New Message</span>
@@ -162,7 +162,7 @@ export default function AlumniInboxPage() {
                         <button
                           onClick={() => openConversation(c.id)}
                           className={`w-full text-left flex items-center gap-3 px-4 py-3 transition-colors ${
-                            isActive ? "bg-[#1a2e5a]/[0.06]" : "hover:bg-slate-50"
+                            isActive ? "bg-[#2563eb]/[0.06]" : "hover:bg-slate-50"
                           }`}
                         >
                           <Avatar
@@ -302,7 +302,7 @@ function NewMessageModal({ onClose, onStarted }) {
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 transition-colors"
+            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 transition-colors"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -317,7 +317,7 @@ function NewMessageModal({ onClose, onStarted }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search alumni by name…"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 focus:border-[#1a2e5a]"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb]"
             />
           </div>
 

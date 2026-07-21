@@ -5,6 +5,7 @@ import { useUnread } from "../../context/UnreadContext";
 import adminApi from "../../api/adminApi";
 import alumniApi from "../../api/alumniApi";
 import { timeAgo } from "../../utils/formatters";
+import Avatar from "../alumni/ui/Avatar";
 import {
   HiOutlineBars3,
   HiOutlineArrowRightOnRectangle,
@@ -12,6 +13,9 @@ import {
   HiOutlineChevronDown,
   HiOutlineBell,
   HiOutlineClipboardDocumentCheck,
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineMagnifyingGlass,
+  HiOutlineXMark,
 } from "react-icons/hi2";
 
 /**
@@ -23,6 +27,7 @@ export default function Header({
   onToggleSidebar,
   onMobileMenuClick,
   variant = "light",
+  sidebarOpen,
 }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -31,9 +36,14 @@ export default function Header({
   const unread = useUnread();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
+  // Mobile-only: the global search collapses to an icon and expands to a
+  // full-width overlay under the header (desktop keeps the inline input).
+  const [searchOpen, setSearchOpen] = useState(false);
   const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const unreadCount =
     user?.role === "alumni" ? (unread?.notifications ?? 0) : adminUnreadCount;
+  const isAlumni = user?.role === "alumni";
+  const unreadMessages = unread?.messages ?? 0;
   // Recent notifications shown in the alumni bell dropdown (fetched on open).
   const [recent, setRecent] = useState([]);
   const [recentLoading, setRecentLoading] = useState(false);
@@ -42,6 +52,22 @@ export default function Header({
   const bellButtonRef = useRef(null);
 
   const dark = variant === "dark";
+  // Alumni get a blue top bar on mobile (matches the approved mobile design);
+  // lg+ keeps the white desktop header untouched. Admin (dark) is unaffected.
+  const alumniBlueBar = isAlumni && !dark;
+  // Icon-button colouring: white on the alumni mobile blue bar, reverting to
+  // the slate desktop treatment at lg. Admin/dark and non-alumni keep theirs.
+  const iconBtnClass = dark
+    ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+    : alumniBlueBar
+      ? "text-white hover:bg-white/10 lg:text-slate-500 lg:hover:text-slate-700 lg:hover:bg-slate-100"
+      : "text-slate-500 hover:text-slate-700 hover:bg-slate-100";
+  // The header is fixed to the viewport (left-0) and the sidebar (z-30) sits
+  // on top of its left edge. When a layout tells us the sidebar's expanded
+  // state, pad the header content past the sidebar on lg+ so left-aligned
+  // content (e.g. the alumni search) clears it instead of hiding underneath.
+  const contentOffset =
+    sidebarOpen === undefined ? "" : sidebarOpen ? "lg:pl-64" : "lg:pl-20";
 
   // Close the bell dropdown on Escape and return focus to the bell button.
   useEffect(() => {
@@ -139,21 +165,43 @@ export default function Header({
 
   return (
     <header
-      className={`fixed top-0 right-0 left-0 z-20 h-16 flex items-center justify-between px-4 sm:px-6 ${
+      className={`fixed top-0 right-0 left-0 z-20 h-16 flex items-center justify-between px-4 sm:px-6 border-b ${contentOffset} ${
         dark
-          ? "bg-navy-950 border-b border-white/[0.06]"
-          : "bg-white border-b border-slate-200"
+          ? "bg-navy-950 border-white/[0.06]"
+          : alumniBlueBar
+            ? "bg-blue-600 border-blue-600 lg:bg-white lg:border-slate-200"
+            : "bg-white border-slate-200"
       }`}
     >
+      {/* Mobile search overlay (alumni) — covers the header when expanded. */}
+      {isAlumni && searchOpen && (
+        <div className="md:hidden absolute inset-0 z-30 flex items-center gap-2 bg-white px-4">
+          <HiOutlineMagnifyingGlass className="w-5 h-5 text-slate-400 flex-shrink-0" />
+          <input
+            type="search"
+            autoFocus
+            // TODO: wire global search when a search backend exists.
+            placeholder="Search alumni, events, jobs…"
+            aria-label="Search"
+            onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+            className="flex-1 h-10 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
+          />
+          <button
+            onClick={() => setSearchOpen(false)}
+            aria-label="Close search"
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+          >
+            <HiOutlineXMark className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center gap-3">
         {/* Mobile menu button */}
         <button
-          className={`lg:hidden p-2 rounded-lg transition-colors ${
-            dark
-              ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-              : "text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-          }`}
+          className={`lg:hidden p-2 rounded-lg transition-colors ${iconBtnClass}`}
           onClick={onMobileMenuClick}
+          aria-label="Open menu"
         >
           <HiOutlineBars3 className="w-5 h-5" />
         </button>
@@ -169,10 +217,50 @@ export default function Header({
         >
           <HiOutlineBars3 className="w-5 h-5" />
         </button>
+
+        {/* Global search — alumni only. Present but not yet wired to a search
+            backend (there is no global-search API this phase). */}
+        {isAlumni && (
+          <div className="hidden md:block relative">
+            <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <input
+              type="search"
+              // TODO: wire global search when a search backend exists.
+              placeholder="Search for alumni, events, jobs, and more..."
+              aria-label="Search"
+              className="w-64 lg:w-96 h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 focus:bg-white transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {/* Right side: notification bell + user menu */}
       <div className="flex items-center gap-2">
+      {/* Mobile search trigger — alumni only (desktop uses the inline input) */}
+      {isAlumni && (
+        <button
+          aria-label="Search"
+          className={`md:hidden p-2 rounded-lg transition-colors ${iconBtnClass}`}
+          onClick={() => setSearchOpen(true)}
+        >
+          <HiOutlineMagnifyingGlass className="w-5 h-5" />
+        </button>
+      )}
+      {/* Messages — alumni only (light theme, unread badge) */}
+      {isAlumni && (
+        <button
+          aria-label={`Messages${unreadMessages > 0 ? `, ${unreadMessages} unread` : ""}`}
+          className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+          onClick={() => navigate("/alumni/messages")}
+        >
+          <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
+          {unreadMessages > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              {unreadMessages > 9 ? "9+" : unreadMessages}
+            </span>
+          )}
+        </button>
+      )}
       {/* Notification bell — admin only (routes to admin-scoped pages) */}
       {user?.role === "admin" && (
       <div className="relative" ref={bellRef}>
@@ -254,7 +342,7 @@ export default function Header({
           aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
           aria-expanded={bellOpen}
           aria-haspopup="true"
-          className="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+          className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
           onClick={() => setBellOpen(!bellOpen)}
         >
           <HiOutlineBell className="w-5 h-5" />
@@ -344,35 +432,66 @@ export default function Header({
       <div className="relative" ref={dropdownRef}>
         <button
           className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-            dark ? "hover:bg-white/[0.06]" : "hover:bg-slate-100"
+            dark
+              ? "hover:bg-white/[0.06]"
+              : alumniBlueBar
+                ? "hover:bg-white/10 lg:hover:bg-slate-100"
+                : "hover:bg-slate-100"
           }`}
           onClick={() => setDropdownOpen(!dropdownOpen)}
         >
-          <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              dark
-                ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
-                : "bg-blue-100"
-            }`}
-          >
-            <HiOutlineUser
-              className={`w-4 h-4 ${dark ? "text-white" : "text-blue-600"}`}
+          {isAlumni ? (
+            <Avatar
+              src={user?.profile_picture}
+              name={user?.full_name}
+              size="sm"
+              className="w-8 h-8"
             />
-          </div>
+          ) : (
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                dark
+                  ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
+                  : "bg-blue-100"
+              }`}
+            >
+              <HiOutlineUser
+                className={`w-4 h-4 ${dark ? "text-white" : "text-blue-600"}`}
+              />
+            </div>
+          )}
           <div className="hidden sm:block text-left">
             <p
-              className={`text-sm font-medium ${dark ? "text-slate-200" : "text-slate-700"}`}
+              className={`text-sm font-medium ${
+                dark
+                  ? "text-slate-200"
+                  : alumniBlueBar
+                    ? "text-white lg:text-slate-700"
+                    : "text-slate-700"
+              }`}
             >
               {user?.full_name}
             </p>
             <p
-              className={`text-[11px] ${dark ? "text-slate-500" : "text-slate-400"}`}
+              className={`text-[11px] ${
+                dark
+                  ? "text-slate-500"
+                  : alumniBlueBar
+                    ? "text-blue-100 lg:text-slate-400"
+                    : "text-slate-400"
+              }`}
             >
               {user?.role_label}
             </p>
           </div>
           <HiOutlineChevronDown
-            className={`w-4 h-4 hidden sm:block ${dark ? "text-slate-500" : "text-slate-400"}`}
+            className={`w-4 h-4 hidden sm:block ${
+              dark
+                ? "text-slate-500"
+                : alumniBlueBar
+                  ? "text-blue-100 lg:text-slate-400"
+                  : "text-slate-400"
+            }`}
           />
         </button>
 

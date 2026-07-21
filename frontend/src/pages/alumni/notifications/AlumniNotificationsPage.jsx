@@ -11,7 +11,23 @@ import EmptyState from "../../../components/common/EmptyState";
 import { useToast } from "../../../hooks/useToast";
 import { formatDate } from "../../../utils/formatters";
 import { PAGINATION } from "../../../config/constants";
-import { HiOutlineBell, HiOutlineCheckCircle } from "react-icons/hi2";
+import { IconChip } from "../../../components/alumni/ui";
+import {
+  HiOutlineBell,
+  HiOutlineCheckCircle,
+  HiOutlineMegaphone,
+  HiOutlineCalendarDays,
+  HiOutlineBriefcase,
+} from "react-icons/hi2";
+
+// Icon + hue by notification content type (inferred from the payload) —
+// matches the dashboard Notifications panel.
+function notificationStyle(n) {
+  if (n.data?.job_posting_id) return { icon: HiOutlineBriefcase, color: "green" };
+  if (n.data?.announcement_id) return { icon: HiOutlineMegaphone, color: "blue" };
+  if (n.data?.event_id) return { icon: HiOutlineCalendarDays, color: "purple" };
+  return { icon: HiOutlineBell, color: "slate" };
+}
 
 export default function AlumniNotificationsPage() {
   const toast = useToast();
@@ -19,6 +35,10 @@ export default function AlumniNotificationsPage() {
   const [notifications, setNotifications] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Batch 5: mobile-only All / Unread segmented tabs. Filters the already
+  // fetched page client-side (no new endpoint); the tabs are hidden on lg+
+  // so the desktop list stays exactly as before.
+  const [tab, setTab] = useState("all");
 
   // 5A: the page number lives in the URL so refresh and back/forward
   // restore the list position.
@@ -90,6 +110,10 @@ export default function AlumniNotificationsPage() {
     }
   };
 
+  const unreadOnPage = notifications.filter((n) => !n.is_read).length;
+  const visible =
+    tab === "unread" ? notifications.filter((n) => !n.is_read) : notifications;
+
   return (
     <div className="max-w-[900px] mx-auto">
       {/* Header */}
@@ -108,53 +132,78 @@ export default function AlumniNotificationsPage() {
         </button>
       </div>
 
+      {/* Mobile-only All / Unread tabs */}
+      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 mb-4 px-1">
+        {[
+          { key: "all", label: "All" },
+          { key: "unread", label: "Unread" },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={`relative -mb-px flex items-center gap-1.5 pb-2.5 text-sm font-semibold transition-colors ${
+              tab === t.key
+                ? "text-blue-600 border-b-2 border-blue-600"
+                : "text-slate-400 border-b-2 border-transparent"
+            }`}
+          >
+            {t.label}
+            {t.key === "unread" && unreadOnPage > 0 && (
+              <span className="inline-flex items-center justify-center min-w-[1.1rem] h-[1.1rem] px-1 text-[0.6rem] font-bold text-white rounded-full bg-red-500">
+                {unreadOnPage > 99 ? "99+" : unreadOnPage}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Notifications List */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         {loading ? (
           <SkeletonCard variant="notification" count={5} />
-        ) : notifications.length === 0 ? (
+        ) : visible.length === 0 ? (
           <EmptyState
             bare
             icon={HiOutlineBell}
-            title="No notifications"
+            title={tab === "unread" ? "No unread notifications" : "No notifications"}
             message="You're all caught up!"
           />
         ) : (
           <div className="divide-y divide-slate-100">
-            {notifications.map((n) => (
-              <div
-                key={n.id}
-                className={`p-4 flex items-start gap-3 transition-colors cursor-pointer ${
-                  !n.is_read
-                    ? "bg-[#c8a84e]/[0.06] hover:bg-[#c8a84e]/[0.1]"
-                    : "hover:bg-slate-50"
-                }`}
-                onClick={() => handleOpen(n)}
-              >
+            {visible.map((n) => {
+              const style = notificationStyle(n);
+              return (
                 <div
-                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    !n.is_read ? "bg-[#c8a84e]" : "bg-transparent"
+                  key={n.id}
+                  className={`p-4 flex items-start gap-3 transition-colors cursor-pointer ${
+                    !n.is_read ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-slate-50"
                   }`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm ${
-                      !n.is_read
-                        ? "font-semibold text-slate-800"
-                        : "text-slate-500"
-                    }`}
-                  >
-                    {n.title}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">
-                    {n.message}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {formatDate(n.created_at)}
-                  </p>
+                  onClick={() => handleOpen(n)}
+                >
+                  <IconChip icon={style.icon} color={style.color} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm ${
+                        !n.is_read
+                          ? "font-semibold text-slate-800"
+                          : "text-slate-500"
+                      }`}
+                    >
+                      {n.title}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                      {n.message}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {formatDate(n.created_at)}
+                    </p>
+                  </div>
+                  {!n.is_read && (
+                    <span className="w-2 h-2 rounded-full bg-blue-600 mt-2 flex-shrink-0" />
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {meta && (

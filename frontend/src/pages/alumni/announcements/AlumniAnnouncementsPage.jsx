@@ -7,6 +7,7 @@ import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
 import { timeAgo, storageUrl, stripHtml } from "../../../utils/formatters";
+import { IconChip } from "../../../components/alumni/ui";
 import {
   HiOutlineMegaphone,
   HiOutlineXMark,
@@ -80,26 +81,17 @@ export default function AlumniAnnouncementsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* ━━━━ Header ━━━━ */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1a2e5a] via-[#243a6e] to-[#1e3466] rounded-2xl shadow-lg">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/[0.03]" />
-        <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-[#c8a84e]/[0.06]" />
-        <div className="relative z-10 px-5 sm:px-8 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 flex-shrink-0">
-              <HiOutlineMegaphone className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <p className="text-[0.72rem] text-[#c8a84e] font-semibold tracking-wider uppercase mb-1">
-                Stay Updated
-              </p>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">Announcements</h1>
-              <p className="text-sm text-white/70 mt-0.5">
-                {unread > 0
-                  ? `You have ${unread} unread announcement${unread > 1 ? "s" : ""}.`
-                  : "You're all caught up."}
-              </p>
-            </div>
-          </div>
+      <div className="flex items-center gap-3">
+        <IconChip icon={HiOutlineMegaphone} color="blue" size="lg" />
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Announcements
+          </h1>
+          <p className="text-sm text-slate-500">
+            {unread > 0
+              ? `You have ${unread} unread announcement${unread > 1 ? "s" : ""}.`
+              : "You're all caught up."}
+          </p>
         </div>
       </div>
 
@@ -137,17 +129,17 @@ function AnnouncementCard({ announcement: a, onOpen }) {
     <button
       onClick={onOpen}
       className={`w-full text-left block bg-white rounded-xl border p-5 transition-all hover:shadow-sm ${
-        a.is_read ? "border-slate-200" : "border-[#c8a84e]/40 ring-1 ring-[#c8a84e]/20"
+        a.is_read ? "border-slate-200" : "border-blue-300 ring-1 ring-blue-100"
       }`}
     >
       <div className="flex items-start gap-3">
         {!a.is_read && (
-          <span className="mt-1.5 w-2 h-2 rounded-full bg-[#c8a84e] flex-shrink-0" title="Unread" />
+          <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-600 flex-shrink-0" title="Unread" />
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {a.is_pinned && (
-              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
+              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                 <HiOutlineBookmark className="w-3 h-3" /> Pinned
               </span>
             )}
@@ -201,7 +193,7 @@ function AnnouncementModal({ announcement: a, onClose }) {
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/30 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -217,7 +209,7 @@ function AnnouncementModal({ announcement: a, onClose }) {
           <div className="p-6">
             <div className="flex items-center gap-2 flex-wrap mb-2">
               {a.is_pinned && (
-                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/10 text-[#a88a3a]">
+                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                   <HiOutlineBookmark className="w-3 h-3" /> Pinned
                 </span>
               )}
@@ -253,8 +245,8 @@ function AnnouncementModal({ announcement: a, onClose }) {
         .announcement-content p{margin:.5rem 0}
         .announcement-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .announcement-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .announcement-content a{color:#1a2e5a;text-decoration:underline}
-        .announcement-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#475569;margin:.5rem 0}
+        .announcement-content a{color:#2563eb;text-decoration:underline}
+        .announcement-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#475569;margin:.5rem 0}
         .announcement-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
   );

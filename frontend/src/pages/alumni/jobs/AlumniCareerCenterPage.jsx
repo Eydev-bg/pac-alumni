@@ -11,6 +11,7 @@ import { useDebounce } from "../../../hooks/useDebounce";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
 import { formatDate, storageUrl } from "../../../utils/formatters";
+import { IconChip } from "../../../components/alumni/ui";
 import {
   HiOutlineBriefcase,
   HiOutlineMapPin,
@@ -90,26 +91,15 @@ export default function AlumniCareerCenterPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* ━━━━ Header ━━━━ */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-[#1a2e5a] via-[#243a6e] to-[#1e3466] rounded-2xl shadow-lg">
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/[0.03]" />
-        <div className="absolute -bottom-12 -left-8 w-40 h-40 rounded-full bg-[#c8a84e]/[0.06]" />
-        <div className="relative z-10 px-5 sm:px-8 py-6 sm:py-8">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 flex-shrink-0">
-              <HiOutlineBriefcase className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <p className="text-[0.72rem] text-[#c8a84e] font-semibold tracking-wider uppercase mb-1">
-                Career Center
-              </p>
-              <h1 className="text-xl sm:text-2xl font-bold text-white">
-                Job Openings
-              </h1>
-              <p className="text-sm text-white/70 mt-0.5">
-                Opportunities shared by PAC for its alumni.
-              </p>
-            </div>
-          </div>
+      <div className="flex items-center gap-3">
+        <IconChip icon={HiOutlineBriefcase} color="blue" size="lg" />
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Job Openings
+          </h1>
+          <p className="text-sm text-slate-500">
+            Opportunities shared by PAC for its alumni.
+          </p>
         </div>
       </div>
 
@@ -121,7 +111,7 @@ export default function AlumniCareerCenterPage() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search by company, position, or location..."
-          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a2e5a]/20 focus:border-[#1a2e5a]/40 transition-colors"
+          className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors"
         />
       </div>
 
@@ -182,7 +172,7 @@ function JobCard({ job }) {
     <div
       className={`bg-white rounded-xl border p-5 transition-all hover:shadow-sm ${
         job.is_pinned
-          ? "border-[#c8a84e]/40 ring-1 ring-[#c8a84e]/20"
+          ? "border-amber-300 ring-1 ring-amber-100"
           : "border-slate-200"
       }`}
     >
@@ -192,7 +182,7 @@ function JobCard({ job }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {job.is_pinned && (
-              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-[#c8a84e]/15 text-[#a8893a]">
+              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
                 <HiOutlineBookmark className="w-3 h-3" /> Pinned
               </span>
             )}
@@ -206,10 +196,10 @@ function JobCard({ job }) {
 
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-slate-500">
             <span className="flex items-center gap-1">
-              <HiOutlineMapPin className="w-3.5 h-3.5 text-[#1a2e5a]" />
+              <HiOutlineMapPin className="w-3.5 h-3.5 text-blue-600" />
               {job.location}
             </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#1a2e5a]/[0.08] text-[#1a2e5a] font-medium">
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
               {job.employment_type_label}
             </span>
             {job.salary && (
@@ -229,7 +219,7 @@ function JobCard({ job }) {
 
         <Link
           to={`/alumni/careers/${job.id}`}
-          className="flex-shrink-0 self-center px-4 py-2 text-xs font-semibold text-white bg-[#1a2e5a] rounded-xl hover:bg-[#243a6e] transition-colors"
+          className="flex-shrink-0 self-center px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
         >
           View Details
         </Link>

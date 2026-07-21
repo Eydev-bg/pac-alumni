@@ -109,10 +109,10 @@ export default function AlumniJobDetailPage() {
 
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.8rem] text-slate-500">
               <span className="flex items-center gap-1">
-                <HiOutlineMapPin className="w-4 h-4 text-[#1a2e5a]" />
+                <HiOutlineMapPin className="w-4 h-4 text-blue-600" />
                 {job.location}
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-[#1a2e5a]/[0.08] text-[#1a2e5a] font-medium text-xs">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium text-xs">
                 {job.employment_type_label}
               </span>
               {job.salary && (
@@ -134,7 +134,7 @@ export default function AlumniJobDetailPage() {
                 <HiOutlineEnvelope className="w-4 h-4" />
                 <a
                   href={`mailto:${job.company_email}`}
-                  className="text-[#1a2e5a] hover:underline"
+                  className="text-blue-600 hover:underline"
                 >
                   {job.company_email}
                 </a>
@@ -148,7 +148,7 @@ export default function AlumniJobDetailPage() {
           <div className="mt-5 pt-5 border-t border-slate-100">
             <button
               onClick={handleApply}
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-[#1a2e5a] rounded-xl hover:bg-[#243a6e] transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
             >
               Apply Now
               <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
@@ -195,8 +195,8 @@ export default function AlumniJobDetailPage() {
         .job-content p{margin:.5rem 0}
         .job-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .job-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .job-content a{color:#1a2e5a;text-decoration:underline}
-        .job-content blockquote{border-left:3px solid #c8a84e;padding-left:.75rem;color:#64748b;margin:.5rem 0}`}</style>
+        .job-content a{color:#2563eb;text-decoration:underline}
+        .job-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}`}</style>
     </div>
   );
 }
@@ -205,7 +205,7 @@ function BackLink({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#1a2e5a] transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
     >
       <HiOutlineArrowLeft className="w-4 h-4" /> Back to Career Center
     </button>
@@ -216,7 +216,7 @@ function Section({ icon: Icon, title, children }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-6">
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-[#c8a84e]" />
+        <Icon className="w-4 h-4 text-blue-600" />
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
           {title}
         </h2>
