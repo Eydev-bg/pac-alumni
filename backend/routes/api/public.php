@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 // ─── Landing page statistics ─────────────────────────────
+// Uses the named 'landing-stats' limiter (120/min per IP, defined in
+// AppServiceProvider) so its throttle counter is isolated from the shared
+// anonymous bucket used by other unauthenticated routes on the same IP.
 Route::get('/landing/stats', LandingStatsController::class)
-    ->middleware('throttle:30,1')
+    ->middleware('throttle:landing-stats')
     ->name('landing.stats');
