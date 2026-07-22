@@ -18,8 +18,8 @@ const QUICK_LINKS = [
   { href: "#careers", label: "Careers" },
 ];
 
-const linkClass = "block text-[12px] text-[#aebbd6] transition hover:text-gold-300";
-const colHeading = "mb-3 text-[12px] font-semibold uppercase tracking-[0.05em] text-gold-300";
+const linkClass = "block text-[12px] text-[#aebbd6] transition hover:text-blue-300";
+const colHeading = "mb-3 text-[12px] font-semibold uppercase tracking-[0.05em] text-blue-300";
 
 /**
  * LandingFooter — deep-navy footer: brand + tagline + social placeholders,
@@ -38,13 +38,13 @@ export default function LandingFooter() {
               <img
                 src="/pac-logo.jpg"
                 alt="Philippine Advent College seal"
-                className="h-[34px] w-[34px] flex-none rounded-full border-2 border-gold-500 bg-navy-900 object-cover"
+                className="h-[34px] w-[34px] flex-none rounded-full border-2 border-blue-500 bg-navy-900 object-cover"
               />
               <span>
                 <span className="block text-[13px] font-extrabold text-white" style={SERIF}>
                   Philippine Advent College
                 </span>
-                <span className="block text-[8px] uppercase tracking-[0.12em] text-gold-500">
+                <span className="block text-[8px] uppercase tracking-[0.12em] text-blue-300">
                   Alumni Tracking System
                 </span>
               </span>
@@ -68,7 +68,7 @@ export default function LandingFooter() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.18] text-[#c9d3e8] transition hover:border-gold-500/50 hover:text-gold-300"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.18] text-[#c9d3e8] transition hover:border-blue-500/50 hover:text-blue-300"
                 >
                   <Icon aria-hidden="true" className="h-4 w-4" />
                 </a>
@@ -104,7 +104,7 @@ export default function LandingFooter() {
               <TbMapPin aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
               Sindangan, Zamboanga del Norte
             </p>
-            <a href="mailto:alumni@pac.edu.ph" className="mb-2 flex items-center gap-1.5 text-[12px] text-[#aebbd6] transition hover:text-gold-300">
+            <a href="mailto:alumni@pac.edu.ph" className="mb-2 flex items-center gap-1.5 text-[12px] text-[#aebbd6] transition hover:text-blue-300">
               <TbMail aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
               alumni@pac.edu.ph
             </a>

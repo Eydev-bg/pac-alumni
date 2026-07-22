@@ -11,6 +11,14 @@ import {
 
 const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
 
+// Rotating pastel IconChip hues, cycled across items by index.
+const HUES = [
+  "bg-blue-50 text-blue-600",
+  "bg-emerald-50 text-emerald-600",
+  "bg-purple-50 text-purple-600",
+  "bg-orange-50 text-orange-500",
+];
+
 // The eight core tools — copy from the approved comp.
 const FEATURES = [
   { icon: TbShieldCheck, title: "Alumni verification", desc: "Secure ID-based sign up for real graduates only." },
@@ -29,27 +37,27 @@ const FEATURES = [
  */
 export default function FeaturesSection() {
   return (
-    <section id="features" className="scroll-mt-20 bg-white px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
+    <section id="features" className="scroll-mt-20 bg-slate-50 px-5 py-14 sm:px-8 lg:px-12 lg:py-20">
       <div className="mx-auto max-w-6xl">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9a7d2f]">
+        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-600">
           Features
         </p>
-        <h2 className="mb-2 text-[26px] font-extrabold leading-tight text-navy-800" style={SERIF}>
+        <h2 className="mb-2 text-[26px] font-extrabold leading-tight text-slate-800" style={SERIF}>
           Everything alumni and staff need in one place
         </h2>
-        <p className="max-w-xl text-[13px] leading-[1.65] text-[#51607a] sm:text-sm">
+        <p className="max-w-xl text-[13px] leading-[1.65] text-slate-500 sm:text-sm">
           Eight core tools, built around how graduates and the alumni office
           actually work.
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {FEATURES.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="rounded-xl border-[0.5px] border-[#e4e9f2] bg-white p-4">
-              <div className="mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] bg-gold-500/[0.14] text-[#b8963e]">
+          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+            <div key={title} className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
+              <div className={`mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] ${HUES[i % 4]}`}>
                 <Icon aria-hidden="true" className="h-5 w-5" />
               </div>
-              <p className="mb-1 text-[13.5px] font-semibold text-navy-800">{title}</p>
-              <p className="text-[11.5px] leading-[1.5] text-[#6b7a95]">{desc}</p>
+              <p className="mb-1 text-[13.5px] font-semibold text-slate-800">{title}</p>
+              <p className="text-[11.5px] leading-[1.5] text-slate-500">{desc}</p>
             </div>
           ))}
         </div>

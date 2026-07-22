@@ -17,9 +17,9 @@ const NAV_LINKS = [
 ];
 
 const REGISTER_BTN =
-  "rounded-[7px] bg-gradient-to-r from-gold-500 to-gold-300 px-3.5 py-1.5 text-[12px] font-semibold text-navy-800 transition hover:brightness-105 focus:outline-none focus:ring-2 focus:ring-gold-300/60";
+  "rounded-lg bg-blue-600 px-3.5 py-1.5 text-[12px] font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
 const LOGIN_BTN =
-  "rounded-[7px] border border-white/25 px-3 py-1.5 text-[12px] font-medium text-[#e6ecf7] transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40";
+  "rounded-lg border border-slate-200 px-3 py-1.5 text-[12px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300";
 
 /**
  * LandingNav — sticky, translucent-navy public navigation.
@@ -39,7 +39,7 @@ export default function LandingNav() {
   }, [menuOpen]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-gold-500/18 bg-navy-950/92 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
         {/* Brand — logo mark always; wordmark only from md up (hidden below md
             so it can't wrap or crowd the actions on small screens). */}
@@ -47,10 +47,10 @@ export default function LandingNav() {
           <img
             src="/pac-logo.jpg"
             alt="Philippine Advent College seal"
-            className="h-9 w-9 flex-none rounded-full border-2 border-gold-500 bg-navy-900 object-cover"
+            className="h-9 w-9 flex-none rounded-full border border-slate-200 bg-white object-cover"
           />
           <span
-            className="hidden truncate whitespace-nowrap text-[13px] font-extrabold leading-none tracking-[0.03em] text-white md:block"
+            className="hidden truncate whitespace-nowrap text-[13px] font-extrabold leading-none tracking-[0.03em] text-slate-800 md:block"
             style={SERIF}
           >
             Philippine Advent College
@@ -63,7 +63,7 @@ export default function LandingNav() {
             <a
               key={link.href}
               href={link.href}
-              className="text-[12px] font-medium text-[#c9d3e8] transition hover:text-gold-300"
+              className="text-[12px] font-medium text-slate-600 transition hover:text-blue-600"
             >
               {link.label}
             </a>
@@ -84,7 +84,7 @@ export default function LandingNav() {
             aria-expanded={menuOpen}
             aria-controls="landing-mobile-menu"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="ml-1 rounded-lg p-1.5 text-[#c9d3e8] transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40 lg:hidden"
+            className="ml-1 rounded-lg p-1.5 text-slate-600 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 lg:hidden"
           >
             {menuOpen ? (
               <TbX aria-hidden="true" className="h-5 w-5" />
@@ -99,7 +99,7 @@ export default function LandingNav() {
       {menuOpen && (
         <div
           id="landing-mobile-menu"
-          className="border-t border-white/10 bg-navy-950/95 px-4 py-3 lg:hidden"
+          className="border-t border-slate-200 bg-white px-4 py-3 lg:hidden"
         >
           <div className="mx-auto flex max-w-6xl flex-col">
             {NAV_LINKS.map((link) => (
@@ -107,7 +107,7 @@ export default function LandingNav() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-lg px-2 py-2.5 text-sm font-medium text-[#c9d3e8] transition hover:bg-white/6 hover:text-gold-300"
+                className="rounded-lg px-2 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
               >
                 {link.label}
               </a>

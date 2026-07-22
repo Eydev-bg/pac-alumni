@@ -11,7 +11,7 @@ const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
  * request fails do we fall back to sample values, dimmed and clearly labelled.
  */
 const CARD_CLASS =
-  "rounded-[11px] border border-gold-500/[0.28] bg-navy-800/55 p-3.5";
+  "rounded-xl border border-slate-200/80 bg-white shadow-sm p-3.5";
 
 // Sample fallback — shown ONLY on API error so the strip is never empty.
 const SAMPLE_STATS = [
@@ -59,10 +59,10 @@ function SkeletonCard() {
   return (
     <div className={CARD_CLASS} aria-hidden="true">
       <div className="text-[23px] leading-none">
-        <div className="h-[0.82em] w-16 animate-pulse rounded bg-gold-300/25" />
+        <div className="h-[0.82em] w-16 animate-pulse rounded bg-slate-200" />
       </div>
       <div className="mt-1.5 text-[10.5px] leading-snug">
-        <div className="h-[0.9em] w-20 animate-pulse rounded bg-[#aebbd6]/20" />
+        <div className="h-[0.9em] w-20 animate-pulse rounded bg-slate-100" />
       </div>
     </div>
   );
@@ -114,18 +114,18 @@ export default function StatStrip() {
       <div className={`grid grid-cols-2 gap-3 sm:grid-cols-4 ${isSample ? "opacity-70" : ""}`}>
         {stats.map((stat) => (
           <div key={stat.id} className={CARD_CLASS}>
-            <div className="text-[23px] font-extrabold leading-none text-gold-300" style={SERIF}>
+            <div className="text-[23px] font-extrabold leading-none text-blue-600" style={SERIF}>
               {stat.value}
               {stat.suffix && <span className="text-[15px]">{stat.suffix}</span>}
             </div>
-            <div className="mt-1.5 text-[10.5px] leading-snug text-[#aebbd6]">
+            <div className="mt-1.5 text-[10.5px] leading-snug text-slate-500">
               {stat.label}
             </div>
           </div>
         ))}
       </div>
       {isSample && (
-        <p className="mt-2 text-[10px] italic text-[#aebbd6]/70">(sample data)</p>
+        <p className="mt-2 text-[10px] italic text-slate-400">(sample data)</p>
       )}
     </div>
   );
