@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { formatDateOnly } from "../../../utils/formatters";
+import { Select } from "../../../components/alumni/ui";
 import {
   HiOutlineBriefcase,
   HiOutlineBuildingOffice2,
@@ -566,25 +567,14 @@ export default function AlumniEmploymentPage() {
                     >
                       Industry <span className="text-red-400">*</span>
                     </label>
-                    <select
+                    <Select
                       id="employment-industry"
                       value={formData.industry}
-                      onChange={(e) =>
-                        setFormData({ ...formData, industry: e.target.value })
-                      }
-                      className={`w-full px-3 py-2.5 border rounded-xl text-sm text-slate-800 bg-white outline-none transition-all focus:ring-2 appearance-none cursor-pointer ${
-                        fieldErrors.industry
-                          ? "border-red-300 focus:border-red-400 focus:ring-red-500/15"
-                          : "border-slate-200 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10"
-                      }`}
-                    >
-                      <option value="">Select industry</option>
-                      {industries.map((ind) => (
-                        <option key={ind} value={ind}>
-                          {ind}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(v) => setFormData({ ...formData, industry: v })}
+                      options={industries.map((ind) => ({ value: ind, label: ind }))}
+                      placeholder="Select industry"
+                      error={!!fieldErrors.industry}
+                    />
                     {fieldErrors.industry && (
                       <p className="text-[0.68rem] text-red-500 mt-1">
                         {fieldErrors.industry[0]}

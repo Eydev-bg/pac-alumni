@@ -9,6 +9,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
 import StatusBadge from "../../../components/common/StatusBadge";
+import { Select } from "../../../components/alumni/ui";
 import {
   HiOutlineClipboardDocumentCheck,
   HiOutlineCheckCircle,
@@ -409,28 +410,15 @@ export default function AlumniBoardExamPage() {
               >
                 Exam Year <span className="text-red-400">*</span>
               </label>
-              <div className="relative">
-                <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <select
-                  id="board-exam-year"
-                  value={formData.exam_year}
-                  onChange={(e) =>
-                    setFormData({ ...formData, exam_year: e.target.value })
-                  }
-                  className={`w-full pl-10 pr-3 py-2.5 border rounded-xl text-sm text-slate-800 bg-white outline-none transition-all duration-200 focus:ring-2 appearance-none cursor-pointer ${
-                    fieldErrors.exam_year
-                      ? "border-red-300 focus:border-red-400 focus:ring-red-500/15"
-                      : "border-slate-200 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10"
-                  }`}
-                >
-                  <option value="">Select exam year</option>
-                  {yearOptions.map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="board-exam-year"
+                value={formData.exam_year}
+                onChange={(v) => setFormData({ ...formData, exam_year: v })}
+                options={yearOptions.map((y) => ({ value: String(y), label: String(y) }))}
+                placeholder="Select exam year"
+                error={!!fieldErrors.exam_year}
+                leftIcon={HiOutlineCalendarDays}
+              />
               {fieldErrors.exam_year && (
                 <p className="text-[0.68rem] text-red-500 mt-1">
                   {fieldErrors.exam_year[0]}

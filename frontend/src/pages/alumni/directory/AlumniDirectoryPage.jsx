@@ -14,7 +14,7 @@ import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
 import EmptyState from "../../../components/common/EmptyState";
 import { useDebounce } from "../../../hooks/useDebounce";
-import { AlumniCard, Avatar, Badge, IconChip } from "../../../components/alumni/ui";
+import { AlumniCard, Avatar, Badge, IconChip, Select } from "../../../components/alumni/ui";
 import {
   HiOutlineUserGroup,
   HiOutlineMagnifyingGlass,
@@ -217,18 +217,18 @@ export default function AlumniDirectoryPage() {
       {/* Always visible on sm+; on mobile it toggles open below the search. */}
       <div className={`${showFilters ? "block" : "hidden"} sm:block`}>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
-          <FilterSelect
-            label="Batch"
+          <Select
+            ariaLabel="Batch"
             value={filters.graduation_year}
             onChange={(v) => patchFilters({ graduation_year: v })}
             options={filterData.years.map((y) => ({
               value: String(y),
               label: String(y),
             }))}
-            allLabel="All batches"
+            placeholder="All batches"
           />
-          <FilterSelect
-            label="Department"
+          <Select
+            ariaLabel="Department"
             value={filters.department_id}
             // Changing department clears an incompatible course selection.
             onChange={(v) => patchFilters({ department_id: v, course_id: "" })}
@@ -236,31 +236,31 @@ export default function AlumniDirectoryPage() {
               value: String(d.id),
               label: d.name,
             }))}
-            allLabel="All departments"
+            placeholder="All departments"
           />
-          <FilterSelect
-            label="Course"
+          <Select
+            ariaLabel="Course"
             value={filters.course_id}
             onChange={(v) => patchFilters({ course_id: v })}
             options={courseOptions.map((c) => ({
               value: String(c.id),
               label: c.code || c.name,
             }))}
-            allLabel="All courses"
+            placeholder="All courses"
           />
-          <FilterSelect
-            label="Employment"
+          <Select
+            ariaLabel="Employment"
             value={filters.employment_status}
             onChange={(v) => patchFilters({ employment_status: v })}
             options={EMPLOYMENT_OPTIONS}
-            allLabel="All employment"
+            placeholder="All employment"
           />
-          <FilterSelect
-            label="Board"
+          <Select
+            ariaLabel="Board"
             value={filters.board_status}
             onChange={(v) => patchFilters({ board_status: v })}
             options={BOARD_OPTIONS}
-            allLabel="All board status"
+            placeholder="All board status"
           />
         </div>
         {activeFilterCount > 0 && (
@@ -314,42 +314,6 @@ export default function AlumniDirectoryPage() {
           <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
       )}
-    </div>
-  );
-}
-
-// ─── Filter dropdown (native select, themed) ────────────────
-function FilterSelect({ label, value, onChange, options, allLabel }) {
-  return (
-    <div className="relative">
-      <select
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full appearance-none pl-3 pr-8 py-2.5 bg-white border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors ${
-          value
-            ? "border-blue-300 text-slate-800 font-medium"
-            : "border-slate-200 text-slate-500"
-        }`}
-      >
-        <option value="">{allLabel}</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      <svg
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-        viewBox="0 0 20 20"
-        fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-          clipRule="evenodd"
-        />
-      </svg>
     </div>
   );
 }
