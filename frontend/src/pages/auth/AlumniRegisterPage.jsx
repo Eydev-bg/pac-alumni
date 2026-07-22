@@ -163,8 +163,8 @@ export default function AlumniRegisterPage() {
   // ── Loading ──
   if (checkingStatus) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#0f1b3d]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#c8a84e]" />
+      <div className="h-screen w-screen flex items-center justify-center bg-blue-700">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500" />
       </div>
     );
   }
@@ -177,17 +177,17 @@ export default function AlumniRegisterPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/campus-bg.jpg')" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b3d]/60 via-[#0f1b3d]/40 to-[#0f1b3d]/70 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
         </div>
         <div className="relative z-10 w-full max-w-[420px] px-5 flex flex-col items-center">
           <img
-            src="/pac-logo.jpg"
+            src="/pac-logo.jp"
             alt="PAC Seal"
-            className="w-[84px] h-[84px] rounded-full object-cover border-[3px] border-[#c8a84e] shadow-[0_0_0_4px_rgba(26,46,90,0.4),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-18px] relative z-20"
+            className="w-[84px] h-[84px] rounded-full object-cover border-[3px] border-blue-500 shadow-[0_0_0_4px_rgba(37,99,235,0.35),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-18px] relative z-20"
           />
           <div className="w-full bg-white/[0.92] backdrop-blur-2xl border border-white/50 rounded-2xl px-7 pt-8 pb-6 shadow-[0_16px_48px_rgba(0,0,0,0.12)] text-center">
             <HiOutlineExclamationTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-            <h2 className="text-lg font-bold text-[#1a2e5a] mb-2">
+            <h2 className="text-lg font-bold text-slate-800 mb-2">
               Registration Closed
             </h2>
             <p className="text-sm text-slate-500 mb-5">
@@ -196,7 +196,7 @@ export default function AlumniRegisterPage() {
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="w-full py-2.5 bg-gradient-to-r from-[#1a2e5a] to-[#2a4177] text-white text-sm font-bold rounded-lg shadow-[0_4px_14px_rgba(26,46,90,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(26,46,90,0.45)]"
+              className="w-full py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)]"
             >
               Back to Login
             </button>
@@ -214,19 +214,19 @@ export default function AlumniRegisterPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/campus-bg.jpg')" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b3d]/60 via-[#0f1b3d]/40 to-[#0f1b3d]/70 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
         </div>
         <div className="relative z-10 w-full max-w-[420px] px-5 flex flex-col items-center">
           <img
             src="/pac-logo.jpg"
             alt="PAC Seal"
-            className="w-[84px] h-[84px] rounded-full object-cover border-[3px] border-[#c8a84e] shadow-[0_0_0_4px_rgba(26,46,90,0.4),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-18px] relative z-20"
+            className="w-[84px] h-[84px] rounded-full object-cover border-[3px] border-blue-500 shadow-[0_0_0_4px_rgba(37,99,235,0.35),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-18px] relative z-20"
           />
           <div className="w-full bg-white/[0.92] backdrop-blur-2xl border border-white/50 rounded-2xl px-7 pt-8 pb-6 shadow-[0_16px_48px_rgba(0,0,0,0.12)] text-center">
             <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
               <HiOutlineCheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
-            <h2 className="text-lg font-bold text-[#1a2e5a] mb-2">
+            <h2 className="text-lg font-bold text-slate-800 mb-2">
               Registration Successful!
             </h2>
             <p className="text-sm text-slate-500 mb-5">
@@ -235,7 +235,7 @@ export default function AlumniRegisterPage() {
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="w-full py-2.5 bg-gradient-to-r from-[#1a2e5a] to-[#2a4177] text-white text-sm font-bold rounded-lg shadow-[0_4px_14px_rgba(26,46,90,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(26,46,90,0.45)]"
+              className="w-full py-2.5 bg-blue-600 text-white text-sm font-bold rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)]"
             >
               Go to Login
             </button>
@@ -255,51 +255,38 @@ export default function AlumniRegisterPage() {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/campus-bg.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0f1b3d]/60 via-[#0f1b3d]/40 to-[#0f1b3d]/70 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
       </div>
 
-      {/* Card */}
-      <div className="relative z-10 w-full max-w-[440px] md:max-w-[780px] px-4 sm:px-5 flex flex-col items-center">
-        {/* Logo */}
-        <img
-          src="/pac-logo.jpg"
-          alt="Philippine Advent College Seal"
-          className="w-[70px] h-[70px] rounded-full object-cover border-[3px] border-[#c8a84e] shadow-[0_0_0_4px_rgba(26,46,90,0.4),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-15px] relative z-20"
-        />
+      {/* Card — split: form left, illustration right (desktop) */}
+      <div className="relative z-10 w-full max-w-[440px] md:max-w-[960px] px-4 sm:px-5">
+        <div className="flex overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
+          {/* LEFT — branding header + form */}
+          <div className="w-full md:w-[62%] bg-white/[0.95] backdrop-blur-2xl px-5 sm:px-7 py-5">
+            {/* Brand (logo + name) */}
+            <div className="flex items-center gap-3 mb-4">
+              <img
+                src="/pac-logo.jpg"
+                alt="Philippine Advent College Seal"
+                className="w-[56px] h-[56px] rounded-full object-cover border-[3px] border-blue-500 shadow-[0_0_0_4px_rgba(37,99,235,0.35),0_6px_20px_rgba(0,0,0,0.3)] bg-white shrink-0"
+              />
+              <div className="min-w-0">
+                <h1
+                  className="text-slate-800 text-[0.95rem] font-extrabold leading-tight"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                >
+                  Philippine Advent College
+                </h1>
+                <span className="text-blue-600 text-[0.6rem] font-bold tracking-wide uppercase">
+                  Alumni Registration
+                </span>
+              </div>
+            </div>
 
-        {/* Branding Header */}
-        <div className="w-full text-center pt-5 pb-2 bg-gradient-to-b from-[#1a2e5a]/90 to-[#1a2e5a]/75 backdrop-blur-xl rounded-t-2xl border border-white/15 border-b-0">
-          <h1
-            className="text-white text-[0.95rem] sm:text-[1.05rem] font-extrabold tracking-[0.06em] uppercase mb-1.5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.3)]"
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-          >
-            Philippine Advent College
-          </h1>
-          <span className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#c8a84e] to-[#e0c76a] text-[#1a2e5a] text-[0.6rem] font-bold tracking-wide uppercase px-3.5 py-0.5 rounded-full shadow-[0_2px_8px_rgba(200,168,78,0.3)]">
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-            Alumni Registration
-          </span>
-        </div>
-
-        {/* Form Card */}
-        <div className="w-full bg-white/[0.92] backdrop-blur-2xl border border-white/50 border-t-0 rounded-b-2xl px-5 sm:px-7 pt-4 pb-5 shadow-[0_16px_48px_rgba(0,0,0,0.12)]">
           {/* Header row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
             <div>
-              <h2 className="text-[1.05rem] font-bold text-[#1a2e5a] mb-0.5">
+              <h2 className="text-[1.05rem] font-bold text-slate-800 mb-0.5">
                 Create Your Alumni Account
               </h2>
               <p className="text-[0.72rem] text-slate-400">
@@ -310,7 +297,7 @@ export default function AlumniRegisterPage() {
               Already have an account?{" "}
               <a
                 href="/login"
-                className="font-bold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
+                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
                 Log In
               </a>
@@ -465,7 +452,7 @@ export default function AlumniRegisterPage() {
             <button
               type="submit"
               disabled={loading || !allPasswordChecksPass}
-              className="w-full py-2.5 mt-4 bg-gradient-to-r from-[#1a2e5a] to-[#2a4177] text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(26,46,90,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(26,46,90,0.45)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
+              className="w-full py-2.5 mt-4 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -504,10 +491,23 @@ export default function AlumniRegisterPage() {
               Already have an account?{" "}
               <a
                 href="/login"
-                className="font-bold text-[#1a2e5a] hover:text-blue-600 hover:underline transition-colors"
+                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
                 Log In
               </a>
+            </p>
+          </div>
+          </div>
+
+          {/* RIGHT — illustration panel (desktop only) */}
+          <div className="hidden md:flex md:w-[38%] flex-col items-center justify-center bg-blue-50 px-7 py-10">
+            <img
+              src="/Sign_up-rafiki.png"
+              alt="Alumni creating an account"
+              className="w-full max-w-[300px] h-auto object-contain"
+            />
+            <p className="mt-4 text-center text-[0.8rem] text-slate-500 max-w-[240px]">
+              Join the PAC Alumni network. Verify your graduate ID to get started.
             </p>
           </div>
         </div>
