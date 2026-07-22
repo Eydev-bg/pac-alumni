@@ -29,6 +29,27 @@ const LOGIN_BTN =
  */
 export default function LandingNav() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeId, setActiveId] = useState("home");
+
+  // Track the section currently in view so the matching nav link highlights.
+  // IntersectionObserver (no scroll listener) avoids per-frame jank; the
+  // asymmetric rootMargin focuses the "active" band around the viewport middle.
+  useEffect(() => {
+    const ids = NAV_LINKS.map((l) => l.href.slice(1));
+    const sections = ids.map((id) => document.getElementById(id)).filter(Boolean);
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActiveId(visible[0].target.id);
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] }
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
 
   // Close the mobile menu on Escape.
   useEffect(() => {
@@ -59,15 +80,27 @@ export default function LandingNav() {
 
         {/* Center links (desktop) */}
         <div className="hidden items-center gap-5 lg:flex">
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="text-[12px] font-medium text-slate-600 transition hover:text-blue-600"
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = activeId === link.href.slice(1);
+            return (
+              <a
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? "true" : undefined}
+                className={`group relative text-[12px] font-medium transition-colors ${
+                  isActive ? "text-blue-600" : "text-slate-600 hover:text-blue-600"
+                }`}
+              >
+                {link.label}
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute -bottom-1 left-0 h-[1.5px] rounded-full bg-blue-600 transition-[width] duration-300 ease-out motion-reduce:transition-none ${
+                    isActive ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
+                />
+              </a>
+            );
+          })}
         </div>
 
         {/* Right actions + mobile toggle */}
@@ -102,16 +135,22 @@ export default function LandingNav() {
           className="border-t border-slate-200 bg-white px-4 py-3 lg:hidden"
         >
           <div className="mx-auto flex max-w-6xl flex-col">
-            {NAV_LINKS.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="rounded-lg px-2 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-slate-50 hover:text-blue-600"
-              >
-                {link.label}
-              </a>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = activeId === link.href.slice(1);
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  aria-current={isActive ? "true" : undefined}
+                  onClick={() => setMenuOpen(false)}
+                  className={`rounded-lg px-2 py-2.5 text-sm font-medium transition hover:bg-slate-50 ${
+                    isActive ? "text-blue-600" : "text-slate-600 hover:text-blue-600"
+                  }`}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
         </div>
       )}

@@ -52,8 +52,8 @@ export default function FeaturesSection() {
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-            <div key={title} className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
-              <div className={`mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] ${HUES[i % 4]}`}>
+            <div key={title} className="group rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none">
+              <div className={`mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] ${HUES[i % 4]} transition-transform duration-200 ease-out group-hover:scale-105 motion-reduce:transform-none`}>
                 <Icon aria-hidden="true" className="h-5 w-5" />
               </div>
               <p className="mb-1 text-[13.5px] font-semibold text-slate-800">{title}</p>
