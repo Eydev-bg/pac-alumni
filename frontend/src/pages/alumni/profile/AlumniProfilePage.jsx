@@ -24,9 +24,11 @@ import {
   ProgressBar,
   Avatar,
   Badge,
+  Select,
 } from "../../../components/alumni/ui";
 import {
   HiOutlineUser,
+  HiOutlineUserGroup,
   HiOutlineAcademicCap,
   HiOutlinePhone,
   HiOutlineMapPin,
@@ -458,6 +460,11 @@ export default function AlumniProfilePage() {
         </div>
       </AlumniCard>
 
+      {/* ══ B2) Directory Visibility (privacy opt-out) ══ */}
+      <DirectoryVisibilitySection
+        initial={profile.preferences?.is_directory_visible ?? true}
+      />
+
       {/* ══ C) Employment Information ══ */}
       <EmploymentSection onSaved={bump} />
 
@@ -484,6 +491,82 @@ function InfoRow({ icon: Icon, label, value, highlight }) {
         </p>
       </div>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+//  B2) DIRECTORY VISIBILITY — privacy opt-out (Phase B)
+//  Reuses PUT /profile ({ is_directory_visible }). Optimistic:
+//  flip immediately, revert on failure.
+// ═══════════════════════════════════════════════════════════
+function DirectoryVisibilitySection({ initial }) {
+  const toast = useToast();
+  const [visible, setVisible] = useState(initial);
+  const [saving, setSaving] = useState(false);
+
+  // Keep in sync if the parent reloads the profile with a fresh value.
+  useEffect(() => {
+    setVisible(initial);
+  }, [initial]);
+
+  const handleToggle = async () => {
+    if (saving) return;
+    const next = !visible;
+    setVisible(next); // optimistic
+    setSaving(true);
+    try {
+      await alumniApi.updateProfile({ is_directory_visible: next });
+      toast.success(
+        next
+          ? "You're now visible in the Alumni Directory."
+          : "You're now hidden from the Alumni Directory.",
+      );
+    } catch (err) {
+      setVisible(!next); // revert
+      toast.error(
+        err.response?.data?.message || "Failed to update directory visibility.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <AlumniCard>
+      <SectionHeader title="Directory Visibility" />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3 min-w-0">
+          <IconChip icon={HiOutlineUserGroup} color="blue" size="md" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-800">
+              Show my profile in the Alumni Directory
+            </p>
+            <p className="mt-0.5 text-[0.78rem] text-slate-500 leading-relaxed">
+              When off, other alumni won't find you in the directory or see your
+              profile.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          role="switch"
+          aria-checked={visible}
+          aria-label="Show my profile in the Alumni Directory"
+          onClick={handleToggle}
+          disabled={saving}
+          className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
+            visible ? "bg-blue-600" : "bg-slate-300"
+          }`}
+        >
+          <span
+            className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+              visible ? "translate-x-5" : "translate-x-0.5"
+            }`}
+          />
+        </button>
+      </div>
+    </AlumniCard>
   );
 }
 
@@ -740,19 +823,14 @@ function EmploymentSection({ onSaved }) {
                       <label htmlFor="emp-industry" className={fieldLabel}>
                         Industry <span className="text-red-400">*</span>
                       </label>
-                      <select
+                      <Select
                         id="emp-industry"
                         value={formData.industry}
-                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                        className={`${inputBase} px-3 appearance-none cursor-pointer ${fieldErrors.industry ? inputErr : inputOk}`}
-                      >
-                        <option value="">Select industry</option>
-                        {industries.map((ind) => (
-                          <option key={ind} value={ind}>
-                            {ind}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(v) => setFormData({ ...formData, industry: v })}
+                        options={industries.map((ind) => ({ value: ind, label: ind }))}
+                        placeholder="Select industry"
+                        error={!!fieldErrors.industry}
+                      />
                       {fieldErrors.industry && (
                         <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.industry[0]}</p>
                       )}
@@ -1125,22 +1203,15 @@ function BoardExamSection({ onSaved }) {
                 <label htmlFor="board-year" className={fieldLabel}>
                   Exam Year <span className="text-red-400">*</span>
                 </label>
-                <div className="relative">
-                  <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <select
-                    id="board-year"
-                    value={formData.exam_year}
-                    onChange={(e) => setFormData({ ...formData, exam_year: e.target.value })}
-                    className={`${inputBase} pl-10 pr-3 appearance-none cursor-pointer ${fieldErrors.exam_year ? inputErr : inputOk}`}
-                  >
-                    <option value="">Select exam year</option>
-                    {yearOptions.map((y) => (
-                      <option key={y} value={y}>
-                        {y}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  id="board-year"
+                  value={formData.exam_year}
+                  onChange={(v) => setFormData({ ...formData, exam_year: v })}
+                  options={yearOptions.map((y) => ({ value: String(y), label: String(y) }))}
+                  placeholder="Select exam year"
+                  error={!!fieldErrors.exam_year}
+                  leftIcon={HiOutlineCalendarDays}
+                />
                 {fieldErrors.exam_year && <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.exam_year[0]}</p>}
               </div>
 

@@ -163,9 +163,23 @@ function AlumniLayoutInner() {
       {/* ── Promo card ── */}
       {sidebarOpen && (
         <div className="px-3 pb-4">
-          <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 p-4 text-white shadow-sm">
-            <p className="text-sm font-bold">Connect. Engage. Inspire.</p>
-            <p className="mt-1 text-xs text-blue-100 leading-relaxed">
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 p-4 text-white shadow-sm">
+            {/* Decorative circles */}
+            <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full bg-white/10"></div>
+            <div className="absolute -bottom-10 -left-10 w-28 h-28 rounded-full bg-white/5"></div>
+
+            {/* Graduate Illustration */}
+            <img
+              src="/public/Graduation_hatsrafiki.png"
+              alt="Graduates"
+              className="w-28 mx-auto mb-3 drop-shadow-lg select-none pointer-events-none"
+            />
+
+            <p className="text-center text-sm font-bold">
+              Connect. Engage. Inspire.
+            </p>
+
+            <p className="mt-1 text-center text-xs text-blue-100 leading-relaxed">
               Building a stronger PAC Alumni Community together.
             </p>
           </div>
