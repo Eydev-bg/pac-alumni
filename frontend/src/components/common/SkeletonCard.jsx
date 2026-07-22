@@ -100,19 +100,37 @@ function ConversationSkeleton() {
   );
 }
 
+// Form/profile section: a few label + input field rows inside an existing
+// white card. Meant to be used with count={1} — one section block, not stacked
+// copies — so a loading form section causes no layout shift.
+function FormSectionSkeleton() {
+  return (
+    <div className="animate-pulse space-y-4">
+      {Array.from({ length: 4 }, (_, i) => (
+        <div key={i} className="space-y-1.5">
+          <Bar className="h-3 w-24" /> {/* label */}
+          <Bar className="h-10 w-full rounded-xl" /> {/* input */}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const VARIANTS = {
   announcement: { Row: AnnouncementSkeleton, bare: false },
   job: { Row: JobSkeleton, bare: false },
   event: { Row: EventSkeleton, bare: false },
   notification: { Row: NotificationSkeleton, bare: true },
   conversation: { Row: ConversationSkeleton, bare: true },
+  // Bare — renders inside an existing card. Use with count={1}.
+  form: { Row: FormSectionSkeleton, bare: true },
 };
 
 /**
  * Loading skeleton list for the Alumni list pages.
  *
- * @param {"announcement"|"job"|"event"|"notification"|"conversation"} variant
- * @param {number} count  Number of skeleton rows (3–5 recommended).
+ * @param {"announcement"|"job"|"event"|"notification"|"conversation"|"form"} variant
+ * @param {number} count  Number of skeleton rows (3–5 recommended; use count={1} for "form").
  */
 export default function SkeletonCard({ variant = "announcement", count = 4 }) {
   const { Row, bare } = VARIANTS[variant] || VARIANTS.announcement;

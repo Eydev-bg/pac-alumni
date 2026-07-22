@@ -8,6 +8,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { timeAgo, storageUrl } from "../../../utils/formatters";
+import SkeletonCard from "../../../components/common/SkeletonCard";
 import {
   HiOutlineTrophy,
   HiOutlineBriefcase,
@@ -92,15 +93,13 @@ export default function AchievementFeed() {
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
       <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-        <HiOutlineTrophy className="w-4 h-4 text-[#c8a84e]" />
+        <HiOutlineTrophy className="w-4 h-4 text-blue-600" />
         <h3 className="text-sm font-bold text-slate-800">Alumni Achievements</h3>
       </div>
 
       <div className="px-5 py-4">
         {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-[#1a2e5a]" />
-          </div>
+          <SkeletonCard variant="notification" count={3} />
         ) : error ? (
           <p className="text-sm text-slate-400 text-center py-6">{error}</p>
         ) : items.length === 0 ? (

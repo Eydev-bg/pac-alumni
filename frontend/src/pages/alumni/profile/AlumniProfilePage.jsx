@@ -17,6 +17,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
 import StatusBadge from "../../../components/common/StatusBadge";
+import SkeletonCard from "../../../components/common/SkeletonCard";
 import {
   AlumniCard,
   IconChip,
@@ -197,10 +198,9 @@ export default function AlumniProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Loading profile…</p>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <SkeletonCard variant="form" count={1} />
         </div>
       </div>
     );
@@ -679,9 +679,7 @@ function EmploymentSection({ onSaved }) {
       />
 
       {loading ? (
-        <div className="py-8 flex justify-center">
-          <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-blue-600" />
-        </div>
+        <SkeletonCard variant="form" count={1} />
       ) : (
         <>
           {/* Current position highlight */}
@@ -1126,9 +1124,7 @@ function BoardExamSection({ onSaved }) {
       />
 
       {loading ? (
-        <div className="py-8 flex justify-center">
-          <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-blue-600" />
-        </div>
+        <SkeletonCard variant="form" count={1} />
       ) : (
         <>
           {course?.name && (
