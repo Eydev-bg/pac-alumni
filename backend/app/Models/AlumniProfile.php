@@ -15,6 +15,7 @@ class AlumniProfile extends Model
         'current_location',
         'employment_status',
         'board_status',
+        'is_directory_visible',
     ];
 
     protected function casts(): array
@@ -22,6 +23,7 @@ class AlumniProfile extends Model
         return [
             'employment_status' => EmploymentStatus::class,
             'board_status' => BoardStatus::class,
+            'is_directory_visible' => 'boolean',
         ];
     }
 

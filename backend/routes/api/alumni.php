@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Alumni\AchievementFeedController;
 use App\Http\Controllers\Api\Alumni\AlumniAnnouncementController;
 use App\Http\Controllers\Api\Alumni\AlumniController;
 use App\Http\Controllers\Api\Alumni\BoardExamController;
+use App\Http\Controllers\Api\Alumni\DirectoryController;
 use App\Http\Controllers\Api\Alumni\AlumniEventController;
 use App\Http\Controllers\Api\Alumni\AlumniJobPostingController;
 use App\Http\Controllers\Api\Alumni\AlumniNotificationController;
@@ -99,6 +100,14 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
         ->name('alumni.achievement-feed.index');
     Route::patch('/achievement-feed/{id}/visibility', [AchievementFeedController::class, 'toggleVisibility'])
         ->whereNumber('id')->name('alumni.achievement-feed.visibility');
+
+    // ─── Alumni Directory (Phase B) ───────────────────────
+    // Browse/search fellow alumni + view a public profile. Static
+    // segment declared before the {uuid} wildcard so it isn't swallowed.
+    Route::get('/directory', [DirectoryController::class, 'index'])
+        ->name('alumni.directory.index');
+    Route::get('/directory/{uuid}', [DirectoryController::class, 'show'])
+        ->name('alumni.directory.show');
 
     // ─── Messaging (Phase 3.3) ────────────────────────────
     // Static segments declared before the parameterized {id} routes so they

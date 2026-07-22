@@ -126,6 +126,9 @@ class AlumniService
                 'board_status' => $profile->board_status?->value,
                 'board_label' => $profile->board_status?->label(),
             ],
+            'preferences' => [
+                'is_directory_visible' => (bool) $profile->is_directory_visible,
+            ],
         ];
     }
 
@@ -165,6 +168,17 @@ class AlumniService
                 }
             }
 
+            // ─── Alumni Directory opt-out toggle ─────────────
+            if (array_key_exists('is_directory_visible', $data)) {
+                $oldVisible = (bool) $profile->is_directory_visible;
+                $newVisible = filter_var($data['is_directory_visible'], FILTER_VALIDATE_BOOLEAN);
+
+                if ($oldVisible !== $newVisible) {
+                    $profile->update(['is_directory_visible' => $newVisible]);
+                    $changes['is_directory_visible'] = ['from' => $oldVisible, 'to' => $newVisible];
+                }
+            }
+
             // ─── Log activity if anything changed ────────────
             if (!empty($changes)) {
                 $graduate = $profile->graduate;
@@ -186,9 +200,12 @@ class AlumniService
                 AchievementFeed::maybeRecordProfileCompleted($profile);
             }
 
+            $fresh = $profile->fresh();
+
             return [
                 'phone' => $user->fresh()->phone,
-                'current_location' => $profile->fresh()->current_location,
+                'current_location' => $fresh->current_location,
+                'is_directory_visible' => (bool) $fresh->is_directory_visible,
                 'changes_made' => !empty($changes),
             ];
         });

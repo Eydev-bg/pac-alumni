@@ -19,16 +19,20 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone'            => ['nullable', 'string', 'max:20'],
-            'current_location' => ['nullable', 'string', 'max:300'],
+            'phone'                => ['nullable', 'string', 'max:20'],
+            'current_location'     => ['nullable', 'string', 'max:300'],
+            // Alumni Directory opt-out. Optional so existing profile updates
+            // that don't touch visibility keep working unchanged.
+            'is_directory_visible' => ['sometimes', 'boolean'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'phone.max'            => 'Phone number must not exceed 20 characters.',
-            'current_location.max' => 'Location must not exceed 300 characters.',
+            'phone.max'                    => 'Phone number must not exceed 20 characters.',
+            'current_location.max'         => 'Location must not exceed 300 characters.',
+            'is_directory_visible.boolean' => 'Directory visibility must be true or false.',
         ];
     }
 }
