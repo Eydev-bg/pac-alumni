@@ -1,15 +1,16 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/components/alumni/MobileTabBar.jsx
 //  Fixed bottom navigation — mobile/tablet only (hidden on lg+).
-//  Batch 5: the four primary alumni destinations. "Alumni Directory"
-//  (the reference's 5th tab) is deferred to Phase B, so we ship 4
-//  centered tabs rather than route to a non-existent page.
+//  The five primary alumni destinations (Phase B re-enabled the
+//  "Alumni" directory tab that was deferred while the feature
+//  didn't exist).
 // ═══════════════════════════════════════════════════════════
 
 import { NavLink } from "react-router-dom";
 import {
   HiOutlineHome,
   HiOutlineCalendarDays,
+  HiOutlineUserGroup,
   HiOutlineBriefcase,
   HiOutlineUser,
 } from "react-icons/hi2";
@@ -17,6 +18,7 @@ import {
 const TABS = [
   { name: "Home", to: "/alumni/dashboard", icon: HiOutlineHome },
   { name: "Events", to: "/alumni/events", icon: HiOutlineCalendarDays },
+  { name: "Alumni", to: "/alumni/directory", icon: HiOutlineUserGroup },
   { name: "Jobs", to: "/alumni/careers", icon: HiOutlineBriefcase },
   { name: "Profile", to: "/alumni/profile", icon: HiOutlineUser },
 ];

@@ -52,6 +52,7 @@ const AlumniJobDetailPage = lazy(() => import("../pages/alumni/jobs/AlumniJobDet
 const AlumniEventsPage = lazy(() => import("../pages/alumni/events/AlumniEventsPage"));
 const AlumniInboxPage = lazy(() => import("../pages/alumni/messages/AlumniInboxPage"));
 const AlumniConversationPage = lazy(() => import("../pages/alumni/messages/AlumniConversationPage"));
+const AlumniDirectoryPage = lazy(() => import("../pages/alumni/directory/AlumniDirectoryPage"));
 
 export default function AppRouter() {
   return (
@@ -130,6 +131,7 @@ export default function AppRouter() {
                 <Route path="events" element={<AlumniEventsPage />} />
                 <Route path="careers" element={<AlumniCareerCenterPage />} />
                 <Route path="careers/:id" element={<AlumniJobDetailPage />} />
+                <Route path="directory" element={<AlumniDirectoryPage />} />
                 <Route path="messages" element={<AlumniInboxPage />} />
                 <Route path="messages/:id" element={<AlumniConversationPage />} />
               </Route>

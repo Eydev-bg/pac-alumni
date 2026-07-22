@@ -17,6 +17,7 @@ import {
   HiOutlineHome,
   HiOutlineXMark,
   HiOutlineUser,
+  HiOutlineUserGroup,
   HiOutlineBriefcase,
   HiOutlineMegaphone,
   HiOutlineCalendarDays,
@@ -48,12 +49,16 @@ function AlumniLayoutInner() {
     useUnread();
 
   // Flat single-list nav (the redesign drops the grouped sections).
-  // Alumni Directory is deferred to Phase B and intentionally omitted.
   // Settings / Help & Support have no alumni page today, so they're omitted
   // rather than pointing at a route that doesn't exist.
   const navItems = [
     { name: "Home", path: "/alumni/dashboard", icon: HiOutlineHome },
     { name: "My Profile", path: "/alumni/profile", icon: HiOutlineUser },
+    {
+      name: "Alumni Directory",
+      path: "/alumni/directory",
+      icon: HiOutlineUserGroup,
+    },
     { name: "Events", path: "/alumni/events", icon: HiOutlineCalendarDays },
     {
       name: "Announcements",

@@ -28,6 +28,7 @@ import {
 import AchievementFeed from "./AchievementFeed";
 import {
   HiOutlineUser,
+  HiOutlineUserGroup,
   HiOutlineBriefcase,
   HiOutlineCalendarDays,
   HiOutlineMegaphone,
@@ -174,7 +175,7 @@ function WelcomeCard() {
   );
 }
 
-// ─── Quick Actions (exactly 3 this phase) ───────────────────
+// ─── Quick Actions ──────────────────────────────────────────
 
 function QuickActions() {
   const actions = [
@@ -184,6 +185,13 @@ function QuickActions() {
       icon: HiOutlineUser,
       color: "blue",
       to: "/alumni/profile",
+    },
+    {
+      title: "Find Alumni",
+      desc: "Browse the alumni directory",
+      icon: HiOutlineUserGroup,
+      color: "orange",
+      to: "/alumni/directory",
     },
     {
       title: "Browse Jobs",
@@ -207,6 +215,7 @@ function QuickActions() {
     blue: "bg-blue-50 text-blue-600",
     green: "bg-emerald-50 text-emerald-600",
     purple: "bg-purple-50 text-purple-600",
+    orange: "bg-orange-50 text-orange-500",
   };
 
   return (
@@ -214,8 +223,8 @@ function QuickActions() {
       <h2 className="text-base font-semibold text-slate-800 mb-3">
         Quick Actions
       </h2>
-      {/* Always a single row of 3 — 3 compact cards on mobile, larger on lg+. */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* 2×2 on mobile, a single row of 4 on sm+. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {actions.map((a) => (
           <Link
             key={a.to}

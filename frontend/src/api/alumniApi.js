@@ -138,6 +138,19 @@ const alumniApi = {
     return api.get('/alumni/messages/recipients', { params: { search } });
   },
 
+  // ─── Alumni Directory (Phase B) ────────────────────────
+  getDirectory(params = {}) {
+    return api.get('/alumni/directory', { params });
+  },
+
+  getDirectoryFilters() {
+    return api.get('/alumni/directory/filters');
+  },
+
+  getDirectoryProfile(uuid) {
+    return api.get(`/alumni/directory/${uuid}`);
+  },
+
   // ─── Job Postings (Phase 3) ────────────────────────────
   getJobPostings(params = {}) {
     return api.get('/alumni/job-postings', { params });
