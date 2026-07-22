@@ -106,6 +106,8 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
     // segment declared before the {uuid} wildcard so it isn't swallowed.
     Route::get('/directory', [DirectoryController::class, 'index'])
         ->name('alumni.directory.index');
+    Route::get('/directory/filters', [DirectoryController::class, 'filters'])
+        ->name('alumni.directory.filters');
     Route::get('/directory/{uuid}', [DirectoryController::class, 'show'])
         ->name('alumni.directory.show');
 

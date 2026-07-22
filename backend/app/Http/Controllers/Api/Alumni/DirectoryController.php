@@ -52,6 +52,19 @@ class DirectoryController extends Controller
     }
 
     /**
+     * GET /api/alumni/directory/filters
+     * Reference data (batch years, departments, courses) for the filter
+     * dropdowns. Alumni-accessible counterpart to the admin reference lists.
+     */
+    public function filters(): JsonResponse
+    {
+        return $this->success(
+            $this->directoryService->filterOptions(auth('api')->id()),
+            'Directory filters retrieved.'
+        );
+    }
+
+    /**
      * GET /api/alumni/directory/{uuid}
      * One alumni's PUBLIC profile (no email/phone). Hidden, inactive,
      * non-alumni, or unknown users all 404 identically so the endpoint

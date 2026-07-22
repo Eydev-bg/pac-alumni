@@ -17,6 +17,9 @@ namespace App\Services\Alumni;
 
 use App\Enums\BoardStatus;
 use App\Enums\UserRole;
+use App\Models\Course;
+use App\Models\Department;
+use App\Models\Graduate;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -95,6 +98,51 @@ class DirectoryService
         }
 
         return $user;
+    }
+
+    /**
+     * Reference data for the directory's filter dropdowns. Batch years are drawn
+     * from the visible directory population so the dropdown never offers a year
+     * that returns nothing; departments/courses reuse the active reference lists
+     * (same source the admin dropdowns use), so no new reference endpoint is
+     * invented on the admin side.
+     */
+    public function filterOptions(int $excludeUserId): array
+    {
+        $years = Graduate::query()
+            ->whereHas('user', fn ($u) => $u
+                ->byRole(UserRole::ALUMNI)
+                ->active()
+                ->where('users.id', '!=', $excludeUserId)
+                ->whereHas('alumniProfile', fn ($ap) => $ap->where('is_directory_visible', true)))
+            ->whereNotNull('graduation_year')
+            ->distinct()
+            ->orderBy('graduation_year', 'desc')
+            ->pluck('graduation_year')
+            ->values();
+
+        $departments = Department::query()
+            ->active()
+            ->orderBy('name')
+            ->get(['id', 'name'])
+            ->map(fn ($d) => ['id' => $d->id, 'name' => $d->name]);
+
+        $courses = Course::query()
+            ->active()
+            ->orderBy('code')
+            ->get(['id', 'name', 'code', 'department_id'])
+            ->map(fn ($c) => [
+                'id'            => $c->id,
+                'name'          => $c->name,
+                'code'          => $c->code,
+                'department_id' => $c->department_id,
+            ]);
+
+        return [
+            'years'       => $years,
+            'departments' => $departments,
+            'courses'     => $courses,
+        ];
     }
 
     /**
