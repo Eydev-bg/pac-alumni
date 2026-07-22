@@ -16,6 +16,7 @@
 namespace App\Services\Alumni;
 
 use App\Enums\BoardStatus;
+use App\Enums\EducationLevel;
 use App\Enums\UserRole;
 use App\Models\Course;
 use App\Models\Department;
@@ -123,6 +124,7 @@ class DirectoryService
 
         $departments = Department::query()
             ->active()
+            ->byLevel(EducationLevel::COLLEGE->value)
             ->orderBy('name')
             ->get(['id', 'name'])
             ->map(fn ($d) => ['id' => $d->id, 'name' => $d->name]);
