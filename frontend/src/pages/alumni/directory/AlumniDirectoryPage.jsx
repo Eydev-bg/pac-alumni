@@ -13,11 +13,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import Pagination from "../../../components/common/Pagination";
 import EmptyState from "../../../components/common/EmptyState";
-import { useDebounce } from "../../../hooks/useDebounce";
 import { AlumniCard, Avatar, Badge, IconChip, Select } from "../../../components/alumni/ui";
 import {
   HiOutlineUserGroup,
-  HiOutlineMagnifyingGlass,
   HiOutlineMapPin,
   HiOutlineBriefcase,
   HiOutlineAdjustmentsHorizontal,
@@ -61,9 +59,9 @@ export default function AlumniDirectoryPage() {
   // restore the exact list state (mirrors the Career Center page).
   const [searchParams, setSearchParams] = useSearchParams();
   const page = Math.max(1, parseInt(searchParams.get("page"), 10) || 1);
+  // Read-only: the on-page search input was removed in favor of the global
+  // header search. A pre-existing ?search= in the URL still filters the list.
   const search = (searchParams.get("search") || "").trim();
-  const [searchInput, setSearchInput] = useState(search);
-  const debouncedSearch = useDebounce(searchInput, 400);
 
   const filters = useMemo(
     () =>
@@ -93,27 +91,6 @@ export default function AlumniDirectoryPage() {
     );
   }, [filterData.courses, filters.department_id]);
 
-  // ── Sync the debounced search input into the URL (resets to page 1) ──
-  useEffect(() => {
-    const trimmed = debouncedSearch.trim();
-    if (trimmed === search) return;
-    if (trimmed !== searchInput.trim()) return;
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (trimmed) next.set("search", trimmed);
-        else next.delete("search");
-        next.delete("page");
-        return next;
-      },
-      { replace: true },
-    );
-  }, [debouncedSearch, searchInput, search, setSearchParams]);
-
-  useEffect(() => {
-    setSearchInput((cur) => (cur.trim() === search ? cur : search));
-  }, [search]);
-
   // Patch one or more filter params; any filter change resets to page 1.
   const patchFilters = (patch) => {
     setSearchParams((prev) => {
@@ -131,6 +108,7 @@ export default function AlumniDirectoryPage() {
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev);
       FILTER_KEYS.forEach((k) => next.delete(k));
+      next.delete("search");
       next.delete("page");
       return next;
     });
@@ -184,19 +162,10 @@ export default function AlumniDirectoryPage() {
         </div>
       </div>
 
-      {/* ━━━━ Search ━━━━ */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <HiOutlineMagnifyingGlass className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            aria-label="Search alumni by name"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search alumni by name..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors"
-          />
-        </div>
-        {/* Mobile filter toggle */}
+      {/* ━━━━ Mobile filter toggle ━━━━ */}
+      {/* Search now lives in the global header; this row just holds the
+          mobile Filters toggle (filter row below is always visible on sm+). */}
+      <div className="flex items-center justify-end gap-2">
         <button
           type="button"
           onClick={() => setShowFilters((v) => !v)}
@@ -263,14 +232,14 @@ export default function AlumniDirectoryPage() {
             placeholder="All board status"
           />
         </div>
-        {activeFilterCount > 0 && (
+        {(activeFilterCount > 0 || search) && (
           <button
             type="button"
             onClick={clearFilters}
             className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
           >
             <HiOutlineXMark className="w-3.5 h-3.5" />
-            Clear filters ({activeFilterCount})
+            Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
           </button>
         )}
       </div>

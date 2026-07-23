@@ -5,6 +5,7 @@ import { useUnread } from "../../context/UnreadContext";
 import adminApi from "../../api/adminApi";
 import alumniApi from "../../api/alumniApi";
 import { timeAgo } from "../../utils/formatters";
+import { useDebounce } from "../../hooks/useDebounce";
 import Avatar from "../alumni/ui/Avatar";
 import {
   HiOutlineBars3,
@@ -50,6 +51,17 @@ export default function Header({
   const dropdownRef = useRef(null);
   const bellRef = useRef(null);
   const bellButtonRef = useRef(null);
+  // Alumni global search (desktop input + mobile overlay share this state) —
+  // debounced directory lookup + results dropdown.
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchResultsOpen, setSearchResultsOpen] = useState(false);
+  const [searchActiveIndex, setSearchActiveIndex] = useState(-1);
+  const searchWrapRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const debouncedQuery = useDebounce(searchQuery, 300);
 
   const dark = variant === "dark";
   // Alumni get a blue top bar on mobile (matches the approved mobile design);
@@ -90,6 +102,11 @@ export default function Header({
       }
       if (bellRef.current && !bellRef.current.contains(e.target)) {
         setBellOpen(false);
+      }
+      const inDesktopSearch = searchWrapRef.current?.contains(e.target);
+      const inMobileSearch = mobileSearchRef.current?.contains(e.target);
+      if (!inDesktopSearch && !inMobileSearch) {
+        setSearchResultsOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -134,6 +151,141 @@ export default function Header({
     };
   }, [bellOpen, user?.role]);
 
+  // Alumni desktop search — fetch directory matches on the debounced query
+  // (min 2 chars). Reuses the visibility-scoped directory endpoint; no backend
+  // changes. Results are capped at 6 for the dropdown.
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (!isAlumni || q.length < 2) {
+      setSearchResults([]);
+      setSearchResultsOpen(false);
+      return;
+    }
+    let cancelled = false;
+    setSearchLoading(true);
+    alumniApi
+      .getDirectory({ search: q, page: 1 })
+      .then((res) => {
+        if (!cancelled) {
+          setSearchResults((res.data.data || []).slice(0, 6));
+          setSearchActiveIndex(-1);
+          setSearchResultsOpen(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSearchResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSearchLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery, isAlumni]);
+
+  // Open a search result: go to the public profile, then clear + close both the
+  // results dropdown and the mobile overlay (harmless no-op on desktop).
+  const openSearchResult = (alumni) => {
+    navigate(`/alumni/directory/${alumni.uuid}`);
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchResultsOpen(false);
+    setSearchActiveIndex(-1);
+    setSearchOpen(false);
+  };
+
+  // Fully close the mobile search overlay and reset search so the next open
+  // starts fresh (used by the overlay's X button and its Escape key).
+  const closeSearchOverlay = () => {
+    setSearchOpen(false);
+    setSearchResultsOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setSearchActiveIndex(-1);
+  };
+
+  // Shared arrow/enter navigation for the results dropdown: ↑/↓ move the
+  // highlight, Enter opens the highlighted result.
+  const handleSearchNavKeys = (e) => {
+    if (!searchResultsOpen || searchResults.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSearchActiveIndex((i) => (i + 1) % searchResults.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSearchActiveIndex((i) =>
+        i <= 0 ? searchResults.length - 1 : i - 1,
+      );
+    } else if (e.key === "Enter") {
+      if (searchActiveIndex >= 0 && searchActiveIndex < searchResults.length) {
+        e.preventDefault();
+        openSearchResult(searchResults[searchActiveIndex]);
+      }
+    }
+  };
+
+  // Desktop input: Escape closes the results and blurs the input.
+  const handleSearchKeyDown = (e) => {
+    if (e.key === "Escape") {
+      setSearchResultsOpen(false);
+      searchInputRef.current?.blur();
+      return;
+    }
+    handleSearchNavKeys(e);
+  };
+
+  // Mobile overlay input: Escape closes the results AND the overlay.
+  const handleMobileSearchKeyDown = (e) => {
+    if (e.key === "Escape") {
+      closeSearchOverlay();
+      return;
+    }
+    handleSearchNavKeys(e);
+  };
+
+  // Results list shared by the desktop dropdown and the mobile overlay. The
+  // caller supplies the positioned container; this renders only the contents.
+  const renderSearchResults = () => {
+    if (searchLoading) {
+      return <p className="px-4 py-2 text-sm text-slate-400">Searching…</p>;
+    }
+    if (searchResults.length === 0) {
+      return (
+        <p className="px-4 py-2 text-sm text-slate-400">No alumni found</p>
+      );
+    }
+    return searchResults.map((alumni, idx) => (
+      <button
+        key={alumni.uuid}
+        type="button"
+        onClick={() => openSearchResult(alumni)}
+        onMouseEnter={() => setSearchActiveIndex(idx)}
+        className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
+          idx === searchActiveIndex ? "bg-slate-50" : "hover:bg-slate-50"
+        }`}
+      >
+        <Avatar
+          src={alumni.profile_picture}
+          name={alumni.full_name}
+          size="sm"
+        />
+        <span className="flex-1 min-w-0">
+          <span className="block text-sm font-medium text-slate-800 truncate">
+            {alumni.full_name}
+          </span>
+          <span className="block text-xs text-slate-400 truncate">
+            {[
+              alumni.course?.code,
+              alumni.graduation_year && `Batch ${alumni.graduation_year}`,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
+        </span>
+      </button>
+    ));
+  };
+
   // Mark an alumni notification read, then deep-link by content type. Jobs have
   // a detail route; announcements/events have list pages only (no detail route),
   // so they land on the list — mirroring the email links.
@@ -173,26 +325,37 @@ export default function Header({
             : "bg-white border-slate-200"
       }`}
     >
-      {/* Mobile search overlay (alumni) — covers the header when expanded. */}
+      {/* Mobile search overlay (alumni) — covers the header when expanded.
+          Shares the same search state + results as the desktop input. */}
       {isAlumni && searchOpen && (
-        <div className="md:hidden absolute inset-0 z-30 flex items-center gap-2 bg-white px-4">
+        <div
+          ref={mobileSearchRef}
+          className="md:hidden absolute inset-0 z-30 flex items-center gap-2 bg-white px-4"
+        >
           <HiOutlineMagnifyingGlass className="w-5 h-5 text-slate-400 flex-shrink-0" />
           <input
             type="search"
             autoFocus
-            // TODO: wire global search when a search backend exists.
-            placeholder="Search alumni, events, jobs…"
-            aria-label="Search"
-            onKeyDown={(e) => e.key === "Escape" && setSearchOpen(false)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleMobileSearchKeyDown}
+            placeholder="Search alumni by name…"
+            aria-label="Search alumni"
             className="flex-1 h-10 bg-transparent text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none"
           />
           <button
-            onClick={() => setSearchOpen(false)}
+            onClick={closeSearchOverlay}
             aria-label="Close search"
             className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
+
+          {searchResultsOpen && searchQuery.trim().length >= 2 && (
+            <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg z-40 py-2 max-h-80 overflow-y-auto">
+              {renderSearchResults()}
+            </div>
+          )}
         </div>
       )}
 
@@ -221,15 +384,27 @@ export default function Header({
         {/* Global search — alumni only. Present but not yet wired to a search
             backend (there is no global-search API this phase). */}
         {isAlumni && (
-          <div className="hidden md:block relative">
+          <div ref={searchWrapRef} className="hidden md:block relative">
             <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="search"
-              // TODO: wire global search when a search backend exists.
-              placeholder="Search for alumni, events, jobs, and more..."
-              aria-label="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (searchResults.length > 0) setSearchResultsOpen(true);
+              }}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search alumni by name..."
+              aria-label="Search alumni"
               className="w-64 lg:w-96 h-10 pl-9 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 focus:bg-white transition-colors"
             />
+
+            {searchResultsOpen && searchQuery.trim().length >= 2 && (
+              <div className="absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-50 py-2 max-h-96 overflow-y-auto">
+                {renderSearchResults()}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -255,7 +430,7 @@ export default function Header({
         >
           <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
           {unreadMessages > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
               {unreadMessages > 9 ? "9+" : unreadMessages}
             </span>
           )}
@@ -278,7 +453,7 @@ export default function Header({
         >
           <HiOutlineBell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -309,7 +484,7 @@ export default function Header({
               <HiOutlineBell className="w-4 h-4 flex-shrink-0" />
               <span>Notifications</span>
               {unreadCount > 0 && (
-                <span className="ml-auto w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="ml-auto min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -347,7 +522,7 @@ export default function Header({
         >
           <HiOutlineBell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -361,7 +536,7 @@ export default function Header({
                 Notifications
               </p>
               {unreadCount > 0 && (
-                <span className="w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -383,12 +558,12 @@ export default function Header({
                     role="menuitem"
                     onClick={() => openAlumniNotification(n)}
                     className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer hover:bg-slate-50 ${
-                      !n.is_read ? "bg-[#c8a84e]/[0.06]" : ""
+                      !n.is_read ? "bg-blue-50" : ""
                     }`}
                   >
                     <span
                       className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                        !n.is_read ? "bg-[#c8a84e]" : "bg-transparent"
+                        !n.is_read ? "bg-blue-600" : "bg-transparent"
                       }`}
                     />
                     <span className="flex-1 min-w-0">
@@ -419,7 +594,7 @@ export default function Header({
                 navigate("/alumni/notifications");
                 setBellOpen(false);
               }}
-              className="w-full px-4 py-2.5 text-sm font-medium text-[#1a2e5a] hover:bg-slate-50 transition-colors border-t border-slate-100"
+              className="w-full px-4 py-2.5 text-sm font-medium text-blue-600 hover:bg-slate-50 transition-colors border-t border-slate-100"
             >
               See all notifications
             </button>

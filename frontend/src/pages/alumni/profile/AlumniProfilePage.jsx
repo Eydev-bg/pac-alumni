@@ -244,17 +244,17 @@ export default function AlumniProfilePage() {
               <img
                 src={storageUrl(personal.profile_picture)}
                 alt={personal.full_name}
-                className="w-24 h-24 rounded-2xl object-cover border border-slate-200"
+                className="w-24 h-24 rounded-full object-cover border border-slate-200"
               />
             ) : (
               <Avatar
                 name={personal.full_name}
                 size="xl"
-                className="w-24 h-24 rounded-2xl text-2xl"
+                className="w-24 h-24 rounded-full text-2xl"
               />
             )}
 
-            <div className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPicture}

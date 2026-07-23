@@ -109,7 +109,7 @@ function WelcomeCard() {
     return (
       <AlumniCard className="p-6">
         <div className="flex flex-col sm:flex-row gap-5 animate-pulse">
-          <div className="w-20 h-20 rounded-2xl bg-slate-100 flex-shrink-0" />
+          <div className="w-20 h-20 rounded-full bg-slate-100 flex-shrink-0" />
           <div className="flex-1 space-y-3">
             <div className="h-5 w-56 bg-slate-100 rounded" />
             <div className="h-3 w-72 bg-slate-100 rounded" />
@@ -131,13 +131,13 @@ function WelcomeCard() {
           <img
             src={storageUrl(personal.profile_picture)}
             alt={personal.full_name}
-            className="w-20 h-20 rounded-2xl object-cover flex-shrink-0"
+            className="w-20 h-20 rounded-full object-cover flex-shrink-0"
           />
         ) : (
           <Avatar
             name={personal?.full_name}
             size="xl"
-            className="w-20 h-20 rounded-2xl"
+            className="w-20 h-20 rounded-full"
           />
         )}
 

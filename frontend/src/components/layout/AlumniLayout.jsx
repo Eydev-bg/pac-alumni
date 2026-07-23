@@ -170,7 +170,7 @@ function AlumniLayoutInner() {
 
             {/* Graduate Illustration */}
             <img
-              src="/public/Graduation_hatsrafiki.png"
+              src="/public/afterwork-rafiki.png"
               alt="Graduates"
               className="w-28 mx-auto mb-3 drop-shadow-lg select-none pointer-events-none"
             />

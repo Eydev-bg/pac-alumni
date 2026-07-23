@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import alumniApi from "../../../api/alumniApi";
+import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { storageUrl } from "../../../utils/formatters";
 import {
@@ -60,8 +61,10 @@ function Avatar({ name, picture, size = "w-10 h-10" }) {
  *                                   can refresh ordering + unread badges.
  */
 export default function ConversationThread({ conversationId, onBack, onActivity }) {
+  const { user } = useAuth();
   const [other, setOther] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [pending, setPending] = useState([]); // optimistic msgs awaiting the server
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
@@ -74,6 +77,14 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
   const scrollToBottom = useCallback((behavior = "smooth") => {
     bottomRef.current?.scrollIntoView({ behavior });
   }, []);
+
+  // Prefer the server's is_mine flag, but fall back to comparing the sender's
+  // uuid to the current user's — so a message the viewer sent always renders on
+  // the right even if a refetch returns an inconsistent flag.
+  const isOwnMessage = (m) =>
+    typeof m.is_mine === "boolean"
+      ? m.is_mine
+      : String(m.sender?.uuid ?? "") === String(user?.uuid ?? "");
 
   const load = useCallback(
     (showSpinner = false) => {
@@ -107,24 +118,45 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
     enabled: !!conversationId,
   });
 
-  // Auto-scroll to the latest message when the list grows.
+  // Auto-scroll to the latest message when the list grows (including when an
+  // optimistic bubble is added to `pending`).
   useEffect(() => {
     scrollToBottom(loading ? "auto" : "smooth");
-  }, [messages, loading, scrollToBottom]);
+  }, [messages, pending, loading, scrollToBottom]);
 
   const handleSend = async (e) => {
     e.preventDefault();
     const text = content.trim();
     if (!text || sending) return;
 
+    const tempId = `temp-${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      content: text,
+      is_mine: true, // always mine — this is the local user's message
+      created_at: new Date().toISOString(),
+      _status: "sending", // "sending" | "failed"
+    };
+
+    setPending((prev) => [...prev, optimistic]);
+    setContent(""); // clear input immediately (Messenger behaviour)
     setSending(true);
     setError("");
+
     try {
       const res = await alumniApi.sendMessage(conversationId, text);
-      setMessages((prev) => [...prev, res.data.data]);
-      setContent("");
+      const saved = res.data.data;
+      // Remove the optimistic copy and append the server message (de-duped).
+      setPending((prev) => prev.filter((p) => p.id !== tempId));
+      setMessages((prev) =>
+        prev.some((x) => x.id === saved.id) ? prev : [...prev, saved],
+      );
       onActivityRef.current?.();
     } catch (err) {
+      // Mark the optimistic bubble as failed so it stays visible on the right.
+      setPending((prev) =>
+        prev.map((p) => (p.id === tempId ? { ...p, _status: "failed" } : p)),
+      );
       if (err?.response?.status === 429) {
         setError("You're sending messages too quickly. Please try again later.");
       } else {
@@ -136,6 +168,9 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
       setSending(false);
     }
   };
+
+  // Pending (optimistic) bubbles always render after the confirmed messages.
+  const allMessages = [...messages, ...pending];
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -177,37 +212,43 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
       <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50">
         {loading ? (
           <p className="text-center text-sm text-slate-400 mt-6">Loading messages…</p>
-        ) : messages.length === 0 ? (
+        ) : allMessages.length === 0 ? (
           <p className="text-center text-sm text-slate-400 mt-6">
             No messages yet. Say hello! 👋
           </p>
         ) : (
-          messages.map((m) => (
-            <div
-              key={m.id}
-              className={`flex ${m.is_mine ? "justify-end" : "justify-start"}`}
-            >
-              <div className="max-w-[75%]">
-                <div
-                  className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
-                    m.is_mine
-                      ? "text-white rounded-br-md"
-                      : "bg-white text-slate-700 border border-slate-200 rounded-bl-md"
-                  }`}
-                  style={m.is_mine ? { background: NAVY } : undefined}
-                >
-                  {m.content}
+          allMessages.map((m) => {
+            const own = isOwnMessage(m);
+            return (
+              <div
+                key={m.id}
+                className={`flex ${own ? "justify-end" : "justify-start"}`}
+              >
+                <div className="max-w-[75%]">
+                  <div
+                    className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                      own
+                        ? "bg-blue-600 text-white rounded-br-md"
+                        : "bg-white text-slate-700 border border-slate-200 rounded-bl-md"
+                    } ${m._status === "sending" ? "opacity-70" : ""}`}
+                  >
+                    {m.content}
+                  </div>
+                  <p
+                    className={`mt-1 text-[0.65rem] text-slate-400 ${
+                      own ? "text-right" : "text-left"
+                    }`}
+                  >
+                    {own && m._status === "sending"
+                      ? "Sending…"
+                      : own && m._status === "failed"
+                        ? <span className="text-red-500">Failed to send</span>
+                        : bubbleTime(m.created_at)}
+                  </p>
                 </div>
-                <p
-                  className={`mt-1 text-[0.65rem] text-slate-400 ${
-                    m.is_mine ? "text-right" : "text-left"
-                  }`}
-                >
-                  {bubbleTime(m.created_at)}
-                </p>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={bottomRef} />
       </div>
