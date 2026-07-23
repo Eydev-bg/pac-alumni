@@ -26,7 +26,6 @@ class MessageController extends Controller
     public function conversations(Request $request): JsonResponse
     {
         $user = auth('api')->user();
-        $request->attributes->set('auth_user_id', $user->id);
 
         $conversations = $this->messageService->listConversations($user);
 
@@ -42,7 +41,6 @@ class MessageController extends Controller
     public function startConversation(StartConversationRequest $request): JsonResponse
     {
         $user = auth('api')->user();
-        $request->attributes->set('auth_user_id', $user->id);
 
         try {
             $conversation = $this->messageService->startConversation(
@@ -65,7 +63,6 @@ class MessageController extends Controller
     public function messages(Request $request, int $id): JsonResponse
     {
         $user = auth('api')->user();
-        $request->attributes->set('auth_user_id', $user->id);
 
         try {
             $conversation = $this->messageService->messages($user, $id);
@@ -85,7 +82,6 @@ class MessageController extends Controller
     public function sendMessage(SendMessageRequest $request, int $id): JsonResponse
     {
         $user = auth('api')->user();
-        $request->attributes->set('auth_user_id', $user->id);
 
         try {
             $message = $this->messageService->sendMessage(

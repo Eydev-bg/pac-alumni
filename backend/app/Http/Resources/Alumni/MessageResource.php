@@ -9,13 +9,15 @@ class MessageResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        // Set by the controller so each message knows if the viewer sent it.
-        $authUserId = $request->attributes->get('auth_user_id');
+        // Resolve the viewer directly from the auth guard — robust across every
+        // path (a FormRequest on the POST route is a different instance than the
+        // request the Resource receives, so a request attribute would be null).
+        $authUserId = auth('api')->id();
 
         return [
             'id'         => $this->id,
             'content'    => $this->content,
-            'is_mine'    => $this->sender_id === $authUserId,
+            'is_mine'    => (int) $this->sender_id === (int) $authUserId,
             'is_read'    => $this->is_read,
             'sender'     => [
                 'uuid' => $this->sender?->uuid,

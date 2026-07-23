@@ -9,10 +9,11 @@ class ConversationResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        // Set by the controller so we can resolve "the other participant".
-        $authUserId = $request->attributes->get('auth_user_id');
+        // Resolve the viewer directly from the auth guard (see MessageResource) —
+        // works on every path regardless of the Request instance.
+        $authUserId = auth('api')->id();
 
-        $other = $this->participant_one_id === $authUserId
+        $other = (int) $this->participant_one_id === (int) $authUserId
             ? $this->participantTwo
             : $this->participantOne;
 
@@ -34,7 +35,7 @@ class ConversationResource extends JsonResource
 
                 return [
                     'content'    => $this->latestMessage->content,
-                    'is_mine'    => $this->latestMessage->sender_id === $authUserId,
+                    'is_mine'    => (int) $this->latestMessage->sender_id === (int) $authUserId,
                     'created_at' => $this->latestMessage->created_at?->toISOString(),
                 ];
             }),
