@@ -4,15 +4,16 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import useModalA11y from "../../../hooks/useModalA11y";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { useDebounce } from "../../../hooks/useDebounce";
-import { timeAgo, storageUrl } from "../../../utils/formatters";
+import { timeAgo } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
+import { Avatar } from "../../../components/alumni/ui";
 import {
   HiOutlineChatBubbleLeftRight,
   HiOutlinePencilSquare,
@@ -22,32 +23,11 @@ import {
 
 const NAVY = "#2563eb";
 
-/** Circle avatar with the first letter of the name. */
-function Avatar({ name, picture, size = "w-11 h-11" }) {
-  const letter = (name || "?").trim().charAt(0).toUpperCase();
-  if (picture) {
-    return (
-      <img
-        src={storageUrl(picture)}
-        alt={name}
-        className={`${size} rounded-full object-cover flex-shrink-0`}
-      />
-    );
-  }
-  return (
-    <div
-      className={`${size} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}
-      style={{ background: NAVY }}
-    >
-      {letter}
-    </div>
-  );
-}
-
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export default function AlumniInboxPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
@@ -64,6 +44,30 @@ export default function AlumniInboxPage() {
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
+
+  // Deep-link entry: `?c={id}` (from "Send Message" / dashboard) preselects a
+  // conversation. Desktop opens it in the right panel; mobile hands off to the
+  // full-screen thread route.
+  useEffect(() => {
+    const c = searchParams.get("c");
+    if (!c) return;
+    const id = Number(c);
+    if (!Number.isFinite(id)) return;
+    if (!isDesktop) {
+      navigate(`/alumni/messages/${id}`, { replace: true });
+      return;
+    }
+    setSelectedId(id);
+    // Drop the param so it doesn't re-apply on later renders/back-navigation.
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete("c");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [searchParams, isDesktop, navigate, setSearchParams]);
 
   const load = useCallback((showSpinner = false) => {
     if (showSpinner) setLoading(true);
@@ -166,8 +170,9 @@ export default function AlumniInboxPage() {
                           }`}
                         >
                           <Avatar
+                            src={c.other_participant?.profile_picture}
                             name={c.other_participant?.name}
-                            picture={c.other_participant?.profile_picture}
+                            size="md"
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
@@ -339,7 +344,7 @@ function NewMessageModal({ onClose, onStarted }) {
                       disabled={starting}
                       className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50 transition-colors text-left disabled:opacity-50"
                     >
-                      <Avatar name={r.name} picture={r.profile_picture} size="w-9 h-9" />
+                      <Avatar src={r.profile_picture} name={r.name} size="sm" />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-slate-800 truncate">
                           {r.name}

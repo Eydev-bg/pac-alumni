@@ -59,7 +59,7 @@ export default function AlumniPublicProfilePage() {
     setMessaging(true);
     try {
       const res = await alumniApi.startConversation(uuid);
-      navigate(`/alumni/messages/${res.data.data.id}`);
+      navigate(`/alumni/messages?c=${res.data.data.id}`);
     } catch (err) {
       toast.error(
         err?.response?.data?.message || "Could not open the conversation.",

@@ -11,9 +11,10 @@ export default function AlumniConversationPage() {
   const navigate = useNavigate();
 
   return (
-    // Offset the fixed AlumniLayout header (h-16) so the thread fills the
-    // remaining viewport and the input bar stays reachable.
-    <div className="-m-4 sm:-m-6 lg:-m-8 -mt-16 h-[100dvh] pt-16 bg-[#f5f7fb]">
+    // Fill exactly the space below the fixed AlumniLayout header (h-16): the
+    // -m-* cancels <main>'s padding so we sit flush under the 4rem header, and
+    // the height is the viewport minus that header — no leftover strip below.
+    <div className="-m-4 sm:-m-6 lg:-m-8 h-[calc(100dvh-4rem)] overflow-hidden bg-white sm:bg-[#f5f7fb]">
       <div className="h-full bg-white rounded-none sm:rounded-2xl overflow-hidden sm:border border-slate-200 sm:m-4 sm:h-[calc(100dvh-2rem)]">
         <ConversationThread
           conversationId={Number(id)}

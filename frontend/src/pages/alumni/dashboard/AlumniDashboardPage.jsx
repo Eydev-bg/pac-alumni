@@ -584,7 +584,7 @@ function RecentMessages() {
             return (
               <li key={c.id}>
                 <button
-                  onClick={() => navigate(`/alumni/messages/${c.id}`)}
+                  onClick={() => navigate(`/alumni/messages?c=${c.id}`)}
                   className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-slate-50 transition-colors"
                 >
                   <Avatar

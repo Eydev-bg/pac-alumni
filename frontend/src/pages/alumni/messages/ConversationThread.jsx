@@ -5,20 +5,19 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
-import { storageUrl } from "../../../utils/formatters";
+// Shared avatar (person-icon fallback) — single source of truth for the header
+// and the per-group message avatars.
+import { Avatar } from "../../../components/alumni/ui";
 import {
   HiOutlineArrowLeft,
   HiOutlinePaperAirplane,
   HiOutlineUserCircle,
 } from "react-icons/hi2";
 
-// Alumni blue-accent theme (Phase A redesign): bubbles/avatar use the primary
-// blue; the send button uses the same accent.
-const NAVY = "#2563eb";
-const GOLD = "#2563eb";
 const MAX_LEN = 1000;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
@@ -28,28 +27,6 @@ function bubbleTime(iso) {
     hour: "numeric",
     minute: "2-digit",
   });
-}
-
-/** Circle avatar with the first letter of the name. */
-function Avatar({ name, picture, size = "w-10 h-10" }) {
-  const letter = (name || "?").trim().charAt(0).toUpperCase();
-  if (picture) {
-    return (
-      <img
-        src={storageUrl(picture)}
-        alt={name}
-        className={`${size} rounded-full object-cover flex-shrink-0`}
-      />
-    );
-  }
-  return (
-    <div
-      className={`${size} rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0`}
-      style={{ background: NAVY }}
-    >
-      {letter}
-    </div>
-  );
 }
 
 /**
@@ -62,6 +39,7 @@ function Avatar({ name, picture, size = "w-10 h-10" }) {
  */
 export default function ConversationThread({ conversationId, onBack, onActivity }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [other, setOther] = useState(null);
   const [messages, setMessages] = useState([]);
   const [pending, setPending] = useState([]); // optimistic msgs awaiting the server
@@ -173,9 +151,9 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
   const allMessages = [...messages, ...pending];
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full min-h-0 bg-white">
       {/* ── Header ── */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white">
+      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white">
         {onBack && (
           <button
             onClick={onBack}
@@ -186,8 +164,15 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
           </button>
         )}
         {other ? (
-          <>
-            <Avatar name={other.name} picture={other.profile_picture} size="w-9 h-9" />
+          <button
+            type="button"
+            onClick={() =>
+              other?.uuid && navigate(`/alumni/directory/${other.uuid}`)
+            }
+            title={other?.name ? `View ${other.name}'s profile` : "View profile"}
+            className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl px-1 -mx-1 py-0.5 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+          >
+            <Avatar src={other.profile_picture} name={other.name} size="sm" />
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-slate-900 truncate">
                 {other.name}
@@ -200,7 +185,7 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
                 </p>
               )}
             </div>
-          </>
+          </button>
         ) : (
           <div className="h-9 flex items-center text-sm text-slate-400">
             <HiOutlineUserCircle className="w-6 h-6 mr-2" /> Conversation
@@ -209,7 +194,7 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50">
         {loading ? (
           <p className="text-center text-sm text-slate-400 mt-6">Loading messages…</p>
         ) : allMessages.length === 0 ? (
@@ -217,13 +202,44 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
             No messages yet. Say hello! 👋
           </p>
         ) : (
-          allMessages.map((m) => {
+          allMessages.map((m, i) => {
             const own = isOwnMessage(m);
+            // A message is the LAST of its group when the next message is from a
+            // different sender (or there is no next message).
+            const next = allMessages[i + 1];
+            const isLastOfGroup = !next || isOwnMessage(next) !== own;
             return (
               <div
                 key={m.id}
-                className={`flex ${own ? "justify-end" : "justify-start"}`}
+                className={`flex items-end gap-2 ${
+                  own ? "justify-end" : "justify-start"
+                }`}
               >
+                {!own &&
+                  (isLastOfGroup ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        other?.uuid &&
+                        navigate(`/alumni/directory/${other.uuid}`)
+                      }
+                      title={
+                        other?.name
+                          ? `View ${other.name}'s profile`
+                          : "View profile"
+                      }
+                      className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    >
+                      <Avatar
+                        src={other?.profile_picture}
+                        name={other?.name}
+                        size="xs"
+                      />
+                    </button>
+                  ) : (
+                    // Spacer so grouped bubbles stay aligned with the avatar row.
+                    <span className="w-7 flex-shrink-0" aria-hidden="true" />
+                  ))}
                 <div className="max-w-[75%]">
                   <div
                     className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
@@ -275,8 +291,7 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
           <button
             type="submit"
             disabled={!content.trim() || sending}
-            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white transition-opacity disabled:opacity-40"
-            style={{ background: GOLD }}
+            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white bg-blue-600 transition-opacity disabled:opacity-40"
             aria-label="Send"
           >
             <HiOutlinePaperAirplane className="w-5 h-5" />

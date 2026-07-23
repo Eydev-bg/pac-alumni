@@ -100,7 +100,7 @@ function AlumniLayoutInner() {
         <img
           src="/pac-logo.jpg"
           alt="PAC"
-          className="flex-shrink-0 w-9 h-9 rounded-xl object-cover shadow-sm"
+          className="flex-shrink-0 w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-slate-200"
         />
         {sidebarOpen && (
           <div className="overflow-hidden">
@@ -255,7 +255,16 @@ function AlumniLayoutInner() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb]">
+    <div
+      className={`bg-[#f5f7fb] ${
+        // On the full-screen thread route the page must equal the DYNAMIC
+        // viewport exactly: min-h-screen (100vh) is taller than the 100dvh the
+        // thread fills on mobile, which makes the BODY scrollable by the
+        // browser-chrome delta — and the mount scrollIntoView then scrolls that
+        // body, carrying the conversation header off-screen. Lock it instead.
+        isFullScreenThread ? "h-dvh overflow-hidden" : "min-h-screen"
+      }`}
+    >
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div
