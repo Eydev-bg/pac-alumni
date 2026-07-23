@@ -1,15 +1,17 @@
 import { useState } from "react";
+import { HiOutlineUser } from "react-icons/hi2";
 import { cn, storageUrl } from "../../../utils/formatters";
 
 /**
- * Avatar — circular user image with an initials fallback. Reused across the
- * header, welcome card, and messages. Pass the raw stored path as `src`; it is
- * resolved through `storageUrl` so callers don't repeat that. Falls back to
- * initials (derived from `name`) when there is no image or it fails to load.
+ * Avatar — circular user image with a neutral person-icon fallback. Reused
+ * across the header, welcome card, and messages. Pass the raw stored path as
+ * `src`; it is resolved through `storageUrl` so callers don't repeat that.
+ * Falls back to a neutral person icon when there is no image or it fails to
+ * load.
  *
  * Props:
  *   src:  raw profile-picture path (or absolute URL), optional
- *   name: full name — drives initials + alt text
+ *   name: full name — drives alt / aria-label text
  *   size: 'xs' | 'sm' | 'md' | 'lg' | 'xl' (default 'md')
  */
 const SIZES = {
@@ -19,14 +21,6 @@ const SIZES = {
   lg: "w-14 h-14 text-base",
   xl: "w-20 h-20 text-xl",
 };
-
-function initials(name) {
-  if (!name) return "?";
-  const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? "";
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
-  return (first + last).toUpperCase() || "?";
-}
 
 export default function Avatar({ src, name, size = "md", className, ...rest }) {
   const [failed, setFailed] = useState(false);
@@ -45,13 +39,13 @@ export default function Avatar({ src, name, size = "md", className, ...rest }) {
     <span
       aria-label={name || "Avatar"}
       className={cn(
-        "inline-flex items-center justify-center rounded-full font-semibold flex-shrink-0 bg-blue-100 text-blue-700",
+        "inline-flex items-center justify-center rounded-full flex-shrink-0 bg-slate-100 text-slate-400",
         dim,
         className,
       )}
       {...rest}
     >
-      {initials(name)}
+      <HiOutlineUser className="w-1/2 h-1/2" aria-hidden="true" />
     </span>
   );
 }
