@@ -66,17 +66,17 @@ export default function LoginPage() {
     <div className="h-screen w-screen overflow-hidden relative flex items-center justify-center">
       {/* ━━━━ Background Image + Dark Overlay ━━━━ */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/campus-bg.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55" />
       </div>
 
       {/* ━━━━ Split Card ━━━━ */}
       <div className="relative z-10 w-full max-w-[880px] px-4 sm:px-5">
         <div className="flex overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
           {/* LEFT — form column */}
-          <div className="w-full md:w-1/2 bg-white/[0.95] backdrop-blur-2xl px-7 py-6">
+          <div className="w-full md:w-1/2 bg-white px-7 py-6">
             {/* ── Brand (logo + name) ── */}
             <div className="flex items-center gap-3 mb-4">
               <img
@@ -258,7 +258,7 @@ export default function LoginPage() {
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
-          <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center bg-blue-50 px-8 py-10">
+          <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 px-8 py-10">
             <img
               src="/Login-rafiki.png"
               alt="Alumni signing in"

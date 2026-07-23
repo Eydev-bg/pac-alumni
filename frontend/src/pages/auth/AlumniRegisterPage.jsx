@@ -177,7 +177,7 @@ export default function AlumniRegisterPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/campus-bg.jpg')" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55" />
         </div>
         <div className="relative z-10 w-full max-w-[420px] px-5 flex flex-col items-center">
           <img
@@ -214,7 +214,7 @@ export default function AlumniRegisterPage() {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/campus-bg.jpg')" }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55" />
         </div>
         <div className="relative z-10 w-full max-w-[420px] px-5 flex flex-col items-center">
           <img
@@ -255,14 +255,14 @@ export default function AlumniRegisterPage() {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/campus-bg.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55" />
       </div>
 
       {/* Card — split: form left, illustration right (desktop) */}
       <div className="relative z-10 w-full max-w-[440px] md:max-w-[960px] px-4 sm:px-5">
         <div className="flex overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
           {/* LEFT — branding header + form */}
-          <div className="w-full md:w-[62%] bg-white/[0.95] backdrop-blur-2xl px-5 sm:px-7 py-5">
+          <div className="w-full md:w-[62%] bg-white px-5 sm:px-7 py-5">
             {/* Brand (logo + name) */}
             <div className="flex items-center gap-3 mb-4">
               <img
@@ -500,7 +500,7 @@ export default function AlumniRegisterPage() {
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
-          <div className="hidden md:flex md:w-[38%] flex-col items-center justify-center bg-blue-50 px-7 py-10">
+          <div className="hidden md:flex md:w-[38%] flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 px-7 py-10">
             <img
               src="/Sign_up-rafiki.png"
               alt="Alumni creating an account"
