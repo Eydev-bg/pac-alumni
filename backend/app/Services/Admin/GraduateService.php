@@ -47,7 +47,7 @@ class GraduateService
         $graduate = $this->graduateRepo->findById($id);
 
         if (!$graduate) {
-            throw new \Exception('Graduate not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Graduate not found.');
         }
 
         return $graduate;
@@ -83,7 +83,7 @@ class GraduateService
         $graduate = $this->graduateRepo->findTrashedById($id);
 
         if (!$graduate) {
-            throw new \Exception('Trashed graduate not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Trashed graduate not found.');
         }
 
         return $graduate;
@@ -102,7 +102,7 @@ class GraduateService
     {
         // If graduate has a linked user account, prevent deletion
         if ($graduate->user_id) {
-            throw new \Exception('Cannot delete graduate with a linked alumni account. Deactivate the account first.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('Cannot delete graduate with a linked alumni account. Deactivate the account first.');
         }
 
         // Snapshot identifying details before the row is gone.
@@ -165,7 +165,7 @@ class GraduateService
         $filteredData = array_intersect_key($data, array_flip($allowed));
 
         if (empty($filteredData)) {
-            throw new \Exception('No valid fields provided for batch update.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('No valid fields provided for batch update.');
         }
 
         $count = $this->graduateRepo->batchUpdate($ids, $filteredData);

@@ -42,7 +42,7 @@ class AlumniAnnouncementService
         $announcement = $this->visibleQuery($profile)->find($id);
 
         if (!$announcement) {
-            throw new \Exception('Announcement not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Announcement not found.');
         }
 
         return $announcement;

@@ -32,13 +32,13 @@ class AuthService
         // ─── Step 1: Check IP-based rate limiting ────────────
         if ($this->isIpBlocked($ip)) {
             $this->logAttempt(null, $email, $ip, $userAgent, LoginAttemptStatus::BLOCKED);
-            throw new \Exception('Too many login attempts. Please try again later.', 429);
+            throw new \App\Exceptions\DomainException('Too many login attempts. Please try again later.', 429);
         }
 
         // ─── Step 2: Check email-based rate limiting ─────────
         if ($this->isEmailBlocked($email)) {
             $this->logAttempt(null, $email, $ip, $userAgent, LoginAttemptStatus::BLOCKED);
-            throw new \Exception('Account temporarily locked due to too many failed attempts. Please try again later.', 429);
+            throw new \App\Exceptions\DomainException('Account temporarily locked due to too many failed attempts. Please try again later.', 429);
         }
 
         // ─── Step 3: Find user ───────────────────────────────
@@ -53,13 +53,13 @@ class AuthService
                 LoginAttemptStatus::FAILED
             );
             // SECURITY: Generic message — never reveal if email exists
-            throw new \Exception('Invalid email or password.', 401);
+            throw new \App\Exceptions\DomainException('Invalid email or password.', 401);
         }
 
         // ─── Step 4: Check account status ────────────────────
         if (!$user->canLogin()) {
             $this->logAttempt($user->id, $email, $ip, $userAgent, LoginAttemptStatus::BLOCKED);
-            throw new \Exception('Your account has been ' . $user->status->value . '. Please contact the administrator.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Your account has been ' . $user->status->value . '. Please contact the administrator.');
         }
 
         // ─── Step 5: Generate token ──────────────────────────

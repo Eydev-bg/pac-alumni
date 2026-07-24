@@ -36,7 +36,7 @@ class BoardExamService
             ->first();
 
         if (!$profile || !$profile->graduate) {
-            throw new \Exception('Alumni profile not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
         }
 
         $graduate = $profile->graduate;
@@ -44,7 +44,7 @@ class BoardExamService
 
         // Check if this is a board program
         if (!$course || !$course->is_board_program) {
-            throw new \Exception('Your course is not a board exam program.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Your course is not a board exam program.');
         }
 
         // Get all board exam records for this graduate
@@ -93,14 +93,14 @@ class BoardExamService
                 ->first();
 
             if (!$profile || !$profile->graduate) {
-                throw new \Exception('Alumni profile not found.', 404);
+                throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
             }
 
             $graduate = $profile->graduate;
             $course = $graduate->course;
 
             if (!$course || !$course->is_board_program) {
-                throw new \Exception('Your course is not a board exam program.', 403);
+                throw \App\Exceptions\DomainException::forbidden('Your course is not a board exam program.');
             }
 
             // ─── Handle proof file upload ────────────────────

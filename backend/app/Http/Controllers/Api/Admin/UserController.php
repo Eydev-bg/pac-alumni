@@ -75,17 +75,13 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, string $uuid): JsonResponse
     {
-        try {
-            $user = $this->userService->findByUuid($uuid);
-            $updated = $this->userService->update($user, $request->validated());
+        $user = $this->userService->findByUuid($uuid);
+        $updated = $this->userService->update($user, $request->validated());
 
-            return $this->success(
-                new UserResource($updated),
-                'User updated successfully.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            new UserResource($updated),
+            'User updated successfully.'
+        );
     }
 
     /**
@@ -94,20 +90,16 @@ class UserController extends Controller
      */
     public function updateStatus(UpdateUserStatusRequest $request, string $uuid): JsonResponse
     {
-        try {
-            $user = $this->userService->findByUuid($uuid);
-            $updated = $this->userService->updateStatus(
-                $user,
-                $request->validated('status')
-            );
+        $user = $this->userService->findByUuid($uuid);
+        $updated = $this->userService->updateStatus(
+            $user,
+            $request->validated('status')
+        );
 
-            return $this->success(
-                new UserResource($updated),
-                'User status updated to ' . $updated->status->label() . '.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            new UserResource($updated),
+            'User status updated to ' . $updated->status->label() . '.'
+        );
     }
 
     /**
@@ -116,16 +108,12 @@ class UserController extends Controller
      */
     public function resetPassword(string $uuid): JsonResponse
     {
-        try {
-            $user = $this->userService->findByUuid($uuid);
-            $this->userService->resetPassword($user);
+        $user = $this->userService->findByUuid($uuid);
+        $this->userService->resetPassword($user);
 
-            return $this->success(
-                null,
-                'A password reset link has been emailed to the user.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            null,
+            'A password reset link has been emailed to the user.'
+        );
     }
 }

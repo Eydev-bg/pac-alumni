@@ -66,14 +66,10 @@ class GraduateController extends Controller
      */
     public function update(UpdateGraduateRequest $request, int $id): JsonResponse
     {
-        try {
-            $graduate = $this->graduateService->findById($id);
-            $updated = $this->graduateService->update($graduate, $request->validated());
+        $graduate = $this->graduateService->findById($id);
+        $updated = $this->graduateService->update($graduate, $request->validated());
 
-            return $this->success(new GraduateResource($updated), 'Graduate updated successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(new GraduateResource($updated), 'Graduate updated successfully.');
     }
 
     /**
@@ -81,14 +77,10 @@ class GraduateController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        try {
-            $graduate = $this->graduateService->findById($id);
-            $this->graduateService->delete($graduate);
+        $graduate = $this->graduateService->findById($id);
+        $this->graduateService->delete($graduate);
 
-            return $this->success(null, 'Graduate record deleted successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(null, 'Graduate record deleted successfully.');
     }
 
     /**
@@ -118,14 +110,10 @@ class GraduateController extends Controller
      */
     public function restore(int $id): JsonResponse
     {
-        try {
-            $graduate = $this->graduateService->findTrashedById($id);
-            $restored = $this->graduateService->restore($graduate);
+        $graduate = $this->graduateService->findTrashedById($id);
+        $restored = $this->graduateService->restore($graduate);
 
-            return $this->success(new GraduateResource($restored), 'Graduate restored successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(new GraduateResource($restored), 'Graduate restored successfully.');
     }
 
     /**
@@ -133,14 +121,10 @@ class GraduateController extends Controller
      */
     public function forceDelete(int $id): JsonResponse
     {
-        try {
-            $graduate = $this->graduateService->findTrashedById($id);
-            $this->graduateService->forceDelete($graduate);
+        $graduate = $this->graduateService->findTrashedById($id);
+        $this->graduateService->forceDelete($graduate);
 
-            return $this->success(null, 'Graduate permanently deleted.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(null, 'Graduate permanently deleted.');
     }
 
     /**
@@ -148,19 +132,15 @@ class GraduateController extends Controller
      */
     public function batchUpdate(BatchUpdateGraduatesRequest $request): JsonResponse
     {
-        try {
-            $count = $this->graduateService->batchUpdate(
-                $request->validated('ids'),
-                $request->validated('data')
-            );
+        $count = $this->graduateService->batchUpdate(
+            $request->validated('ids'),
+            $request->validated('data')
+        );
 
-            return $this->success(
-                ['updated_count' => $count],
-                "{$count} graduate records updated."
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            ['updated_count' => $count],
+            "{$count} graduate records updated."
+        );
     }
 
     /**

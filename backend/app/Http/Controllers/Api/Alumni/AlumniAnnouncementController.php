@@ -61,12 +61,8 @@ class AlumniAnnouncementController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $announcement = $this->announcementService->show($profile, $id);
-            return $this->success(new AlumniAnnouncementResource($announcement), 'Announcement retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->show($profile, $id);
+        return $this->success(new AlumniAnnouncementResource($announcement), 'Announcement retrieved.');
     }
 
     /**
@@ -79,11 +75,7 @@ class AlumniAnnouncementController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $this->announcementService->markAsRead($profile, $id);
-            return $this->success(null, 'Announcement marked as read.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $this->announcementService->markAsRead($profile, $id);
+        return $this->success(null, 'Announcement marked as read.');
     }
 }

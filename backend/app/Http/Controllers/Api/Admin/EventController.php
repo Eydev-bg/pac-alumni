@@ -53,12 +53,8 @@ class EventController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        try {
-            $event = $this->eventService->find($id);
-            return $this->success(new EventResource($event), 'Event retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->find($id);
+        return $this->success(new EventResource($event), 'Event retrieved.');
     }
 
     /**
@@ -66,12 +62,8 @@ class EventController extends Controller
      */
     public function update(UpdateEventRequest $request, int $id): JsonResponse
     {
-        try {
-            $event = $this->eventService->update($id, $request->validated(), $request->file('image'));
-            return $this->success(new EventResource($event), 'Event updated.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->update($id, $request->validated(), $request->file('image'));
+        return $this->success(new EventResource($event), 'Event updated.');
     }
 
     /**
@@ -79,12 +71,8 @@ class EventController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        try {
-            $this->eventService->destroy($id);
-            return $this->success(null, 'Event deleted.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $this->eventService->destroy($id);
+        return $this->success(null, 'Event deleted.');
     }
 
     /**
@@ -92,12 +80,8 @@ class EventController extends Controller
      */
     public function publish(int $id): JsonResponse
     {
-        try {
-            $event = $this->eventService->publish($id);
-            return $this->success(new EventResource($event), 'Event published.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->publish($id);
+        return $this->success(new EventResource($event), 'Event published.');
     }
 
     /**
@@ -105,12 +89,8 @@ class EventController extends Controller
      */
     public function archive(int $id): JsonResponse
     {
-        try {
-            $event = $this->eventService->archive($id);
-            return $this->success(new EventResource($event), 'Event archived.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->archive($id);
+        return $this->success(new EventResource($event), 'Event archived.');
     }
 
     /**
@@ -118,11 +98,7 @@ class EventController extends Controller
      */
     public function togglePin(int $id): JsonResponse
     {
-        try {
-            $event = $this->eventService->togglePin($id);
-            return $this->success(new EventResource($event), 'Event pin updated.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->togglePin($id);
+        return $this->success(new EventResource($event), 'Event pin updated.');
     }
 }

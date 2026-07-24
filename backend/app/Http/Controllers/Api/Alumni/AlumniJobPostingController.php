@@ -35,11 +35,7 @@ class AlumniJobPostingController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        try {
-            $job = $this->jobPostingService->find($id);
-            return $this->success(new AlumniJobPostingResource($job), 'Job posting retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $job = $this->jobPostingService->find($id);
+        return $this->success(new AlumniJobPostingResource($job), 'Job posting retrieved.');
     }
 }

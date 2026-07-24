@@ -34,7 +34,7 @@ class EmploymentService
             ->first();
 
         if (!$profile || !$profile->graduate) {
-            throw new \Exception('Alumni profile not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
         }
 
         $graduate = $profile->graduate;
@@ -85,7 +85,7 @@ class EmploymentService
                 ->first();
 
             if (!$profile || !$profile->graduate) {
-                throw new \Exception('Alumni profile not found.', 404);
+                throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
             }
 
             $graduate = $profile->graduate;

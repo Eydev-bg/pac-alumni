@@ -89,17 +89,13 @@ class DepartmentController extends Controller
      */
     public function update(UpdateDepartmentRequest $request, int $id): JsonResponse
     {
-        try {
-            $department = $this->deptService->findById($id);
-            $updated = $this->deptService->update($department, $request->validated());
+        $department = $this->deptService->findById($id);
+        $updated = $this->deptService->update($department, $request->validated());
 
-            return $this->success(
-                new DepartmentResource($updated),
-                'Department updated successfully.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            new DepartmentResource($updated),
+            'Department updated successfully.'
+        );
     }
 
     /**
@@ -107,14 +103,10 @@ class DepartmentController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        try {
-            $department = $this->deptService->findById($id);
-            $this->deptService->delete($department);
+        $department = $this->deptService->findById($id);
+        $this->deptService->delete($department);
 
-            return $this->success(null, 'Department deleted successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(null, 'Department deleted successfully.');
     }
 
     /**
@@ -126,17 +118,13 @@ class DepartmentController extends Controller
             'status' => ['required', 'string', 'in:active,inactive'],
         ]);
 
-        try {
-            $department = $this->deptService->findById($id);
-            $updated = $this->deptService->updateStatus($department, $request->status);
+        $department = $this->deptService->findById($id);
+        $updated = $this->deptService->updateStatus($department, $request->status);
 
-            return $this->success(
-                new DepartmentResource($updated),
-                'Department status updated to ' . $updated->status->label() . '.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(
+            new DepartmentResource($updated),
+            'Department status updated to ' . $updated->status->label() . '.'
+        );
     }
 
     /**
@@ -144,13 +132,9 @@ class DepartmentController extends Controller
      */
     public function stats(int $id): JsonResponse
     {
-        try {
-            $department = $this->deptService->findById($id);
-            $stats = $this->deptService->getStats($department);
+        $department = $this->deptService->findById($id);
+        $stats = $this->deptService->getStats($department);
 
-            return $this->success($stats, 'Department stats retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($stats, 'Department stats retrieved.');
     }
 }

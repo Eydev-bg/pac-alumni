@@ -29,7 +29,7 @@ class AlumniService
             ->first();
 
         if (!$profile || !$profile->graduate) {
-            throw new \Exception('Alumni profile not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
         }
 
         $graduate = $profile->graduate;
@@ -48,7 +48,6 @@ class AlumniService
                 'profile_picture' => $user->profile_picture,
             ],
             'academic' => [
-                'alumni_id' => $graduate->alumni_id_number,
                 'alumni_id' => $graduate->alumni_id_number,
                 'graduation_year' => $graduate->graduation_year,
                 'education_level' => $graduate->education_level?->value,
@@ -88,7 +87,7 @@ class AlumniService
             ->first();
 
         if (!$profile || !$profile->graduate) {
-            throw new \Exception('Alumni profile not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
         }
 
         $graduate = $profile->graduate;
@@ -107,7 +106,6 @@ class AlumniService
                 'profile_picture' => $user->profile_picture,
             ],
             'academic' => [
-                'alumni_id' => $graduate->alumni_id_number,
                 'alumni_id' => $graduate->alumni_id_number,
                 'graduation_year' => $graduate->graduation_year,
                 'education_level' => $graduate->education_level?->value,
@@ -155,7 +153,7 @@ class AlumniService
             $profile = AlumniProfile::where('user_id', $user->id)->first();
 
             if (!$profile) {
-                throw new \Exception('Alumni profile not found.', 404);
+                throw \App\Exceptions\DomainException::notFound('Alumni profile not found.');
             }
 
             if (array_key_exists('current_location', $data)) {

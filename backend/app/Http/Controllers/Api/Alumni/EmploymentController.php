@@ -27,14 +27,10 @@ class EmploymentController extends Controller
      */
     public function index(): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $data = $this->employmentService->getEmploymentData($user);
+        $user = auth('api')->user();
+        $data = $this->employmentService->getEmploymentData($user);
 
-            return $this->success($data, 'Employment data retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($data, 'Employment data retrieved.');
     }
 
     /**
@@ -43,13 +39,9 @@ class EmploymentController extends Controller
      */
     public function store(StoreEmploymentRequest $request): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $result = $this->employmentService->submitEmployment($user, $request->validated());
+        $user = auth('api')->user();
+        $result = $this->employmentService->submitEmployment($user, $request->validated());
 
-            return $this->created($result, 'Employment updated successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->created($result, 'Employment updated successfully.');
     }
 }

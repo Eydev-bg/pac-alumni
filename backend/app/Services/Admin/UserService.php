@@ -61,7 +61,7 @@ class UserService
         $user = $this->userRepo->findByUuid($uuid);
 
         if (!$user) {
-            throw new \Exception('User not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('User not found.');
         }
 
         return $user;
@@ -123,12 +123,12 @@ class UserService
 
         // SECURITY: Cannot suspend/deactivate yourself
         if ($user->id === auth()->id()) {
-            throw new \Exception('You cannot change your own account status.', 403);
+            throw \App\Exceptions\DomainException::forbidden('You cannot change your own account status.');
         }
 
         // SECURITY: Cannot suspend other admins (only super-admin logic, optional)
         if ($user->isAdmin() && $newStatus !== UserStatus::ACTIVE) {
-            throw new \Exception('Cannot suspend or deactivate an admin account.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Cannot suspend or deactivate an admin account.');
         }
 
         $previousStatus = $user->status;
@@ -152,7 +152,7 @@ class UserService
     {
         // SECURITY: Cannot reset your own password through this endpoint
         if ($user->id === auth()->id()) {
-            throw new \Exception('Use the change password feature to update your own password.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Use the change password feature to update your own password.');
         }
 
         $this->passwordResetService->sendAdminResetLink($user);

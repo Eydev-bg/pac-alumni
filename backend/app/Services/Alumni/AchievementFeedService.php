@@ -35,11 +35,11 @@ class AchievementFeedService
         $achievement = AchievementFeed::find($id);
 
         if (!$achievement) {
-            throw new \Exception('Achievement not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Achievement not found.');
         }
 
         if ($achievement->alumni_profile_id !== $profile->id) {
-            throw new \Exception('You can only change the visibility of your own achievements.', 403);
+            throw \App\Exceptions\DomainException::forbidden('You can only change the visibility of your own achievements.');
         }
 
         $achievement->update(['is_public' => !$achievement->is_public]);

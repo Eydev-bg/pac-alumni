@@ -48,7 +48,7 @@ class AlumniEventService
         $event = $this->visibleQuery($profile)->find($id);
 
         if (!$event) {
-            throw new \Exception('Event not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Event not found.');
         }
 
         return $event;

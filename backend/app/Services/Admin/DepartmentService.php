@@ -52,7 +52,7 @@ class DepartmentService
         $dept = $this->deptRepo->findById($id);
 
         if (!$dept) {
-            throw new \Exception('Department not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Department not found.');
         }
 
         return $dept;
@@ -102,9 +102,8 @@ class DepartmentService
     public function delete(Department $department): void
     {
         if ($department->hasGraduates()) {
-            throw new \Exception(
-                'Cannot delete department with existing graduate records. Deactivate it instead.',
-                422
+            throw \App\Exceptions\DomainException::unprocessable(
+                'Cannot delete department with existing graduate records. Deactivate it instead.'
             );
         }
 

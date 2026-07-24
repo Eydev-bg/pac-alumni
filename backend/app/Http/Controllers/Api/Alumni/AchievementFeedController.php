@@ -48,14 +48,10 @@ class AchievementFeedController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $achievement = $this->achievementService->toggleVisibility($profile, $id);
-            return $this->success(
-                ['id' => $achievement->id, 'is_public' => $achievement->is_public],
-                'Achievement visibility updated.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $achievement = $this->achievementService->toggleVisibility($profile, $id);
+        return $this->success(
+            ['id' => $achievement->id, 'is_public' => $achievement->is_public],
+            'Achievement visibility updated.'
+        );
     }
 }

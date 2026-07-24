@@ -16,7 +16,18 @@ class ChangePasswordRequest extends FormRequest
     {
         return [
             'current_password' => ['required', 'string'],
-            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+            'password'         => [
+                'required', 'string', 'confirmed',
+                'different:current_password',
+                new \App\Rules\StrongPassword(),
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'password.different' => 'Your new password must be different from your current password.',
         ];
     }
 }

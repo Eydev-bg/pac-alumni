@@ -30,14 +30,10 @@ class AlumniController extends Controller
      */
     public function dashboard(): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $data = $this->alumniService->getDashboardData($user);
+        $user = auth('api')->user();
+        $data = $this->alumniService->getDashboardData($user);
 
-            return $this->success($data, 'Dashboard data retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($data, 'Dashboard data retrieved.');
     }
 
     /**
@@ -46,14 +42,10 @@ class AlumniController extends Controller
      */
     public function profile(): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $data = $this->alumniService->getProfile($user);
+        $user = auth('api')->user();
+        $data = $this->alumniService->getProfile($user);
 
-            return $this->success($data, 'Profile data retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($data, 'Profile data retrieved.');
     }
 
     /**
@@ -62,19 +54,15 @@ class AlumniController extends Controller
      */
     public function profileCompletion(): JsonResponse
     {
-        try {
-            $profile = auth('api')->user()->alumniProfile;
-            if (!$profile) {
-                return $this->forbidden('Alumni profile not found.');
-            }
-
-            return $this->success(
-                $this->completionService->compute($profile),
-                'Profile completion retrieved.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
+        $profile = auth('api')->user()->alumniProfile;
+        if (!$profile) {
+            return $this->forbidden('Alumni profile not found.');
         }
+
+        return $this->success(
+            $this->completionService->compute($profile),
+            'Profile completion retrieved.'
+        );
     }
 
     /**
@@ -83,14 +71,10 @@ class AlumniController extends Controller
      */
     public function updateProfile(UpdateProfileRequest $request): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $result = $this->alumniService->updateProfile($user, $request->validated());
+        $user = auth('api')->user();
+        $result = $this->alumniService->updateProfile($user, $request->validated());
 
-            return $this->success($result, 'Profile updated successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($result, 'Profile updated successfully.');
     }
 
     /**
@@ -99,17 +83,13 @@ class AlumniController extends Controller
      */
     public function uploadPicture(UploadProfilePictureRequest $request): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $result = $this->alumniService->uploadProfilePicture(
-                $user,
-                $request->file('profile_picture')
-            );
+        $user = auth('api')->user();
+        $result = $this->alumniService->uploadProfilePicture(
+            $user,
+            $request->file('profile_picture')
+        );
 
-            return $this->success($result, 'Profile picture uploaded successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($result, 'Profile picture uploaded successfully.');
     }
 
     /**
@@ -118,13 +98,9 @@ class AlumniController extends Controller
      */
     public function removePicture(): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $this->alumniService->removeProfilePicture($user);
+        $user = auth('api')->user();
+        $this->alumniService->removeProfilePicture($user);
 
-            return $this->success(null, 'Profile picture removed.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success(null, 'Profile picture removed.');
     }
 }

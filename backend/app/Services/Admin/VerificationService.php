@@ -35,22 +35,22 @@ class VerificationService
         // ─── Step 1: Check if registration is open ───────
         $settings = RegistrationSetting::getSettings();
         if (!$settings->isCurrentlyOpen()) {
-            throw new \Exception('Registration is currently closed.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Registration is currently closed.');
         }
 
         // ─── Step 2: Check blacklist ─────────────────────
         if (RegistrationBlacklist::isBlacklisted($ip, BlacklistIdentifierType::IP)) {
-            throw new \Exception('Your access has been restricted. Please contact the administrator.', 403);
+            throw \App\Exceptions\DomainException::forbidden('Your access has been restricted. Please contact the administrator.');
         }
 
         if (RegistrationBlacklist::isBlacklisted($data['alumni_id'], BlacklistIdentifierType::ALUMNI_ID)) {
-            throw new \Exception('This Alumni ID has been blocked. Please contact the administrator.', 403);
+            throw \App\Exceptions\DomainException::forbidden('This Alumni ID has been blocked. Please contact the administrator.');
         }
 
         // ─── Step 3: Check if email already registered ───
         if (User::where('email', $data['email'])->exists()) {
             $this->logRejection($data, $ip, 'Email already registered in the system.');
-            throw new \Exception('This email is already registered.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('This email is already registered.');
         }
 
         // ─── Step 4: Match Alumni ID against graduate master list ──
@@ -61,7 +61,7 @@ class VerificationService
         if (!$graduate) {
             $this->logRejection($data, $ip, 'Alumni ID not found in college graduate records.');
             $this->checkAutoBlacklist($ip, $data['alumni_id']);
-            throw new \Exception('Verification failed. Your Alumni ID was not found in our records.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('Verification failed. Your Alumni ID was not found in our records.');
         }
 
         // ─── Step 5: Verify name match ───────────────────
@@ -71,13 +71,13 @@ class VerificationService
         if ($inputName !== $recordName) {
             $this->logRejection($data, $ip, 'Name does not match graduate records.', $graduate->id);
             $this->checkAutoBlacklist($ip, $data['alumni_id']);
-            throw new \Exception('Verification failed. The name provided does not match our records.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('Verification failed. The name provided does not match our records.');
         }
 
         // ─── Step 6: Check if already has an account ─────
         if ($graduate->user_id) {
             $this->logRejection($data, $ip, 'Graduate already has a linked alumni account.', $graduate->id);
-            throw new \Exception('An alumni account already exists for this graduate record.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('An alumni account already exists for this graduate record.');
         }
 
         // ─── Step 7: All checks passed — create account ─

@@ -43,16 +43,16 @@ class MessageService
         $recipient = User::where('uuid', $recipientUuid)->first();
 
         if (!$recipient) {
-            throw new \Exception('Recipient not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Recipient not found.');
         }
 
         if ($recipient->id === $user->id) {
-            throw new \Exception('You cannot start a conversation with yourself.', 422);
+            throw \App\Exceptions\DomainException::unprocessable('You cannot start a conversation with yourself.');
         }
 
         // Alumni-only messaging — no contacting admins.
         if ($recipient->role !== UserRole::ALUMNI) {
-            throw new \Exception('You can only message fellow alumni.', 403);
+            throw \App\Exceptions\DomainException::forbidden('You can only message fellow alumni.');
         }
 
         $conversation = Conversation::firstOrCreateBetween($user->id, $recipient->id);
@@ -147,7 +147,7 @@ class MessageService
             ->find($conversationId);
 
         if (!$conversation) {
-            throw new \Exception('Conversation not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Conversation not found.');
         }
 
         return $conversation;

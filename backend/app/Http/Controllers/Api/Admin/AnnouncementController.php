@@ -53,12 +53,8 @@ class AnnouncementController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        try {
-            $announcement = $this->announcementService->find($id);
-            return $this->success(new AnnouncementResource($announcement), 'Announcement retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->find($id);
+        return $this->success(new AnnouncementResource($announcement), 'Announcement retrieved.');
     }
 
     /**
@@ -66,12 +62,8 @@ class AnnouncementController extends Controller
      */
     public function update(UpdateAnnouncementRequest $request, int $id): JsonResponse
     {
-        try {
-            $announcement = $this->announcementService->update($id, $request->validated(), $request->file('image'));
-            return $this->success(new AnnouncementResource($announcement), 'Announcement updated.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->update($id, $request->validated(), $request->file('image'));
+        return $this->success(new AnnouncementResource($announcement), 'Announcement updated.');
     }
 
     /**
@@ -79,12 +71,8 @@ class AnnouncementController extends Controller
      */
     public function destroy(int $id): JsonResponse
     {
-        try {
-            $this->announcementService->destroy($id);
-            return $this->success(null, 'Announcement deleted.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $this->announcementService->destroy($id);
+        return $this->success(null, 'Announcement deleted.');
     }
 
     /**
@@ -92,12 +80,8 @@ class AnnouncementController extends Controller
      */
     public function publish(int $id): JsonResponse
     {
-        try {
-            $announcement = $this->announcementService->publish($id);
-            return $this->success(new AnnouncementResource($announcement), 'Announcement published.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->publish($id);
+        return $this->success(new AnnouncementResource($announcement), 'Announcement published.');
     }
 
     /**
@@ -105,12 +89,8 @@ class AnnouncementController extends Controller
      */
     public function archive(int $id): JsonResponse
     {
-        try {
-            $announcement = $this->announcementService->archive($id);
-            return $this->success(new AnnouncementResource($announcement), 'Announcement archived.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->archive($id);
+        return $this->success(new AnnouncementResource($announcement), 'Announcement archived.');
     }
 
     /**
@@ -118,11 +98,7 @@ class AnnouncementController extends Controller
      */
     public function togglePin(int $id): JsonResponse
     {
-        try {
-            $announcement = $this->announcementService->togglePin($id);
-            return $this->success(new AnnouncementResource($announcement), 'Announcement pin updated.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $announcement = $this->announcementService->togglePin($id);
+        return $this->success(new AnnouncementResource($announcement), 'Announcement pin updated.');
     }
 }

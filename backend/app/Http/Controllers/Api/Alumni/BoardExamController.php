@@ -27,14 +27,10 @@ class BoardExamController extends Controller
      */
     public function index(): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $data = $this->boardExamService->getBoardExamData($user);
+        $user = auth('api')->user();
+        $data = $this->boardExamService->getBoardExamData($user);
 
-            return $this->success($data, 'Board exam data retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->success($data, 'Board exam data retrieved.');
     }
 
     /**
@@ -43,17 +39,13 @@ class BoardExamController extends Controller
      */
     public function store(StoreBoardExamRequest $request): JsonResponse
     {
-        try {
-            $user = auth('api')->user();
-            $result = $this->boardExamService->submitBoardExam(
-                $user,
-                $request->validated(),
-                $request->file('proof_file')
-            );
+        $user = auth('api')->user();
+        $result = $this->boardExamService->submitBoardExam(
+            $user,
+            $request->validated(),
+            $request->file('proof_file')
+        );
 
-            return $this->created($result, 'Board exam result submitted successfully.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 500);
-        }
+        return $this->created($result, 'Board exam result submitted successfully.');
     }
 }

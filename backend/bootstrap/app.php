@@ -90,6 +90,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ], 429);
         });
 
+        $exceptions->render(function (\App\Exceptions\DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], $e->status());
+        });
+
         $exceptions->render(function (\Throwable $e) {
             if (app()->environment('production')) {
                 return response()->json([

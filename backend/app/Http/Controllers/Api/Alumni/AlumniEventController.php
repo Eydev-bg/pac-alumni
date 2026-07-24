@@ -46,12 +46,8 @@ class AlumniEventController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $event = $this->eventService->show($profile, $id);
-            return $this->success(new AlumniEventResource($event), 'Event retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->show($profile, $id);
+        return $this->success(new AlumniEventResource($event), 'Event retrieved.');
     }
 
     /**
@@ -64,12 +60,8 @@ class AlumniEventController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $event = $this->eventService->rsvp($profile, $id, $request->validated()['status']);
-            return $this->success(new AlumniEventResource($event), 'RSVP saved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->rsvp($profile, $id, $request->validated()['status']);
+        return $this->success(new AlumniEventResource($event), 'RSVP saved.');
     }
 
     /**
@@ -82,11 +74,7 @@ class AlumniEventController extends Controller
             return $this->forbidden('Alumni profile not found.');
         }
 
-        try {
-            $event = $this->eventService->cancelRsvp($profile, $id);
-            return $this->success(new AlumniEventResource($event), 'RSVP cancelled.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        $event = $this->eventService->cancelRsvp($profile, $id);
+        return $this->success(new AlumniEventResource($event), 'RSVP cancelled.');
     }
 }

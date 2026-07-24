@@ -42,19 +42,15 @@ class MessageController extends Controller
     {
         $user = auth('api')->user();
 
-        try {
-            $conversation = $this->messageService->startConversation(
-                $user,
-                $request->validated('recipient_id'),
-            );
+        $conversation = $this->messageService->startConversation(
+            $user,
+            $request->validated('recipient_id'),
+        );
 
-            return $this->success(
-                new ConversationResource($conversation),
-                'Conversation ready.'
-            );
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 400);
-        }
+        return $this->success(
+            new ConversationResource($conversation),
+            'Conversation ready.'
+        );
     }
 
     /**
@@ -64,16 +60,12 @@ class MessageController extends Controller
     {
         $user = auth('api')->user();
 
-        try {
-            $conversation = $this->messageService->messages($user, $id);
+        $conversation = $this->messageService->messages($user, $id);
 
-            return $this->success([
-                'conversation' => new ConversationResource($conversation),
-                'messages'     => MessageResource::collection($conversation->messages),
-            ], 'Messages retrieved.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        return $this->success([
+            'conversation' => new ConversationResource($conversation),
+            'messages'     => MessageResource::collection($conversation->messages),
+        ], 'Messages retrieved.');
     }
 
     /**
@@ -83,17 +75,13 @@ class MessageController extends Controller
     {
         $user = auth('api')->user();
 
-        try {
-            $message = $this->messageService->sendMessage(
-                $user,
-                $id,
-                $request->validated('content'),
-            );
+        $message = $this->messageService->sendMessage(
+            $user,
+            $id,
+            $request->validated('content'),
+        );
 
-            return $this->created(new MessageResource($message), 'Message sent.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 404);
-        }
+        return $this->created(new MessageResource($message), 'Message sent.');
     }
 
     /**

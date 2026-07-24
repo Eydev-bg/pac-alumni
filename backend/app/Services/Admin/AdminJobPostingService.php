@@ -36,7 +36,7 @@ class AdminJobPostingService
             ->find($id);
 
         if (!$job) {
-            throw new \Exception('Job posting not found.', 404);
+            throw \App\Exceptions\DomainException::notFound('Job posting not found.');
         }
 
         return $job;
