@@ -136,7 +136,7 @@ function ToastItem({ toast, onDismiss, reducedMotion }) {
       onBlur={resume}
       onTransitionEnd={handleTransitionEnd}
       className={cn(
-        "pointer-events-auto relative overflow-hidden flex items-start gap-3 w-80 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl ring-1 p-4 bg-navy-850 border border-white/10",
+        "pointer-events-auto relative overflow-hidden flex items-start gap-3 w-80 max-w-[calc(100vw-2rem)] rounded-xl shadow-xl ring-1 p-4 bg-navy-850 border border-white/10 dark:bg-slate-800 dark:border-slate-700",
         meta.ring,
         motion,
         entered && !leaving

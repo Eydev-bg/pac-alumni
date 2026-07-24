@@ -107,13 +107,13 @@ function WelcomeCard() {
 
   if (loading) {
     return (
-      <AlumniCard className="p-6">
+      <AlumniCard className="p-6 dark:bg-slate-800 dark:border-slate-700">
         <div className="flex flex-col sm:flex-row gap-5 animate-pulse">
-          <div className="w-20 h-20 rounded-full bg-slate-100 flex-shrink-0" />
+          <div className="w-20 h-20 rounded-full bg-slate-100 flex-shrink-0 dark:bg-slate-700" />
           <div className="flex-1 space-y-3">
-            <div className="h-5 w-56 bg-slate-100 rounded" />
-            <div className="h-3 w-72 bg-slate-100 rounded" />
-            <div className="h-2 w-full bg-slate-100 rounded-full" />
+            <div className="h-5 w-56 bg-slate-100 rounded dark:bg-slate-700" />
+            <div className="h-3 w-72 bg-slate-100 rounded dark:bg-slate-700" />
+            <div className="h-2 w-full bg-slate-100 rounded-full dark:bg-slate-700" />
           </div>
         </div>
       </AlumniCard>
@@ -124,7 +124,7 @@ function WelcomeCard() {
   const pct = completion?.percentage ?? 0;
 
   return (
-    <AlumniCard className="p-6">
+    <AlumniCard className="p-6 dark:bg-slate-800 dark:border-slate-700">
       <div className="flex flex-col sm:flex-row gap-5">
         {/* Photo */}
         {personal?.profile_picture ? (
@@ -143,33 +143,39 @@ function WelcomeCard() {
 
         {/* Greeting + welcome text */}
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold text-slate-800">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-white">
             {greeting()}, {firstName}! <span aria-hidden="true">👋</span>
           </h1>
-          <p className="mt-1 text-sm text-slate-500 leading-relaxed">
+          <p className="mt-1 text-sm text-slate-500 leading-relaxed dark:text-slate-400">
             Welcome back to PAC Alumni Community. Let's stay connected and
             continue building our future together.
           </p>
         </div>
 
-        {/* Profile completion */}
-        <div className="sm:w-56 sm:border-l sm:border-slate-100 sm:pl-5 flex-shrink-0">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-semibold text-slate-600">
-              Profile Completion
-            </span>
+        {/* Profile completion — hidden once the profile is 100% complete so the
+            card collapses to just the greeting + avatar (the border-l divider
+            lives on this block, so hiding it leaves no orphaned divider, and the
+            greeting's flex-1 expands to fill the space). Gated on `completion`
+            so it doesn't flash in while data is still loading. */}
+        {completion && pct < 100 && (
+          <div className="sm:w-56 sm:border-l sm:border-slate-100 sm:pl-5 flex-shrink-0 sm:dark:border-slate-700">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                Profile Completion
+              </span>
+            </div>
+            <p className="text-sm font-bold text-slate-800 mb-2 dark:text-slate-100">
+              {pct}% Complete
+            </p>
+            <ProgressBar value={pct} className="dark:bg-slate-700" />
+            <Link
+              to="/alumni/profile"
+              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Continue
+            </Link>
           </div>
-          <p className="text-sm font-bold text-slate-800 mb-2">
-            {pct}% Complete
-          </p>
-          <ProgressBar value={pct} />
-          <Link
-            to="/alumni/profile"
-            className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Continue
-          </Link>
-        </div>
+        )}
       </div>
     </AlumniCard>
   );
@@ -212,15 +218,15 @@ function QuickActions() {
   // Pastel chip hues (mirrors IconChip's palette). Built inline here so the
   // chip + icon can scale responsively — compact on mobile, larger on lg+.
   const chipColor = {
-    blue: "bg-blue-50 text-blue-600",
-    green: "bg-emerald-50 text-emerald-600",
-    purple: "bg-purple-50 text-purple-600",
-    orange: "bg-orange-50 text-orange-500",
+    blue: "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300",
+    green: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300",
+    purple: "bg-purple-50 text-purple-600 dark:bg-purple-500/15 dark:text-purple-300",
+    orange: "bg-orange-50 text-orange-500 dark:bg-orange-500/15 dark:text-orange-300",
   };
 
   return (
     <div>
-      <h2 className="text-base font-semibold text-slate-800 mb-3">
+      <h2 className="text-base font-semibold text-slate-800 mb-3 dark:text-slate-200">
         Quick Actions
       </h2>
       {/* 2×2 on mobile, a single row of 4 on sm+. */}
@@ -229,17 +235,17 @@ function QuickActions() {
           <Link
             key={a.to}
             to={a.to}
-            className="group flex flex-col items-center text-center bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 lg:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+            className="group flex flex-col items-center text-center bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 lg:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all dark:bg-slate-800 dark:border-slate-700"
           >
             <span
               className={`inline-flex items-center justify-center flex-shrink-0 rounded-xl w-10 h-10 lg:w-12 lg:h-12 mb-2 lg:mb-3 ${chipColor[a.color]}`}
             >
               <a.icon className="w-5 h-5 lg:w-6 lg:h-6" />
             </span>
-            <p className="text-xs lg:text-sm font-semibold text-slate-800 leading-tight">
+            <p className="text-xs lg:text-sm font-semibold text-slate-800 leading-tight dark:text-slate-200">
               {a.title}
             </p>
-            <p className="mt-0.5 text-xs text-slate-400 hidden sm:block">
+            <p className="mt-0.5 text-xs text-slate-400 hidden sm:block dark:text-slate-400">
               {a.desc}
             </p>
           </Link>
@@ -268,9 +274,13 @@ function LatestAnnouncement() {
   }, []);
 
   return (
-    <AlumniCard>
+    <AlumniCard className="dark:bg-slate-800 dark:border-slate-700">
       <SectionHeader
-        title="Latest Announcement"
+        title={
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            Latest Announcement
+          </h3>
+        }
         actionLabel="View All"
         actionTo="/alumni/announcements"
       />
@@ -282,17 +292,17 @@ function LatestAnnouncement() {
         <Link to="/alumni/announcements" className="flex gap-3 group">
           <IconChip icon={HiOutlineMegaphone} color="blue" />
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+            <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1 dark:text-slate-100">
               {item.title}
             </h4>
-            <p className="mt-1 text-xs text-slate-500 line-clamp-2">
+            <p className="mt-1 text-xs text-slate-500 line-clamp-2 dark:text-slate-400">
               {stripHtml(item.content)}
             </p>
-            <div className="mt-2 flex items-center gap-2 text-[0.7rem] text-slate-400">
+            <div className="mt-2 flex items-center gap-2 text-[0.7rem] text-slate-400 dark:text-slate-400">
               {item.published_at && <span>{formatDate(item.published_at)}</span>}
               {item.posted_by && (
                 <>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-slate-300 dark:text-slate-600">•</span>
                   <span>{item.posted_by}</span>
                 </>
               )}
@@ -333,9 +343,13 @@ function UpcomingEvent() {
   }, []);
 
   return (
-    <AlumniCard>
+    <AlumniCard className="dark:bg-slate-800 dark:border-slate-700">
       <SectionHeader
-        title="Upcoming Event"
+        title={
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            Upcoming Event
+          </h3>
+        }
         actionLabel="View All"
         actionTo="/alumni/events"
       />
@@ -346,23 +360,23 @@ function UpcomingEvent() {
       ) : (
         <Link to="/alumni/events" className="flex gap-4 group">
           {/* Date block */}
-          <div className="flex-shrink-0 w-16 rounded-xl bg-blue-50 py-2 text-center">
-            <p className="text-[0.65rem] font-bold text-blue-600">
+          <div className="flex-shrink-0 w-16 rounded-xl bg-blue-50 py-2 text-center dark:bg-blue-500/15">
+            <p className="text-[0.65rem] font-bold text-blue-600 dark:text-blue-300">
               {dateParts(event.start_datetime).mon}
             </p>
-            <p className="text-2xl font-bold text-slate-800 leading-tight">
+            <p className="text-2xl font-bold text-slate-800 leading-tight dark:text-slate-100">
               {dateParts(event.start_datetime).day}
             </p>
           </div>
           <div className="min-w-0">
-            <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2">
+            <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 dark:text-slate-100">
               {event.title}
             </h4>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {formatDate(event.start_datetime)}
             </p>
             {event.location && (
-              <p className="mt-1 flex items-center gap-1 text-xs text-slate-400">
+              <p className="mt-1 flex items-center gap-1 text-xs text-slate-400 dark:text-slate-400">
                 <HiOutlineMapPin className="w-3.5 h-3.5 flex-shrink-0" />
                 <span className="truncate">{event.location}</span>
               </p>
@@ -398,9 +412,13 @@ function LatestJobs() {
   }, []);
 
   return (
-    <AlumniCard>
+    <AlumniCard className="dark:bg-slate-800 dark:border-slate-700">
       <SectionHeader
-        title="Latest Job Opportunities"
+        title={
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            Latest Job Opportunities
+          </h3>
+        }
         actionLabel="View All"
         actionTo="/alumni/careers"
       />
@@ -409,7 +427,7 @@ function LatestJobs() {
       ) : items.length === 0 ? (
         <PanelEmpty icon={HiOutlineBriefcase} text="No job openings yet" />
       ) : (
-        <ul className="divide-y divide-slate-100 -my-2">
+        <ul className="divide-y divide-slate-100 -my-2 dark:divide-slate-700">
           {items.map((job) => (
             <li key={job.id}>
               <Link
@@ -420,24 +438,25 @@ function LatestJobs() {
                   <img
                     src={storageUrl(job.company_logo)}
                     alt={job.company_name}
-                    className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                    className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0 dark:border-slate-700"
                   />
                 ) : (
                   <IconChip
                     icon={HiOutlineBuildingOffice2}
                     color="slate"
                     size="sm"
+                    className="dark:bg-slate-700 dark:text-slate-300"
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors truncate">
+                  <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors truncate dark:text-slate-100">
                     {job.job_position}
                   </h4>
-                  <p className="text-xs text-slate-500 truncate">
+                  <p className="text-xs text-slate-500 truncate dark:text-slate-400">
                     {job.company_name}
                   </p>
                 </div>
-                <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 flex-shrink-0">
+                <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 flex-shrink-0 dark:text-slate-400">
                   <HiOutlineMapPin className="w-3.5 h-3.5" />
                   <span className="truncate max-w-[9rem]">{job.location}</span>
                 </div>
@@ -500,9 +519,13 @@ function NotificationsPanel() {
   };
 
   return (
-    <AlumniCard>
+    <AlumniCard className="dark:bg-slate-800 dark:border-slate-700">
       <SectionHeader
-        title="Notifications"
+        title={
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            Notifications
+          </h3>
+        }
         actionLabel="View All"
         actionTo="/alumni/notifications"
       />
@@ -518,20 +541,20 @@ function NotificationsPanel() {
               <li key={n.id}>
                 <button
                   onClick={() => open(n)}
-                  className="w-full flex items-start gap-3 p-2 rounded-lg text-left hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-start gap-3 p-2 rounded-lg text-left hover:bg-slate-50 transition-colors dark:hover:bg-slate-700"
                 >
                   <IconChip icon={style.icon} color={style.color} size="sm" />
                   <span className="flex-1 min-w-0">
                     <span
                       className={`block text-sm line-clamp-2 ${
                         !n.is_read
-                          ? "font-semibold text-slate-800"
-                          : "text-slate-600"
+                          ? "font-semibold text-slate-800 dark:text-slate-100"
+                          : "text-slate-600 dark:text-slate-300"
                       }`}
                     >
                       {n.title}
                     </span>
-                    <span className="block text-[0.7rem] text-slate-400 mt-0.5">
+                    <span className="block text-[0.7rem] text-slate-400 mt-0.5 dark:text-slate-400">
                       {timeAgo(n.created_at)}
                     </span>
                   </span>
@@ -565,9 +588,13 @@ function RecentMessages() {
   }, []);
 
   return (
-    <AlumniCard>
+    <AlumniCard className="dark:bg-slate-800 dark:border-slate-700">
       <SectionHeader
-        title="Recent Messages"
+        title={
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+            Recent Messages
+          </h3>
+        }
         actionLabel="View All"
         actionTo="/alumni/messages"
       />
@@ -585,7 +612,7 @@ function RecentMessages() {
               <li key={c.id}>
                 <button
                   onClick={() => navigate(`/alumni/messages?c=${c.id}`)}
-                  className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-slate-50 transition-colors"
+                  className="w-full flex items-center gap-3 p-2 rounded-lg text-left hover:bg-slate-50 transition-colors dark:hover:bg-slate-700"
                 >
                   <Avatar
                     src={c.other_participant?.profile_picture}
@@ -597,14 +624,14 @@ function RecentMessages() {
                       <span
                         className={`text-sm truncate ${
                           c.unread_count > 0
-                            ? "font-bold text-slate-900"
-                            : "font-semibold text-slate-700"
+                            ? "font-bold text-slate-900 dark:text-white"
+                            : "font-semibold text-slate-700 dark:text-slate-200"
                         }`}
                       >
                         {c.other_participant?.name}
                       </span>
                       {c.last_message_at && (
-                        <span className="text-[0.65rem] text-slate-400 flex-shrink-0">
+                        <span className="text-[0.65rem] text-slate-400 flex-shrink-0 dark:text-slate-400">
                           {timeAgo(c.last_message_at)}
                         </span>
                       )}
@@ -613,8 +640,8 @@ function RecentMessages() {
                       <span
                         className={`text-xs truncate ${
                           c.unread_count > 0
-                            ? "text-slate-700 font-medium"
-                            : "text-slate-400"
+                            ? "text-slate-700 font-medium dark:text-slate-300"
+                            : "text-slate-400 dark:text-slate-400"
                         }`}
                       >
                         {preview}
@@ -641,10 +668,10 @@ function SkeletonRows({ lines = 3 }) {
     <div className="space-y-3 animate-pulse">
       {Array.from({ length: lines }).map((_, i) => (
         <div key={i} className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-slate-100 flex-shrink-0" />
+          <div className="w-10 h-10 rounded-lg bg-slate-100 flex-shrink-0 dark:bg-slate-700" />
           <div className="flex-1 space-y-2">
-            <div className="h-3 w-3/4 bg-slate-100 rounded" />
-            <div className="h-2.5 w-1/2 bg-slate-100 rounded" />
+            <div className="h-3 w-3/4 bg-slate-100 rounded dark:bg-slate-700" />
+            <div className="h-2.5 w-1/2 bg-slate-100 rounded dark:bg-slate-700" />
           </div>
         </div>
       ))}
@@ -655,10 +682,10 @@ function SkeletonRows({ lines = 3 }) {
 function PanelEmpty({ icon: Icon, text }) {
   return (
     <div className="py-8 text-center">
-      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2">
-        <Icon className="w-5 h-5 text-slate-300" />
+      <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-2 dark:bg-slate-700">
+        <Icon className="w-5 h-5 text-slate-300 dark:text-slate-500" />
       </div>
-      <p className="text-sm text-slate-400">{text}</p>
+      <p className="text-sm text-slate-400 dark:text-slate-400">{text}</p>
     </div>
   );
 }

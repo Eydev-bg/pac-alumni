@@ -91,10 +91,10 @@ export default function AchievementFeed() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
-        <HiOutlineTrophy className="w-4 h-4 text-blue-600" />
-        <h3 className="text-sm font-bold text-slate-800">Alumni Achievements</h3>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2 dark:border-slate-700">
+        <HiOutlineTrophy className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Alumni Achievements</h3>
       </div>
 
       <div className="px-5 py-4">
@@ -104,10 +104,10 @@ export default function AchievementFeed() {
           <p className="text-sm text-slate-400 text-center py-6">{error}</p>
         ) : items.length === 0 ? (
           <div className="text-center py-8">
-            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-              <HiOutlineSparkles className="w-6 h-6 text-slate-300" />
+            <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3 dark:bg-slate-700">
+              <HiOutlineSparkles className="w-6 h-6 text-slate-300 dark:text-slate-500" />
             </div>
-            <p className="text-sm font-semibold text-slate-500">No achievements yet</p>
+            <p className="text-sm font-semibold text-slate-500 dark:text-slate-300">No achievements yet</p>
             <p className="text-xs text-slate-400 mt-0.5">
               Update your employment or board exam results to be featured here.
             </p>
@@ -140,10 +140,10 @@ function AchievementItem({ achievement: a, toggling, onToggle }) {
     .join("");
 
   return (
-    <li className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors">
+    <li className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-slate-50 transition-colors dark:hover:bg-slate-700">
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
+        <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden dark:bg-slate-700">
           {alumni.profile_picture ? (
             <img
               src={storageUrl(alumni.profile_picture)}
@@ -151,11 +151,11 @@ function AchievementItem({ achievement: a, toggling, onToggle }) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-[0.7rem] font-bold text-slate-500">{initials}</span>
+            <span className="text-[0.7rem] font-bold text-slate-500 dark:text-slate-300">{initials}</span>
           )}
         </div>
         <span
-          className={`absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full ${style.bg} flex items-center justify-center ring-2 ring-white`}
+          className={`absolute -bottom-1 -right-1 w-[18px] h-[18px] rounded-full ${style.bg} flex items-center justify-center ring-2 ring-white dark:ring-slate-800`}
         >
           <Icon className={`w-2.5 h-2.5 ${style.fg}`} />
         </span>
@@ -163,25 +163,25 @@ function AchievementItem({ achievement: a, toggling, onToggle }) {
 
       {/* Body */}
       <div className="flex-1 min-w-0">
-        <p className="text-[0.8rem] text-slate-700 leading-snug">{a.title}</p>
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[0.68rem] text-slate-400">
+        <p className="text-[0.8rem] text-slate-700 leading-snug dark:text-slate-200">{a.title}</p>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5 text-[0.68rem] text-slate-400 dark:text-slate-400">
           {alumni.course_code && <span>{alumni.course_code}</span>}
           {alumni.graduation_year && (
             <>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
               <span>Batch {alumni.graduation_year}</span>
             </>
           )}
           {a.created_at && (
             <>
-              <span className="text-slate-300">•</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
               <span>{timeAgo(a.created_at)}</span>
             </>
           )}
           {!a.is_public && a.is_own && (
             <>
-              <span className="text-slate-300">•</span>
-              <span className="text-amber-600 font-medium">Hidden</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
+              <span className="text-amber-600 font-medium dark:text-amber-400">Hidden</span>
             </>
           )}
         </div>
@@ -193,7 +193,7 @@ function AchievementItem({ achievement: a, toggling, onToggle }) {
           onClick={onToggle}
           disabled={toggling}
           title={a.is_public ? "Hide from feed" : "Show in feed"}
-          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-40"
+          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-40 dark:text-slate-500 dark:hover:text-slate-300 dark:hover:bg-slate-700"
         >
           {a.is_public ? (
             <HiOutlineEye className="w-4 h-4" />

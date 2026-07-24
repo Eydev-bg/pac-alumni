@@ -27,7 +27,7 @@ export default function MobileTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 shadow-[0_-1px_4px_rgba(15,23,42,0.06)]"
+      className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200 shadow-[0_-1px_4px_rgba(15,23,42,0.06)] dark:bg-slate-800 dark:border-slate-700"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <ul className="flex items-stretch justify-around">
@@ -38,8 +38,8 @@ export default function MobileTabBar() {
               className={({ isActive }) =>
                 `flex flex-col items-center justify-center gap-1 py-2.5 text-[0.65rem] font-medium transition-colors ${
                   isActive
-                    ? "text-blue-600"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
                 }`
               }
             >

@@ -22,7 +22,7 @@ export default function Card({
   return (
     <Component
       className={cn(
-        "bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06]",
+        "bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] dark:bg-slate-800 dark:border-slate-700",
         padding && "p-6",
         className,
       )}

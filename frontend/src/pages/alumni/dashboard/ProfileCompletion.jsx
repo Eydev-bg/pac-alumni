@@ -39,6 +39,11 @@ export default function ProfileCompletion() {
 
   const { percentage, completed, total, is_complete, missing } = data;
 
+  // Once the profile is fully complete, the reminder card is no longer needed —
+  // hide it entirely so the Home page stays uncluttered. The 100% state is still
+  // visible on the My Profile page.
+  if (percentage >= 100) return null;
+
   // Bar color reflects progress.
   const barColor =
     percentage >= 100

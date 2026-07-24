@@ -19,7 +19,7 @@ const VARIANTS = {
   primary:
     "bg-gradient-to-r from-gold-500 to-gold-700 text-white hover:from-gold-400 hover:to-gold-600 shadow-lg shadow-gold-500/20 focus:ring-gold-500/40",
   secondary:
-    "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-400",
+    "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-400 dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-600",
   danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-500",
   ghost:
     "bg-transparent text-slate-300 hover:bg-white/[0.06] focus:ring-white/20",

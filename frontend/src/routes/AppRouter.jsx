@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute, RoleGuard, GuestRoute, LoadingScreen } from "../guards";
 
 // Layouts are the app shell and are needed to render any route, so they stay
@@ -54,13 +54,14 @@ const AlumniInboxPage = lazy(() => import("../pages/alumni/messages/AlumniInboxP
 const AlumniConversationPage = lazy(() => import("../pages/alumni/messages/AlumniConversationPage"));
 const AlumniDirectoryPage = lazy(() => import("../pages/alumni/directory/AlumniDirectoryPage"));
 const AlumniPublicProfilePage = lazy(() => import("../pages/alumni/directory/AlumniPublicProfilePage"));
+const AlumniSettingsPage = lazy(() => import("../pages/alumni/settings/AlumniSettingsPage"));
 
 export default function AppRouter() {
   return (
-    <BrowserRouter>
-      {/* Single Suspense boundary wrapping every lazy route element; the
-          shared LoadingScreen shows briefly while a route chunk loads. */}
-      <Suspense fallback={<LoadingScreen />}>
+    // BrowserRouter now lives in App.jsx (above ThemeProvider).
+    // Single Suspense boundary wrapping every lazy route element; the
+    // shared LoadingScreen shows briefly while a route chunk loads.
+    <Suspense fallback={<LoadingScreen />}>
         <Routes>
           {/* ─── Public: Landing page + Maintenance (no auth/guard) ── */}
           <Route path="/" element={<LandingPage />} />
@@ -139,6 +140,11 @@ export default function AppRouter() {
                 />
                 <Route path="messages" element={<AlumniInboxPage />} />
                 <Route path="messages/:id" element={<AlumniConversationPage />} />
+                <Route
+                  path="settings"
+                  element={<Navigate to="/alumni/settings/security" replace />}
+                />
+                <Route path="settings/:tab" element={<AlumniSettingsPage />} />
               </Route>
             </Route>
           </Route>
@@ -159,7 +165,6 @@ export default function AppRouter() {
           />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Suspense>
-    </BrowserRouter>
+    </Suspense>
   );
 }

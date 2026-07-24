@@ -23,6 +23,7 @@ import {
   HiOutlineCalendarDays,
   HiOutlineChatBubbleLeftRight,
   HiOutlineBell,
+  HiOutlineCog6Tooth,
   HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 
@@ -49,8 +50,8 @@ function AlumniLayoutInner() {
     useUnread();
 
   // Flat single-list nav (the redesign drops the grouped sections).
-  // Settings / Help & Support have no alumni page today, so they're omitted
-  // rather than pointing at a route that doesn't exist.
+  // Settings now has a real alumni page (Security + Appearance); Help & Support
+  // is still omitted as it has no route yet.
   const navItems = [
     { name: "Home", path: "/alumni/dashboard", icon: HiOutlineHome },
     { name: "My Profile", path: "/alumni/profile", icon: HiOutlineUser },
@@ -78,13 +79,14 @@ function AlumniLayoutInner() {
       icon: HiOutlineBell,
       badge: unreadNotifications,
     },
+    { name: "Settings", path: "/alumni/settings", icon: HiOutlineCog6Tooth },
   ];
 
   const linkClasses = (isActive) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
       isActive
-        ? "bg-blue-50 text-blue-700"
-        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300"
+        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700/50 dark:hover:text-white"
     }`;
 
   const handleLogout = async () => {
@@ -104,14 +106,16 @@ function AlumniLayoutInner() {
         />
         {sidebarOpen && (
           <div className="overflow-hidden">
-            <h2 className="text-base font-bold text-blue-700 leading-tight truncate">
+            <h2 className="text-base font-bold text-blue-700 dark:text-blue-400 leading-tight truncate">
               PAC Alumni
             </h2>
-            <p className="text-xs text-slate-400 truncate">Community</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+              Community
+            </p>
           </div>
         )}
         <button
-          className="ml-auto lg:hidden text-slate-400 hover:text-slate-600"
+          className="ml-auto lg:hidden text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
           onClick={() => setMobileSidebarOpen(false)}
         >
           <HiOutlineXMark className="w-5 h-5" />
@@ -133,7 +137,7 @@ function AlumniLayoutInner() {
                   <item.icon className="w-5 h-5" />
                   {/* Collapsed sidebar: show a dot indicator on the icon. */}
                   {!sidebarOpen && item.badge > 0 && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white" />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white dark:ring-slate-800" />
                   )}
                 </span>
                 {sidebarOpen && <span className="flex-1">{item.name}</span>}
@@ -148,11 +152,11 @@ function AlumniLayoutInner() {
         </ul>
 
         {/* Logout — grouped with nav but visually separated. */}
-        <div className="mt-2 pt-2 border-t border-slate-100">
+        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
           <button
             onClick={handleLogout}
             title={!sidebarOpen ? "Logout" : undefined}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-all duration-200"
           >
             <HiOutlineArrowRightOnRectangle className="w-5 h-5 flex-shrink-0" />
             {sidebarOpen && <span className="flex-1 text-left">Logout</span>}
@@ -197,28 +201,30 @@ function AlumniLayoutInner() {
         <button
           onClick={() => setMobileSidebarOpen(false)}
           aria-label="Close menu"
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
         >
           <HiOutlineXMark className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-3 pr-8">
           <Avatar src={user?.profile_picture} name={user?.full_name} size="lg" />
           <div className="min-w-0">
-            <p className="text-sm font-bold text-slate-800 truncate">
+            <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
               {user?.full_name}
             </p>
-            <p className="text-xs text-slate-400 truncate">{user?.email}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
+              {user?.email}
+            </p>
             <NavLink
               to="/alumni/profile"
               onClick={() => setMobileSidebarOpen(false)}
-              className="mt-0.5 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700"
+              className="mt-0.5 inline-block text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               View Profile
             </NavLink>
           </div>
         </div>
       </div>
-      <div className="border-t border-slate-100" />
+      <div className="border-t border-slate-100 dark:border-slate-700" />
 
       <nav className="flex-1 overflow-y-auto py-2 px-3">
         <ul className="space-y-1">
@@ -241,10 +247,10 @@ function AlumniLayoutInner() {
           ))}
         </ul>
 
-        <div className="mt-2 pt-2 border-t border-slate-100">
+        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-all duration-200"
           >
             <HiOutlineArrowRightOnRectangle className="w-5 h-5 flex-shrink-0" />
             <span className="flex-1 text-left">Logout</span>
@@ -256,7 +262,7 @@ function AlumniLayoutInner() {
 
   return (
     <div
-      className={`bg-[#f5f7fb] ${
+      className={`bg-[#f5f7fb] dark:bg-slate-900 ${
         // On the full-screen thread route the page must equal the DYNAMIC
         // viewport exactly: min-h-screen (100vh) is taller than the 100dvh the
         // thread fills on mobile, which makes the BODY scrollable by the
@@ -275,7 +281,7 @@ function AlumniLayoutInner() {
 
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:flex lg:flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-slate-200 transition-all duration-300 ${
+        className={`hidden lg:flex lg:flex-col fixed inset-y-0 left-0 z-30 bg-white border-r border-slate-200 dark:bg-slate-800 dark:border-slate-700 transition-all duration-300 ${
           sidebarOpen ? "w-64" : "w-20"
         }`}
       >
@@ -284,7 +290,7 @@ function AlumniLayoutInner() {
 
       {/* Mobile sidebar (drawer) */}
       <aside
-        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 flex flex-col ${
+        className={`lg:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 dark:bg-slate-800 dark:border-slate-700 transform transition-transform duration-300 flex flex-col ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

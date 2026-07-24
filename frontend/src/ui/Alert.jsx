@@ -13,6 +13,13 @@ import { cn } from "../utils/formatters";
  * toast (e.g. a list page that failed to load). Tuned for the dark admin
  * surfaces; colors use semantic Tailwind roles.
  *
+ * DARK MODE: the translucent tints (e.g. `bg-red-500/10` + `text-red-300`)
+ * already read correctly on a dark surface, so no `dark:` overrides are added.
+ * A light-mode base is intentionally NOT introduced here because the admin side
+ * (which shares this component) renders it on its always-navy surface — adding
+ * a light base would regress that. The alumni settings tabs surface field
+ * errors inline + via toasts, so they don't depend on Alert.
+ *
  * Props:
  *   variant: 'error' | 'warning' | 'info' | 'success'  (default 'error')
  *   title:   optional heading

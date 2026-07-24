@@ -1,6 +1,15 @@
 @import "tailwindcss";
 
 /*
+ * ─── Dark mode (Tailwind v4, class-based) ────────────────
+ * This project uses Tailwind v4 with CSS-based config (no tailwind.config.js),
+ * so class-based dark mode is enabled here rather than via `darkMode: 'class'`.
+ * `dark:` utilities apply whenever <html> (or any ancestor) carries `.dark`,
+ * which ThemeContext + the index.html anti-flash script toggle.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
  * ─── Design-system theme tokens (Phase 4) ────────────────
  * Single source of truth for the brand palette. Every admin surface
  * references these tokens (e.g. `bg-navy-800`, `text-gold-500`) instead of
