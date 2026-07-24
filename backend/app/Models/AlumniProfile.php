@@ -16,6 +16,7 @@ class AlumniProfile extends Model
         'employment_status',
         'board_status',
         'is_directory_visible',
+        'preferences',
     ];
 
     protected function casts(): array
@@ -24,6 +25,7 @@ class AlumniProfile extends Model
             'employment_status' => EmploymentStatus::class,
             'board_status' => BoardStatus::class,
             'is_directory_visible' => 'boolean',
+            'preferences' => 'array',
         ];
     }
 

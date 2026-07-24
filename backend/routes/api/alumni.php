@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\Alumni\AlumniJobPostingController;
 use App\Http\Controllers\Api\Alumni\AlumniNotificationController;
 use App\Http\Controllers\Api\Alumni\EmploymentController;
 use App\Http\Controllers\Api\Alumni\MessageController;
+use App\Http\Controllers\Api\Alumni\Settings\AppearanceSettingsController;
+use App\Http\Controllers\Api\Alumni\Settings\SecuritySettingsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -128,4 +130,18 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
     // Rate limited: max 20 messages per hour per user (spam prevention).
     Route::post('/conversations/{id}/messages', [MessageController::class, 'sendMessage'])
         ->whereNumber('id')->middleware('throttle:20,60')->name('alumni.conversations.send');
+
+    // ─── Settings (Security + Appearance) ─────────────────
+    Route::prefix('settings')->group(function () {
+        Route::put('/security/password', [SecuritySettingsController::class, 'changePassword'])
+            ->middleware('throttle:5,60')
+            ->name('alumni.settings.security.password');
+
+        Route::get('/appearance', [AppearanceSettingsController::class, 'show'])
+            ->name('alumni.settings.appearance.show');
+
+        Route::patch('/appearance', [AppearanceSettingsController::class, 'update'])
+            ->middleware('throttle:30,1')
+            ->name('alumni.settings.appearance.update');
+    });
 });

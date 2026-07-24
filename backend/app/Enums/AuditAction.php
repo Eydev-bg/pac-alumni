@@ -29,6 +29,10 @@ enum AuditAction: string
     // ─── System settings ─────────────────────────────────────
     case MAINTENANCE_MODE_TOGGLED = 'maintenance.toggled';
 
+    // ─── Alumni self-service settings ────────────────────────
+    case SETTINGS_PASSWORD_CHANGED = 'settings.password_changed';
+    case SETTINGS_APPEARANCE_UPDATED = 'settings.appearance_updated';
+
     public function label(): string
     {
         return match ($this) {
@@ -43,6 +47,8 @@ enum AuditAction: string
             self::BLACKLIST_ADDED => 'Added to blacklist',
             self::BLACKLIST_REMOVED => 'Removed from blacklist',
             self::MAINTENANCE_MODE_TOGGLED => 'Maintenance mode toggled',
+            self::SETTINGS_PASSWORD_CHANGED => 'Password changed',
+            self::SETTINGS_APPEARANCE_UPDATED => 'Appearance updated',
         };
     }
 
