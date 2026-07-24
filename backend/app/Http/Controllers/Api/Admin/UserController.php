@@ -27,7 +27,7 @@ class UserController extends Controller
     public function index(Request $request): JsonResponse
     {
         $users = $this->userService->list(
-            perPage: $request->integer('per_page', 15),
+            perPage: min($request->integer('per_page', 15), 100),
             search: $request->string('search')->toString() ?: null,
             role: $request->string('role')->toString() ?: null,
             status: $request->string('status')->toString() ?: null,

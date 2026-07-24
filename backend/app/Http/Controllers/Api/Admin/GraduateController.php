@@ -30,7 +30,7 @@ class GraduateController extends Controller
     public function index(Request $request): JsonResponse
     {
         $graduates = $this->graduateService->list(
-            perPage: $request->integer('per_page', 15),
+            perPage: min($request->integer('per_page', 15), 100),
             search: $request->string('search')->toString() ?: null,
             educationLevel: $request->string('education_level')->toString() ?: null,
             graduationYear: $request->integer('graduation_year') ?: null,
@@ -89,7 +89,7 @@ class GraduateController extends Controller
     public function trashed(Request $request): JsonResponse
     {
         $graduates = $this->graduateService->listTrashed(
-            perPage: $request->integer('per_page', 15),
+            perPage: min($request->integer('per_page', 15), 100),
             search: $request->string('search')->toString() ?: null,
             educationLevel: $request->string('education_level')->toString() ?: null,
             graduationYear: $request->integer('graduation_year') ?: null,
@@ -167,7 +167,7 @@ class GraduateController extends Controller
     {
         $batches = ImportBatch::with('uploadedBy:id,uuid,first_name,last_name')
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate(min($request->integer('per_page', 15), 100));
 
         return $this->paginated(
             $batches->through(fn($b) => new ImportBatchResource($b)),

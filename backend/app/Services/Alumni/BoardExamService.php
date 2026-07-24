@@ -19,12 +19,17 @@ use App\Models\Course;
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
+use App\Services\Admin\DashboardCacheService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BoardExamService
 {
+    public function __construct(
+        protected DashboardCacheService $dashboardCache,
+    ) {}
+
     /**
      * Get board exam data for the authenticated alumni.
      * Returns course info, current status, and exam history.
@@ -87,7 +92,7 @@ class BoardExamService
      */
     public function submitBoardExam(User $user, array $data, ?UploadedFile $proofFile = null): array
     {
-        return DB::transaction(function () use ($user, $data, $proofFile) {
+        $result = DB::transaction(function () use ($user, $data, $proofFile) {
             $profile = AlumniProfile::where('user_id', $user->id)
                 ->with(['graduate.course.department'])
                 ->first();
@@ -177,6 +182,14 @@ class BoardExamService
                 'updated_board_label' => $newBoardStatus->label(),
             ];
         });
+
+        // Board exam submissions feed the admin dashboard aggregates
+        // (board_passers, board_passing_rate), which are served from a
+        // short-TTL cache. Invalidate AFTER the transaction commits so a
+        // rolled-back write never clears a still-accurate cache.
+        $this->dashboardCache->flush();
+
+        return $result;
     }
 
     /**

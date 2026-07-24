@@ -37,7 +37,7 @@ class AlumniEventService
         return $this->visibleQuery($profile)
             ->orderByDesc('is_pinned')
             ->orderBy('start_datetime')
-            ->paginate($filters['per_page'] ?? 15);
+            ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
     }
 
     /**

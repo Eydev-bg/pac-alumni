@@ -27,7 +27,7 @@ class DepartmentController extends Controller
     public function index(Request $request): JsonResponse
     {
         $departments = $this->deptService->list(
-            perPage: $request->integer('per_page', 15),
+            perPage: min($request->integer('per_page', 15), 100),
             search: $request->string('search')->toString() ?: null,
             status: $request->string('status')->toString() ?: null,
             isBoard: $request->has('is_board') ? $request->string('is_board')->toString() : null,

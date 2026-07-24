@@ -20,10 +20,15 @@ use App\Models\EmploymentStatusHistory;  // ← ADDED
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
+use App\Services\Admin\DashboardCacheService;
 use Illuminate\Support\Facades\DB;
 
 class EmploymentService
 {
+    public function __construct(
+        protected DashboardCacheService $dashboardCache,
+    ) {}
+
     /**
      * Get employment data for the authenticated alumni.
      */
@@ -79,7 +84,7 @@ class EmploymentService
      */
     public function submitEmployment(User $user, array $data): array
     {
-        return DB::transaction(function () use ($user, $data) {
+        $result = DB::transaction(function () use ($user, $data) {
             $profile = AlumniProfile::where('user_id', $user->id)
                 ->with(['graduate.course.department'])
                 ->first();
@@ -193,6 +198,14 @@ class EmploymentService
                 ];
             }
         });
+
+        // Alumni employment changes feed the admin dashboard aggregates
+        // (employment_rate, employed_count, employment_type_breakdown), which
+        // are served from a short-TTL cache. Invalidate AFTER the transaction
+        // commits so a rolled-back write never clears a still-accurate cache.
+        $this->dashboardCache->flush();
+
+        return $result;
     }
 
     /**

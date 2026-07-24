@@ -58,7 +58,7 @@ class AlumniSearchController extends Controller
             });
         }
 
-        $results = $query->orderBy('last_name')->paginate($request->integer('per_page', 15));
+        $results = $query->orderBy('last_name')->paginate(min($request->integer('per_page', 15), 100));
 
         return $this->paginated(
             $results->through(fn($g) => new GraduateResource($g)),

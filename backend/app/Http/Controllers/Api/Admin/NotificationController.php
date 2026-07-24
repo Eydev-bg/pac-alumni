@@ -22,7 +22,7 @@ class NotificationController extends Controller
     {
         $notifications = Notification::where('user_id', auth()->id())
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated($notifications, 'Notifications retrieved.');
     }

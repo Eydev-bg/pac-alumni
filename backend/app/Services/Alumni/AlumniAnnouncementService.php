@@ -31,7 +31,7 @@ class AlumniAnnouncementService
         return $this->visibleQuery($profile)
             ->orderByDesc('is_pinned')
             ->orderByDesc('published_at')
-            ->paginate($filters['per_page'] ?? 15);
+            ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
     }
 
     /**

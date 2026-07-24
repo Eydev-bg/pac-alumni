@@ -18,6 +18,7 @@ class UserService
         protected UserRepositoryInterface $userRepo,
         protected AuditLogService $auditLog,
         protected PasswordResetService $passwordResetService,
+        protected DashboardCacheService $dashboardCache,
     ) {}
 
     /**
@@ -138,6 +139,10 @@ class UserService
             'from' => $previousStatus->value,
             'to' => $newStatus->value,
         ]);
+
+        // Activating/suspending/deactivating a user changes the admin dashboard
+        // active/inactive alumni counts, which are served from a short-TTL cache.
+        $this->dashboardCache->flush();
 
         return $updated;
     }

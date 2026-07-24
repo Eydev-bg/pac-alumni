@@ -21,6 +21,10 @@ use Illuminate\Support\Str;
 
 class VerificationService
 {
+    public function __construct(
+        protected DashboardCacheService $dashboardCache,
+    ) {}
+
     /**
      * Auto-verify alumni registration against graduate master list.
      *
@@ -81,7 +85,7 @@ class VerificationService
         }
 
         // ─── Step 7: All checks passed — create account ─
-        return DB::transaction(function () use ($data, $graduate, $ip) {
+        $result = DB::transaction(function () use ($data, $graduate, $ip) {
             // Create user account
             $user = User::create([
                 'email' => $data['email'],
@@ -133,6 +137,14 @@ class VerificationService
                 'alumni_id' => $graduate->alumni_id_number,
             ];
         });
+
+        // A new alumni registration changes the admin dashboard aggregates
+        // (registered_alumni, active_alumni), which are served from a short-TTL
+        // cache. Invalidate AFTER the transaction commits so a rolled-back
+        // registration never clears a still-accurate cache.
+        $this->dashboardCache->flush();
+
+        return $result;
     }
 
     /**

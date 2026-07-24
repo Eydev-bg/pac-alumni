@@ -24,7 +24,7 @@ class LoginActivityLogController extends Controller
     public function index(Request $request): JsonResponse
     {
         $logs = $this->logRepo->paginate(
-            perPage: $request->integer('per_page', 20),
+            perPage: min($request->integer('per_page', 20), 100),
             status: $request->string('status')->toString() ?: null,
             dateFrom: $request->string('date_from')->toString() ?: null,
             dateTo: $request->string('date_to')->toString() ?: null,

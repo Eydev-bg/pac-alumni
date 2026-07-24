@@ -70,20 +70,29 @@ class DashboardController extends Controller
             })
             ->count();
 
-        // Board passers (unique graduates)
+        // Board passers (unique graduates). Exclude records belonging to
+        // soft-deleted graduates so this numerator stays consistent with the
+        // Graduate::count()-based denominators (which drop trashed graduates).
         $boardPassers = $this->distinctGraduateCount(
-            BoardExamRecord::where('status', BoardStatus::PASSED->value)
+            $this->excludeTrashedGraduates(BoardExamRecord::where('status', BoardStatus::PASSED->value))
         );
 
         // Graduates in board program courses who have NO board exam record at all
         $boardProgramCourseIds = Course::boardPrograms()->pluck('id');
         $graduatesInBoardPrograms = Graduate::whereIn('course_id', $boardProgramCourseIds)->count();
-        $graduatesWithBoardRecord = $this->distinctGraduateCount(BoardExamRecord::query());
+        $graduatesWithBoardRecord = $this->distinctGraduateCount(
+            $this->excludeTrashedGraduates(BoardExamRecord::query())
+        );
         $boardNotYetTaken = max(0, $graduatesInBoardPrograms - $graduatesWithBoardRecord);
 
-        // Employment rate
-        $totalProfiles = AlumniProfile::whereIn('employment_status', ['employed', 'unemployed'])->count();
-        $employed = AlumniProfile::where('employment_status', 'employed')->count();
+        // Employment rate. Exclude profiles of soft-deleted graduates so these
+        // counts stay consistent with the Graduate::count()-based denominators.
+        $totalProfiles = $this->excludeTrashedGraduates(
+            AlumniProfile::whereIn('employment_status', ['employed', 'unemployed'])
+        )->count();
+        $employed = $this->excludeTrashedGraduates(
+            AlumniProfile::where('employment_status', 'employed')
+        )->count();
         $employmentRate = $totalProfiles > 0 ? round(($employed / $totalProfiles) * 100, 1) : 0;
 
         // Compared to last month
@@ -113,7 +122,7 @@ class DashboardController extends Controller
                 : 0,
             'employment_rate' => $employmentRate,
             'employment_known_count' => $totalProfiles,
-            'employment_total_profiles' => AlumniProfile::count(),
+            'employment_total_profiles' => $this->excludeTrashedGraduates(AlumniProfile::query())->count(),
             'employed_count' => $employed,
             'new_alumni_this_month' => $thisMonthAlumni,
             'alumni_growth_percent' => $alumniGrowth,
@@ -150,7 +159,9 @@ class DashboardController extends Controller
     private function getEmploymentTypeBreakdown(): array
     {
         // Counts of current employment records keyed by the raw enum value.
-        $counts = EmploymentRecord::where('is_current', true)
+        // Exclude records of soft-deleted graduates so the breakdown stays
+        // consistent with the other dashboard employment numbers.
+        $counts = $this->excludeTrashedGraduates(EmploymentRecord::where('is_current', true))
             ->selectRaw('employment_type, COUNT(*) as count')
             ->groupBy('employment_type')
             ->pluck('count', 'employment_type');
@@ -175,5 +186,19 @@ class DashboardController extends Controller
         return (int) $query
             ->selectRaw('COUNT(DISTINCT graduate_id) as aggregate')
             ->value('aggregate');
+    }
+
+    /**
+     * Constrain a query on a graduate-owned table (board_exam_records,
+     * alumni_profiles, employment_records) to rows whose graduate is NOT
+     * soft-deleted. whereHas('graduate') applies the Graduate SoftDeletes
+     * global scope, so trashed graduates' child rows are excluded — keeping
+     * these numerators consistent with the Graduate::count()-based denominators
+     * (which already drop trashed graduates). Mirrors the whereNull('deleted_at')
+     * joins used by AnalyticsService and GraduateTracerService.
+     */
+    private function excludeTrashedGraduates(Builder $query): Builder
+    {
+        return $query->whereHas('graduate');
     }
 }

@@ -34,7 +34,7 @@ class DirectoryController extends Controller
     {
         $directory = $this->directoryService->list(
             excludeUserId: auth('api')->id(),
-            perPage: $request->integer('per_page', 15),
+            perPage: min($request->integer('per_page', 15), 100),
             search: $request->string('search')->toString() ?: null,
             graduationYear: $request->integer('graduation_year') ?: null,
             departmentId: $request->integer('department_id') ?: null,

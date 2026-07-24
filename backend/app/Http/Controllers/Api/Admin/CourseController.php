@@ -28,7 +28,7 @@ class CourseController extends Controller
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->search($request->search)
             ->orderBy('code')
-            ->paginate($request->integer('per_page', 30));
+            ->paginate(min($request->integer('per_page', 30), 100));
 
         $data = $courses->through(fn($c) => [
             'id' => $c->id,

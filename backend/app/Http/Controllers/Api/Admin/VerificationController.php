@@ -86,7 +86,7 @@ class VerificationController extends Controller
             ->search($request->search)
             ->dateRange($request->date_from, $request->date_to)
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated(
             $logs->through(fn($log) => new VerificationLogResource($log)),
@@ -103,7 +103,7 @@ class VerificationController extends Controller
             ->verified()
             ->search($request->search)
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated(
             $logs->through(fn($log) => new VerificationLogResource($log)),
@@ -120,7 +120,7 @@ class VerificationController extends Controller
             ->rejected()
             ->search($request->search)
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated(
             $logs->through(fn($log) => new VerificationLogResource($log)),
@@ -149,7 +149,7 @@ class VerificationController extends Controller
         $items = RegistrationBlacklist::with('blacklistedByUser:id,uuid,first_name,last_name')
             ->when($request->type, fn($q) => $q->where('identifier_type', $request->type))
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated(
             $items->through(fn($item) => new BlacklistResource($item)),

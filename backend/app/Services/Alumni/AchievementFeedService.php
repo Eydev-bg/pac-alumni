@@ -18,11 +18,17 @@ class AchievementFeedService
         return AchievementFeed::query()
             ->with(['alumniProfile.user', 'alumniProfile.graduate.course'])
             ->where(function ($q) use ($profile) {
-                $q->where('is_public', true)
+                // Public achievements, but only from alumni who are directory-visible.
+                $q->where(function ($inner) {
+                    $inner->where('is_public', true)
+                        ->whereHas('alumniProfile', fn ($ap) => $ap->where('is_directory_visible', true));
+                })
+                    // The requesting alumni ALWAYS sees their own entries, regardless
+                    // of their own visibility setting.
                     ->orWhere('alumni_profile_id', $profile->id);
             })
             ->latest()
-            ->paginate($filters['per_page'] ?? 15);
+            ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
     }
 
     /**

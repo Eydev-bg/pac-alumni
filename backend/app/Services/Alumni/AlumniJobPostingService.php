@@ -18,7 +18,7 @@ class AlumniJobPostingService
             ->when($filters['search'] ?? null, fn ($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->orderByDesc('published_at')
-            ->paginate($filters['per_page'] ?? 15);
+            ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
     }
 
     /**

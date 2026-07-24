@@ -55,6 +55,27 @@ class MessageService
             throw \App\Exceptions\DomainException::forbidden('You can only message fellow alumni.');
         }
 
+        // Respect the directory opt-out: a hidden alumnus cannot be cold-messaged.
+        // EXCEPTION: if a conversation already exists between the two (started while
+        // the recipient was visible), allow continuing it. Normalize the ids the
+        // same way firstOrCreateBetween does so we match the single canonical row.
+        [$one, $two] = $user->id < $recipient->id
+            ? [$user->id, $recipient->id]
+            : [$recipient->id, $user->id];
+
+        $hasExistingConversation = Conversation::query()
+            ->where('participant_one_id', $one)
+            ->where('participant_two_id', $two)
+            ->exists();
+
+        if (!$hasExistingConversation) {
+            $profile = $recipient->alumniProfile;
+            if (!$profile || !$profile->is_directory_visible) {
+                // Same 404 as a non-existent user — never reveal a hidden profile exists.
+                throw \App\Exceptions\DomainException::notFound('Recipient not found.');
+            }
+        }
+
         $conversation = Conversation::firstOrCreateBetween($user->id, $recipient->id);
         $conversation->load(['participantOne', 'participantTwo', 'latestMessage']);
 
@@ -130,6 +151,9 @@ class MessageService
             ->byRole(UserRole::ALUMNI)
             ->active()
             ->where('id', '!=', $user->id)
+            // Respect the directory opt-out: alumni who hid themselves must not
+            // be surfaced as message recipients.
+            ->whereHas('alumniProfile', fn ($q) => $q->where('is_directory_visible', true))
             ->search($search)
             ->with('alumniProfile.graduate.course')
             ->orderBy('first_name')

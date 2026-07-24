@@ -22,7 +22,7 @@ class EmailLogController extends Controller
             ->when($request->type, fn($q) => $q->where('type', $request->type))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 20));
+            ->paginate(min($request->integer('per_page', 20), 100));
 
         return $this->paginated($logs, 'Email logs.');
     }

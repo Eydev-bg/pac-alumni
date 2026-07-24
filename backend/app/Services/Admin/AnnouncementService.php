@@ -25,7 +25,7 @@ class AnnouncementService
             ->when($filters['search'] ?? null, fn ($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->latest()
-            ->paginate($filters['per_page'] ?? 15);
+            ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
     }
 
     /**
