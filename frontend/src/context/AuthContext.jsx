@@ -89,6 +89,19 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
+   * Merge a partial update into the cached user without a network call.
+   * Use after a mutation whose response already contains the new values.
+   */
+  const updateUser = useCallback((partial) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...partial };
+      tokenStorage.setUser(next);
+      return next;
+    });
+  }, []);
+
+  /**
    * Check if user has a specific role.
    */
  const hasRole = useCallback(
@@ -113,8 +126,9 @@ export function AuthProvider({ children }) {
       logout,
       hasRole,
       refreshUser,
+      updateUser,
     }),
-    [user, token, loading, login, logout, hasRole, refreshUser],
+    [user, token, loading, login, logout, hasRole, refreshUser, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

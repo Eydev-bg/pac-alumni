@@ -28,6 +28,14 @@ const authApi = {
   resetPassword(data) {
     return api.post('/auth/reset-password', data);
   },
+
+  updateProfile(data) {
+    return api.put('/auth/profile', data);
+  },
+
+  changePassword(data) {
+    return api.put('/auth/change-password', data);
+  },
 };
 
 export default authApi;
