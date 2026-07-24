@@ -53,7 +53,7 @@ export default function CollegeAnalyticsTab() {
         );
         setDepartments(collegeDepts);
       })
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments filter:", err); });
   }, []);
 
   // Load courses when department changes

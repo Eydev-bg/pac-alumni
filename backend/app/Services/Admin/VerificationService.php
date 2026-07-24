@@ -23,6 +23,7 @@ class VerificationService
 {
     public function __construct(
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     /**
@@ -143,6 +144,7 @@ class VerificationService
         // cache. Invalidate AFTER the transaction commits so a rolled-back
         // registration never clears a still-accurate cache.
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $result;
     }

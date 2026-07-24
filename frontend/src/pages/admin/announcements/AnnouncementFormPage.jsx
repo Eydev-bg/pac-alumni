@@ -130,15 +130,15 @@ export default function AnnouncementFormPage() {
     adminApi
       .getAllDepartments({ education_level: "college" })
       .then((res) => setDepartments(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments selector:", err); });
     adminApi
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses selector:", err); });
     adminApi
       .getGraduationYears()
       .then((res) => setYears(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years selector:", err); });
   }, []);
 
   // ── Load existing announcement when editing ──

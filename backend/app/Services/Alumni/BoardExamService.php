@@ -20,6 +20,7 @@ use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
 use App\Services\Admin\DashboardCacheService;
+use App\Services\Admin\GraduateTracerService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -28,6 +29,7 @@ class BoardExamService
 {
     public function __construct(
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     /**
@@ -188,6 +190,7 @@ class BoardExamService
         // short-TTL cache. Invalidate AFTER the transaction commits so a
         // rolled-back write never clears a still-accurate cache.
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $result;
     }

@@ -98,6 +98,7 @@ Overall assessment: **Not production-ready as-is, but close.** The Critical item
 - **Evidence**: `find tests -name '*Test.php'` → 9 substantive files vs. 28 services / 34 controllers.
 
 ### [H-004] `GraduateTracerService::clearCache()` is a no-op — tracer analytics stay stale 10-15 min with no invalidation
+> ✅ **FIXED** — 2026-07-24 — Implemented `clearCache()` to drop the entire `tracer:*` namespace in a driver-aware sweep (DELETE by key prefix on the database store, `keys()`+`del()` on Redis, TTL fallback otherwise), and wired `clearCache()` into all write paths alongside the dashboard flush: `EmploymentService`, `BoardExamService`, `VerificationService`, `UserService::updateStatus`, all 5 `GraduateService` sites, and `GraduateImportService` (injected via constructor).
 - **Category**: Data Integrity
 - **Side**: Admin
 - **Files**: `backend/app/Services/Admin/GraduateTracerService.php:29-33,100-102,306-316`
@@ -106,6 +107,7 @@ Overall assessment: **Not production-ready as-is, but close.** The Critical item
 - **Evidence**: method body is entirely commented-out guidance; `grep -rn clearCache app/` → no callers.
 
 ### [H-005] Frontend swallows API errors silently with empty `.catch(() => {})` — no error state shown to the user
+> ✅ **FIXED** — 2026-07-24 — Replaced all 31 empty `.catch(() => {})` sites across 16 files with dev-visible `console.error` logging. All 31 turned out to be non-critical fetches (Category B): reference/filter-dropdown loads, background polls/unread-counts, secondary dashboard preview widgets (which already degrade to graceful empty states), and a fail-open registration pre-check. The primary user-blocking loads already had `setError`/`toast.error` handling, so there were no silent Category A/C sites to convert.
 - **Category**: Error Handling
 - **Side**: Both
 - **Files** (representative, not exhaustive): `context/UnreadContext.jsx:28,35,39`; `components/layout/Header.jsx:147`; `context/MaintenanceContext.jsx:28`; `pages/admin/alumni/AlumniSearchPage.jsx:46,50,54`; `pages/admin/analytics/CollegeAnalyticsTab.jsx:56`; `pages/admin/analytics/LevelAnalyticsTab.jsx:56` (grep shows many more).
@@ -114,6 +116,7 @@ Overall assessment: **Not production-ready as-is, but close.** The Critical item
 - **Evidence**: `UnreadContext.jsx:28` `.catch(() => {});` around the unread-count poll.
 
 ### [H-006] N+1 in `AnalyticsService::collegeGraduates()` department breakdown
+> ✅ **FIXED** — 2026-07-24 — Replaced the per-department loop (1 + 2N queries) with a single grouped query over college graduates keyed by (department_id, course_id) plus one courses lookup, then aggregated to department level in PHP. Same output shape, same OR-attribution semantics (direct department_id OR course-department, counted under both when they differ), same filters (college scope, year range, soft-delete exclusion). Query count for the breakdown is now constant (3) regardless of department count.
 - **Category**: Performance
 - **Side**: Admin
 - **Files**: `backend/app/Services/Admin/AnalyticsService.php:74-99`

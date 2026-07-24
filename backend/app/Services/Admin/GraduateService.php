@@ -14,6 +14,7 @@ class GraduateService
         protected GraduateRepositoryInterface $graduateRepo,
         protected AuditLogService $auditLog,
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     public function list(
@@ -94,6 +95,7 @@ class GraduateService
         $updated = $this->graduateRepo->update($graduate, $data);
 
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $updated;
     }
@@ -116,6 +118,7 @@ class GraduateService
         $this->auditLog->record(AuditAction::GRADUATE_DELETED, $graduate, $snapshot);
 
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
     }
 
     /**
@@ -133,6 +136,7 @@ class GraduateService
         $this->auditLog->record(AuditAction::GRADUATE_RESTORED, $restored, $snapshot);
 
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $restored;
     }
@@ -153,6 +157,7 @@ class GraduateService
         $this->auditLog->record(AuditAction::GRADUATE_FORCE_DELETED, $graduate, $snapshot);
 
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
     }
 
     /**
@@ -177,6 +182,7 @@ class GraduateService
         ]);
 
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $count;
     }

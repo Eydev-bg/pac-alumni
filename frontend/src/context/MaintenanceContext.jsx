@@ -25,7 +25,7 @@ export function MaintenanceProvider({ children }) {
         setEnabled(res.data.data.is_enabled);
         setMessage(res.data.data.message || "");
       })
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Maintenance status check failed:", err); })
       .finally(() => {
         if (active) setLoading(false);
       });

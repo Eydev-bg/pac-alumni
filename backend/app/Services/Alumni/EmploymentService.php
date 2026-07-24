@@ -21,12 +21,14 @@ use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
 use App\Services\Admin\DashboardCacheService;
+use App\Services\Admin\GraduateTracerService;
 use Illuminate\Support\Facades\DB;
 
 class EmploymentService
 {
     public function __construct(
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     /**
@@ -204,6 +206,7 @@ class EmploymentService
         // are served from a short-TTL cache. Invalidate AFTER the transaction
         // commits so a rolled-back write never clears a still-accurate cache.
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $result;
     }

@@ -71,32 +71,56 @@ class AnalyticsService
             ->orderBy('graduation_year', 'desc')
             ->get();
 
-        // By department — get all college departments and count graduates for each
+        // By department — get all active college departments.
         $collegeDepts = \App\Models\Department::where('education_level', 'college')
             ->where('status', 'active')
             ->orderBy('name')
             ->get();
 
-        $byDepartment = $collegeDepts->map(function ($dept) use ($yearFrom, $yearTo) {
-            $courseIds = $dept->courses()->pluck('id')->toArray();
-            $count = Graduate::where('education_level', EducationLevel::COLLEGE)
-                ->when($yearFrom, fn($q) => $q->where('graduation_year', '>=', $yearFrom))
-                ->when($yearTo, fn($q) => $q->where('graduation_year', '<=', $yearTo))
-                ->where(function ($q) use ($dept, $courseIds) {
-                    $q->where('department_id', $dept->id);
-                    if (!empty($courseIds)) {
-                        $q->orWhereIn('course_id', $courseIds);
-                    }
-                })
-                ->count();
+        // Count graduates per department in a CONSTANT number of queries
+        // (previously 1 + 2N: a courses pluck + a count per department). A
+        // graduate is attributed to a department when its department_id matches
+        // OR its course belongs to that department — the SAME OR semantics as
+        // before, so a graduate whose direct department and course-department
+        // differ is still counted under BOTH (deduped once per department).
+        $courseDeptMap = \App\Models\Course::pluck('department_id', 'id'); // course_id => department_id
+        $collegeDeptIds = $collegeDepts->pluck('id')->all();
 
-            return [
-                'id' => $dept->id,
-                'name' => $dept->name,
-                'code' => $dept->code,
-                'count' => $count,
-            ];
-        })->filter(fn($d) => $d['count'] > 0)->sortByDesc('count')->values()->toArray();
+        // One grouped query over the (year-filtered) college graduates.
+        // SoftDeletes global scope still excludes trashed graduates, as before.
+        $grouped = Graduate::where('education_level', EducationLevel::COLLEGE)
+            ->when($yearFrom, fn($q) => $q->where('graduation_year', '>=', $yearFrom))
+            ->when($yearTo, fn($q) => $q->where('graduation_year', '<=', $yearTo))
+            ->selectRaw('department_id, course_id, COUNT(*) as cnt')
+            ->groupBy('department_id', 'course_id')
+            ->get();
+
+        // Tally each group's count into every active-college department it maps
+        // to. Using a keyed set per group dedupes the direct + course-department
+        // match so a single graduate is never double-counted within one dept.
+        $deptTotals = array_fill_keys($collegeDeptIds, 0);
+        foreach ($grouped as $row) {
+            $targets = [];
+            if ($row->department_id !== null) {
+                $targets[$row->department_id] = true;
+            }
+            $courseDeptId = $row->course_id !== null ? ($courseDeptMap[$row->course_id] ?? null) : null;
+            if ($courseDeptId !== null) {
+                $targets[$courseDeptId] = true;
+            }
+            foreach (array_keys($targets) as $deptId) {
+                if (array_key_exists($deptId, $deptTotals)) {
+                    $deptTotals[$deptId] += (int) $row->cnt;
+                }
+            }
+        }
+
+        $byDepartment = $collegeDepts->map(fn($dept) => [
+            'id' => $dept->id,
+            'name' => $dept->name,
+            'code' => $dept->code,
+            'count' => $deptTotals[$dept->id] ?? 0,
+        ])->filter(fn($d) => $d['count'] > 0)->sortByDesc('count')->values()->toArray();
 
         return [
             'total_graduates' => $total,

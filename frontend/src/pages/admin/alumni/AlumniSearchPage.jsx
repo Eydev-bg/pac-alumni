@@ -43,15 +43,15 @@ export default function AlumniSearchPage() {
         );
         setDepartments(collegeDepts);
       })
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments filter:", err); });
     adminApi
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses filter:", err); });
     adminApi
       .getGraduationYears("college")
       .then((res) => setYears(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years filter:", err); });
   }, []);
 
   const filteredCourses = deptFilter

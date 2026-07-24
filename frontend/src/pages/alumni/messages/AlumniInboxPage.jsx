@@ -74,7 +74,7 @@ export default function AlumniInboxPage() {
     alumniApi
       .getConversations()
       .then((res) => setConversations(res.data.data ?? []))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Conversations load/poll failed:", err); })
       .finally(() => setLoading(false));
   }, []);
 

@@ -1364,7 +1364,7 @@ function CompletionSection({ reloadSignal }) {
     alumniApi
       .getProfileCompletion()
       .then((res) => active && setData(res.data.data))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Profile completion section failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;

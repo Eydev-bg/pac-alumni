@@ -51,7 +51,7 @@ export default function CourseFormModal({
         );
         setDepartments(collegeDepts);
       })
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments:", err); });
   }, []);
 
   const lockedDept = lockedDepartmentId

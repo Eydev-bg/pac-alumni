@@ -53,7 +53,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
     adminApi
       .getGraduationYears(level)
       .then((res) => setYears(res.data.data || []))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years filter:", err); });
   }, [level]);
 
   useEffect(() => {

@@ -24,6 +24,7 @@ class GraduateImportService
     public function __construct(
         protected GraduateRepositoryInterface $graduateRepo,
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     /**
@@ -229,8 +230,9 @@ class GraduateImportService
                 'completed_at' => now(),
             ]);
 
-            // Freshly imported graduates change dashboard aggregates.
+            // Freshly imported graduates change dashboard + tracer aggregates.
             $this->dashboardCache->flush();
+            $this->tracerService->clearCache();
         } catch (\Throwable $e) {
             if (DB::transactionLevel() > 0) {
                 DB::rollBack();

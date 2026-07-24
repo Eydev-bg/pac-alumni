@@ -25,7 +25,7 @@ export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
     adminApi
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses:", err); });
   }, []);
 
   const handleChange = (field, value) => {

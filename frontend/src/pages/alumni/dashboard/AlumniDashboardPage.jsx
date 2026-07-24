@@ -266,7 +266,7 @@ function LatestAnnouncement() {
     alumniApi
       .getAnnouncements({ per_page: 1 })
       .then((res) => active && setItem(res.data.data?.[0] ?? null))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Latest announcement widget failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -335,7 +335,7 @@ function UpcomingEvent() {
           .sort((a, b) => new Date(a.start_datetime) - new Date(b.start_datetime));
         setEvent(upcoming[0] ?? items[0] ?? null);
       })
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Upcoming event widget failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -404,7 +404,7 @@ function LatestJobs() {
     alumniApi
       .getJobPostings({ per_page: 3 })
       .then((res) => active && setItems(res.data.data ?? []))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Latest jobs widget failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -492,7 +492,7 @@ function NotificationsPanel() {
     alumniApi
       .getNotifications({ per_page: 4 })
       .then((res) => active && setItems(res.data.data ?? []))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Notifications panel widget failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
@@ -580,7 +580,7 @@ function RecentMessages() {
     alumniApi
       .getConversations()
       .then((res) => active && setItems((res.data.data ?? []).slice(0, 4)))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Recent messages widget failed:", err); })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;

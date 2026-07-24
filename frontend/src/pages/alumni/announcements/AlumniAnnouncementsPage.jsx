@@ -43,7 +43,7 @@ export default function AlumniAnnouncementsPage() {
     alumniApi
       .getAnnouncementsUnreadCount()
       .then((res) => setUnread(res.data.data.unread_count))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Announcements unread count failed:", err); });
   }, []);
 
   const load = useCallback(() => {

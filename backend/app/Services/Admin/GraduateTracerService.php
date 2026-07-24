@@ -302,16 +302,38 @@ class GraduateTracerService
      *
      * Call this when graduate data changes (import, registration,
      * employment update) to ensure fresh analytics.
+     *
+     * getTracerSummary() and getTracerByCourse() cache under dynamically
+     * parameterized keys — "tracer:summary:{courseId}:{batchYear}" and
+     * "tracer:by-course:{departmentId}:{courseId}:{yearFrom}:{yearTo}" — so the
+     * individual keys cannot be enumerated. Instead we drop the entire
+     * "tracer:" namespace in a driver-aware sweep. These are the only keys that
+     * carry that prefix, so nothing else (e.g. the dashboard cache) is affected.
      */
     public static function clearCache(): void
     {
-        // In production, use Cache::tags() for more surgical invalidation.
-        // For simplicity, we flush keys matching the tracer prefix.
-        // If using Redis: Cache::getRedis()->keys('tracer:*') → delete
-        // If using file/database cache, this is a safe no-op approach:
+        $store = Cache::getStore();
 
-        // The cached items will expire naturally (10-15 min TTL).
-        // For immediate invalidation on data changes, clear specific keys:
-        // Cache::forget("tracer:summary:{$courseId}:{$batchYear}");
+        // Redis: pattern-delete every key under the tracer namespace at once.
+        if ($store instanceof \Illuminate\Cache\RedisStore) {
+            $connection = $store->connection();
+            $keys = $connection->keys($store->getPrefix() . 'tracer:*');
+            if (!empty($keys)) {
+                $connection->del($keys);
+            }
+            return;
+        }
+
+        // Database (the default store): one row per key in the cache table,
+        // stored as <prefix><key>. Delete every tracer: row in one statement.
+        if ($store instanceof \Illuminate\Cache\DatabaseStore) {
+            DB::table(config('cache.stores.database.table', 'cache'))
+                ->where('key', 'like', $store->getPrefix() . 'tracer:%')
+                ->delete();
+            return;
+        }
+
+        // Other stores (array/file/etc.) can't be pattern-scanned reliably; the
+        // tracer keys expire naturally within their 10-15 minute TTL.
     }
 }

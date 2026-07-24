@@ -25,18 +25,18 @@ export function UnreadProvider({ children }) {
     alumniApi
       .getMessagesUnreadCount()
       .then((res) => setMessages(res.data.data.unread_count))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Unread messages poll failed:", err); });
   }, []);
 
   const fetchAnnouncementsAndNotifications = useCallback(() => {
     alumniApi
       .getAnnouncementsUnreadCount()
       .then((res) => setAnnouncements(res.data.data.unread_count))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Unread announcements poll failed:", err); });
     alumniApi
       .getUnreadCount()
       .then((res) => setNotifications(res.data.data.count ?? 0))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Unread notifications poll failed:", err); });
   }, []);
 
   useVisibilityPolling(fetchMessages, 30000, { leading: true });

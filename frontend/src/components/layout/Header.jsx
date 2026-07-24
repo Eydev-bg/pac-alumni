@@ -144,7 +144,7 @@ export default function Header({
       .then((res) => {
         if (active) setRecent(res.data.data);
       })
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Bell notifications preview failed:", err); })
       .finally(() => active && setRecentLoading(false));
     return () => {
       active = false;

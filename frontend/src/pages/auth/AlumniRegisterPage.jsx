@@ -103,7 +103,7 @@ export default function AlumniRegisterPage() {
       .then((res) => {
         if (!res.data.data.is_open) setRegistrationClosed(true);
       })
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Registration status check failed:", err); })
       .finally(() => setCheckingStatus(false));
   }, []);
 

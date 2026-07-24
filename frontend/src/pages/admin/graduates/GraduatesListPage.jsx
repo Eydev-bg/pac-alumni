@@ -135,15 +135,15 @@ export default function GraduatesListPage() {
     adminApi
       .getAllDepartments()
       .then((res) => setDepartments(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments filter:", err); });
     adminApi
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses filter:", err); });
     adminApi
       .getGraduationYears()
       .then((res) => setYears(res.data.data))
-      .catch(() => {});
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years filter:", err); });
   }, []);
 
   const selectedDept = departments.find(

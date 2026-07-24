@@ -19,6 +19,7 @@ class UserService
         protected AuditLogService $auditLog,
         protected PasswordResetService $passwordResetService,
         protected DashboardCacheService $dashboardCache,
+        protected GraduateTracerService $tracerService,
     ) {}
 
     /**
@@ -143,6 +144,7 @@ class UserService
         // Activating/suspending/deactivating a user changes the admin dashboard
         // active/inactive alumni counts, which are served from a short-TTL cache.
         $this->dashboardCache->flush();
+        $this->tracerService->clearCache();
 
         return $updated;
     }

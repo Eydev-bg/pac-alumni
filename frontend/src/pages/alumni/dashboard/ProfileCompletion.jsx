@@ -22,7 +22,7 @@ export default function ProfileCompletion() {
     alumniApi
       .getProfileCompletion()
       .then((res) => setData(res.data.data))
-      .catch(() => {})
+      .catch((err) => { if (import.meta.env.DEV) console.error("Profile completion widget failed:", err); })
       .finally(() => setLoading(false));
   }, []);
 
