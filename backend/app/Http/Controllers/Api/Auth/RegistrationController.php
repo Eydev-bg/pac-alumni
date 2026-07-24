@@ -39,18 +39,14 @@ class RegistrationController extends Controller
      */
     public function verify(AlumniRegisterRequest $request): JsonResponse
     {
-        try {
-            $result = $this->verificationService->verifyAndRegister(
-                $request->validated(),
-                $request->ip()
-            );
+        $result = $this->verificationService->verifyAndRegister(
+            $request->validated(),
+            $request->ip()
+        );
 
-            return $this->created([
-                'alumni_id' => $result['alumni_id'],
-                'message' => 'Registration successful! Your alumni account has been created.',
-            ], 'Verification successful. Account created.');
-        } catch (\Exception $e) {
-            return $this->error($e->getMessage(), $e->getCode() ?: 422);
-        }
+        return $this->created([
+            'alumni_id' => $result['alumni_id'],
+            'message' => 'Registration successful! Your alumni account has been created.',
+        ], 'Verification successful. Account created.');
     }
 }
