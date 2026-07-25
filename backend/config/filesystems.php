@@ -17,6 +17,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Uploads Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk used for alumni file uploads (profile pictures, board-exam
+    | proofs). Defaults to 'public' (local) for dev/backward compatibility;
+    | set STORAGE_DISK=supabase in production for S3-compatible object storage.
+    | Resolved centrally via App\Services\StorageService.
+    |
+    */
+
+    'uploads_disk' => env('STORAGE_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
@@ -58,6 +72,22 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+        ],
+
+        // Supabase Storage exposes an S3-compatible API. Uses the s3 driver
+        // pointed at Supabase's endpoint. `use_path_style_endpoint` MUST be
+        // true, and `throw` surfaces storage failures as exceptions instead
+        // of silent false returns.
+        'supabase' => [
+            'driver' => 's3',
+            'key' => env('SUPABASE_STORAGE_KEY'),
+            'secret' => env('SUPABASE_STORAGE_SECRET'),
+            'region' => env('SUPABASE_STORAGE_REGION', 'ap-south-1'),
+            'bucket' => env('SUPABASE_STORAGE_BUCKET', 'alumni-files'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://lhlygngsmfnpymdqsxoj.supabase.co/storage/v1/s3'),
+            'use_path_style_endpoint' => true,
+            'throw' => true,
+            'visibility' => 'private',
         ],
 
     ],

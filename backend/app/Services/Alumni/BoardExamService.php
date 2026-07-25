@@ -21,9 +21,9 @@ use App\Models\ProfileActivityLog;
 use App\Models\User;
 use App\Services\Admin\DashboardCacheService;
 use App\Services\Admin\GraduateTracerService;
+use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class BoardExamService
 {
@@ -114,8 +114,9 @@ class BoardExamService
             $proofPath = null;
             if ($proofFile) {
                 $filename = 'board_exam_proofs/' . $user->uuid . '_' . time() . '.' . $proofFile->getClientOriginalExtension();
-                $proofFile->storeAs('', $filename, 'public');
-                $proofPath = '/storage/' . $filename;
+                // Store on the configured disk; persist the RAW path (URL is
+                // resolved at read time by the BoardExamRecord accessor).
+                $proofPath = StorageService::store($proofFile, $filename);
             }
 
             // ─── Append-and-supersede (Phase 3.4) ────────────

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Services\StorageService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -118,6 +120,34 @@ class User extends Authenticatable implements JWTSubject
     }
 
     // ─── Accessors ───────────────────────────────────────────
+
+    /**
+     * Resolve the stored profile picture path to a servable URL at read time.
+     *
+     * The DB now stores a raw path (e.g. "profile_pictures/uuid.jpg"). Signed
+     * cloud URLs expire, so we resolve on read via StorageService. Handles:
+     *   1. Legacy "/storage/..." values — kept as-is on local; converted to a
+     *      signed URL when running on cloud storage.
+     *   2. New raw paths — resolved via StorageService::url().
+     *   3. Full "http..." URLs (legacy) — passed through untouched.
+     */
+    protected function profilePicture(): Attribute
+    {
+        return Attribute::make(
+            get: function (?string $value) {
+                if (!$value) return null;
+                if (str_starts_with($value, 'http')) return $value;
+                if (str_starts_with($value, '/storage/')) {
+                    if (StorageService::diskName() !== 'public') {
+                        return StorageService::url(substr($value, strlen('/storage/')));
+                    }
+                    return $value;
+                }
+                return StorageService::url($value);
+            },
+        );
+    }
+
     public function getFullNameAttribute(): string
     {
         $parts = array_filter([

@@ -13,9 +13,9 @@ use App\Models\AlumniProfile;
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
 use App\Models\User;
+use App\Services\StorageService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class AlumniService
 {
@@ -211,7 +211,7 @@ class AlumniService
 
     /**
      * Upload profile picture.
-     * SECURITY: Stores in public disk with unique filename.
+     * SECURITY: Stores on the configured upload disk with a unique filename.
      */
     public function uploadProfilePicture(User $user, UploadedFile $file): array
     {
@@ -222,12 +222,13 @@ class AlumniService
             // Generate unique filename
             $filename = 'profile_pictures/' . $user->uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
 
-            // Store the file
-            $path = $file->storeAs('', $filename, 'public');
+            // Store the file on the configured disk (local 'public' or cloud)
+            $path = StorageService::store($file, $filename);
 
-            // Update user record (+ track profile activity for reminders)
+            // Persist the RAW storage path — the URL (which may be a short-lived
+            // signed cloud URL) is resolved at read time by the model accessor.
             $user->update([
-                'profile_picture' => '/storage/' . $path,
+                'profile_picture' => $path,
                 'last_profile_update_at' => now(),
             ]);
 
@@ -276,14 +277,17 @@ class AlumniService
 
     /**
      * Delete the physical profile picture file from storage.
+     *
+     * Reads the RAW stored value (not the accessor-resolved URL) so cloud
+     * paths — which the accessor would turn into an un-parseable signed URL —
+     * still delete correctly. StorageService handles both legacy /storage/
+     * paths and new raw paths.
      */
     private function deleteProfilePictureFile(User $user): void
     {
-        if ($user->profile_picture) {
-            $path = str_replace('/storage/', '', $user->profile_picture);
-            if (Storage::disk('public')->exists($path)) {
-                Storage::disk('public')->delete($path);
-            }
+        $stored = $user->getRawOriginal('profile_picture');
+        if ($stored) {
+            StorageService::delete($stored);
         }
     }
 }
