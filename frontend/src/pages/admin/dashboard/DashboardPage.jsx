@@ -191,7 +191,7 @@ export default function DashboardPage() {
           {/* Employment Type Distribution — horizontal bar (full width) */}
           <EmploymentTypeChart
             data={employment_type_breakdown?.types ?? employment_type_breakdown}
-            totalAlumni={employment_type_breakdown?.total ?? stats.registered_alumni || 1}
+            totalAlumni={(employment_type_breakdown?.total ?? stats.registered_alumni) || 1}
           />
 
           {/* Employment Overview pie — left */}
