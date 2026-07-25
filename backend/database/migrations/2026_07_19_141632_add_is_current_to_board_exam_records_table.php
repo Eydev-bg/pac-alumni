@@ -21,7 +21,7 @@ return new class extends Migration
         // updated table directly in an uncorrelated subquery without wrapping it).
         DB::statement(<<<'SQL'
             UPDATE board_exam_records
-            SET is_current = 1
+            SET is_current = true
             WHERE id IN (
                 SELECT max_id FROM (
                     SELECT MAX(id) AS max_id
