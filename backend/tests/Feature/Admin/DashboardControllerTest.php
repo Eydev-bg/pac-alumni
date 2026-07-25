@@ -96,7 +96,7 @@ class DashboardControllerTest extends TestCase
                         'employment_total_profiles',
                     ],
                     'graduates_per_year',
-                    'employment_type_breakdown',
+                    'employment_type_breakdown' => ['types', 'total'],
                 ],
             ]);
     }
@@ -184,13 +184,38 @@ class DashboardControllerTest extends TestCase
 
         $this->actingAsAdmin();
 
-        $breakdown = collect(
-            $this->getJson('/api/admin/dashboard')->assertOk()->json('data.employment_type_breakdown')
-        );
+        $response = $this->getJson('/api/admin/dashboard')->assertOk()->json('data.employment_type_breakdown');
+        $breakdown = collect($response['types']);
 
         $this->assertSame(1, $breakdown->sum('count'));
         $this->assertSame(0, $breakdown->firstWhere('type', EmploymentType::LOCAL->label())['count']);
         $this->assertSame(1, $breakdown->firstWhere('type', EmploymentType::INTERNATIONAL->label())['count']);
+        // Total tracks the (trashed-excluded) type counts.
+        $this->assertSame(1, $response['total']);
+    }
+
+    /** H-007 regression guard — breakdown total reconciles with its own data. */
+    public function test_employment_type_breakdown_includes_total(): void
+    {
+        $g1 = Graduate::factory()->create();
+        $g2 = Graduate::factory()->create();
+
+        EmploymentRecordFactory::new()->type(EmploymentType::LOCAL)->create(['graduate_id' => $g1->id]);
+        EmploymentRecordFactory::new()->type(EmploymentType::INTERNATIONAL)->create(['graduate_id' => $g2->id]);
+
+        $this->actingAsAdmin();
+
+        $breakdown = $this->getJson('/api/admin/dashboard')
+            ->assertOk()
+            ->json('data.employment_type_breakdown');
+
+        // New shape: { types: [...], total: N }
+        $this->assertArrayHasKey('total', $breakdown);
+        $this->assertArrayHasKey('types', $breakdown);
+        $this->assertSame(2, $breakdown['total']);
+        $this->assertSame(2, collect($breakdown['types'])->sum('count'));
+        // Total must equal sum of type counts (self-consistent)
+        $this->assertSame($breakdown['total'], collect($breakdown['types'])->sum('count'));
     }
 
     /** C-001 behaviour test — the payload is cached until explicitly flushed. */

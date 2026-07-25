@@ -190,8 +190,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Employment Type Distribution — horizontal bar (full width) */}
           <EmploymentTypeChart
-            data={employment_type_breakdown}
-            totalAlumni={stats.registered_alumni || 1}
+            data={employment_type_breakdown?.types ?? employment_type_breakdown}
+            totalAlumni={employment_type_breakdown?.total ?? stats.registered_alumni || 1}
           />
 
           {/* Employment Overview pie — left */}

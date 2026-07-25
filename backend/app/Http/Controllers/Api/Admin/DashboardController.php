@@ -166,7 +166,7 @@ class DashboardController extends Controller
             ->groupBy('employment_type')
             ->pluck('count', 'employment_type');
 
-        return collect(EmploymentType::cases())
+        $types = collect(EmploymentType::cases())
             ->map(fn (EmploymentType $type) => [
                 'type' => $type->label(),
                 'count' => (int) ($counts[$type->value] ?? 0),
@@ -174,6 +174,16 @@ class DashboardController extends Controller
             ->sortByDesc('count')
             ->values()
             ->toArray();
+
+        // H-007: expose a self-consistent total so the frontend bar chart uses
+        // the breakdown's own denominator instead of a value from a different
+        // source table (registered_alumni / alumni_profiles).
+        $total = array_sum(array_column($types, 'count'));
+
+        return [
+            'types' => $types,
+            'total' => $total,
+        ];
     }
 
     /**
