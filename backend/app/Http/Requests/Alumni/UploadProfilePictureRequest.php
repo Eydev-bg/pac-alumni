@@ -23,8 +23,8 @@ class UploadProfilePictureRequest extends FormRequest
                 'required',
                 'image',
                 'mimes:jpeg,jpg,png,webp',
-                'max:2048', // 2MB max
-                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000',
+                'max:5120', // 5MB max
+                'dimensions:min_width=50,min_height=50,max_width=5000,max_height=5000',
             ],
         ];
     }
@@ -35,8 +35,8 @@ class UploadProfilePictureRequest extends FormRequest
             'profile_picture.required'   => 'Please select an image to upload.',
             'profile_picture.image'      => 'The file must be an image.',
             'profile_picture.mimes'      => 'Only JPEG, JPG, PNG, and WebP images are accepted.',
-            'profile_picture.max'        => 'Image must not exceed 2MB.',
-            'profile_picture.dimensions' => 'Image must be between 100x100 and 2000x2000 pixels.',
+            'profile_picture.max'        => 'Image must not exceed 5MB.',
+            'profile_picture.dimensions' => 'Image must be between 50x50 and 5000x5000 pixels.',
         ];
     }
 }
