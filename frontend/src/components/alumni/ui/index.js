@@ -7,3 +7,4 @@ export { default as ProgressBar } from "./ProgressBar";
 export { default as Avatar } from "./Avatar";
 export { default as Badge } from "./Badge";
 export { default as Select } from "./Select";
+export { default as ImageLightbox } from "./ImageLightbox";

@@ -11,9 +11,10 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
+import { storageUrl } from "../../../utils/formatters";
 import Pagination from "../../../components/common/Pagination";
 import EmptyState from "../../../components/common/EmptyState";
-import { AlumniCard, Avatar, Badge, IconChip, Select } from "../../../components/alumni/ui";
+import { AlumniCard, Avatar, Badge, IconChip, Select, ImageLightbox } from "../../../components/alumni/ui";
 import {
   HiOutlineUserGroup,
   HiOutlineMapPin,
@@ -54,6 +55,7 @@ export default function AlumniDirectoryPage() {
     courses: [],
   });
   const [showFilters, setShowFilters] = useState(false); // mobile toggle
+  const [lightboxSrc, setLightboxSrc] = useState(null);
 
   // Page + search + filters all live in the URL so refresh and back/forward
   // restore the exact list state (mirrors the Career Center page).
@@ -277,18 +279,31 @@ export default function AlumniDirectoryPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {items.map((alumni) => (
-              <DirectoryCard key={alumni.uuid} alumni={alumni} />
+              <DirectoryCard
+                key={alumni.uuid}
+                alumni={alumni}
+                onViewPicture={setLightboxSrc}
+              />
             ))}
           </div>
           <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
+      )}
+
+      {/* Full-size profile picture viewer */}
+      {lightboxSrc && (
+        <ImageLightbox
+          src={lightboxSrc}
+          alt="Profile"
+          onClose={() => setLightboxSrc(null)}
+        />
       )}
     </div>
   );
 }
 
 // ─── Directory card ─────────────────────────────────────────
-function DirectoryCard({ alumni }) {
+function DirectoryCard({ alumni, onViewPicture }) {
   const empColor =
     alumni.employment_status === "employed"
       ? "green"
@@ -305,11 +320,26 @@ function DirectoryCard({ alumni }) {
   return (
     <AlumniCard className="flex flex-col">
       <div className="flex items-start gap-3">
-        <Avatar
-          src={alumni.profile_picture}
-          name={alumni.full_name}
-          size="lg"
-        />
+        {alumni.profile_picture ? (
+          <button
+            type="button"
+            onClick={() => onViewPicture(storageUrl(alumni.profile_picture))}
+            title="Click to view full size"
+            className="rounded-full flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+          >
+            <Avatar
+              src={alumni.profile_picture}
+              name={alumni.full_name}
+              size="lg"
+            />
+          </button>
+        ) : (
+          <Avatar
+            src={alumni.profile_picture}
+            name={alumni.full_name}
+            size="lg"
+          />
+        )}
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold text-slate-800 truncate">
             {alumni.full_name}

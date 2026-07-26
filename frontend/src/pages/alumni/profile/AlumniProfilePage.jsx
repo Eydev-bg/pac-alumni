@@ -26,6 +26,7 @@ import {
   Avatar,
   Badge,
   Select,
+  ImageLightbox,
 } from "../../../components/alumni/ui";
 import {
   HiOutlineUser,
@@ -93,6 +94,8 @@ export default function AlumniProfilePage() {
   // Picture state
   const [uploadingPicture, setUploadingPicture] = useState(false);
   const [removingPicture, setRemovingPicture] = useState(false);
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const fileInputRef = useRef(null);
 
   // Bumped whenever any section saves, so the completion card re-fetches.
@@ -182,7 +185,6 @@ export default function AlumniProfilePage() {
   };
 
   const handleRemovePicture = async () => {
-    if (!confirm("Remove your profile picture?")) return;
     setRemovingPicture(true);
     try {
       await alumniApi.removeProfilePicture();
@@ -193,6 +195,7 @@ export default function AlumniProfilePage() {
       toast.error("Failed to remove picture.");
     } finally {
       setRemovingPicture(false);
+      setShowRemoveConfirm(false);
     }
   };
 
@@ -244,7 +247,9 @@ export default function AlumniProfilePage() {
               <img
                 src={storageUrl(personal.profile_picture)}
                 alt={personal.full_name}
-                className="w-24 h-24 rounded-full object-cover border border-slate-200"
+                onClick={() => setLightboxSrc(storageUrl(personal.profile_picture))}
+                title="Click to view full size"
+                className="w-24 h-24 rounded-full object-cover border border-slate-200 cursor-pointer"
               />
             ) : (
               <Avatar
@@ -254,12 +259,12 @@ export default function AlumniProfilePage() {
               />
             )}
 
-            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPicture}
                 title="Upload photo"
-                className="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors disabled:opacity-50"
+                className="pointer-events-auto w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors disabled:opacity-50"
               >
                 {uploadingPicture ? (
                   <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -269,10 +274,10 @@ export default function AlumniProfilePage() {
               </button>
               {personal.profile_picture && (
                 <button
-                  onClick={handleRemovePicture}
+                  onClick={() => setShowRemoveConfirm(true)}
                   disabled={removingPicture}
                   title="Remove photo"
-                  className="w-9 h-9 rounded-xl bg-red-500/30 hover:bg-red-500/50 flex items-center justify-center transition-colors disabled:opacity-50"
+                  className="pointer-events-auto w-9 h-9 rounded-xl bg-red-500/30 hover:bg-red-500/50 flex items-center justify-center transition-colors disabled:opacity-50"
                 >
                   {removingPicture ? (
                     <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -324,6 +329,41 @@ export default function AlumniProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* Inline remove-picture confirmation (replaces the browser confirm). */}
+        {showRemoveConfirm && (
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+            <p className="flex-1 text-sm font-medium text-red-700 text-center sm:text-left">
+              Remove your profile picture?
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <button
+                onClick={handleRemovePicture}
+                disabled={removingPicture}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-[0.78rem] font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              >
+                {removingPicture ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Removing…
+                  </>
+                ) : (
+                  <>
+                    <HiOutlineTrash className="w-4 h-4" />
+                    Yes, Remove
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setShowRemoveConfirm(false)}
+                disabled={removingPicture}
+                className={btnGhost}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </AlumniCard>
 
       {/* ══ A) Personal Information ══ */}
@@ -473,6 +513,15 @@ export default function AlumniProfilePage() {
 
       {/* ══ E) Profile Completion ══ */}
       <CompletionSection reloadSignal={reloadSignal} />
+
+      {/* Full-size profile picture viewer */}
+      {lightboxSrc && (
+        <ImageLightbox
+          src={lightboxSrc}
+          alt={personal.full_name}
+          onClose={() => setLightboxSrc(null)}
+        />
+      )}
     </div>
   );
 }

@@ -11,7 +11,7 @@ import { Link, useParams, useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useToast } from "../../../hooks/useToast";
 import { storageUrl } from "../../../utils/formatters";
-import { AlumniCard, Avatar, Badge, SectionHeader } from "../../../components/alumni/ui";
+import { AlumniCard, Avatar, Badge, SectionHeader, ImageLightbox } from "../../../components/alumni/ui";
 import {
   HiOutlineArrowLeft,
   HiOutlineChatBubbleLeftRight,
@@ -34,6 +34,7 @@ export default function AlumniPublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [messaging, setMessaging] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -120,7 +121,9 @@ export default function AlumniPublicProfilePage() {
             <img
               src={storageUrl(personal.profile_picture)}
               alt={personal.full_name}
-              className="w-24 h-24 rounded-2xl object-cover border border-slate-200 flex-shrink-0"
+              onClick={() => setLightboxSrc(storageUrl(personal.profile_picture))}
+              title="Click to view full size"
+              className="w-24 h-24 rounded-2xl object-cover border border-slate-200 flex-shrink-0 cursor-pointer"
             />
           ) : (
             <Avatar
@@ -247,6 +250,15 @@ export default function AlumniPublicProfilePage() {
           </p>
         )}
       </AlumniCard>
+
+      {/* Full-size profile picture viewer */}
+      {lightboxSrc && (
+        <ImageLightbox
+          src={lightboxSrc}
+          alt={personal.full_name}
+          onClose={() => setLightboxSrc(null)}
+        />
+      )}
     </div>
   );
 }
