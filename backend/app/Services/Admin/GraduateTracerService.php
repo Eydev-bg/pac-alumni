@@ -261,7 +261,11 @@ class GraduateTracerService
             ->where('g.education_level', EducationLevel::COLLEGE->value)
             ->select([
                 'g.alumni_id_number',
-                DB::raw("CONCAT_WS(' ', g.first_name, g.middle_name, g.last_name, g.suffix) as full_name"),
+                // Portable full-name concatenation that skips NULL parts and
+                // collapses the separator. Uses standard SQL (COALESCE + || +
+                // TRIM) so it works on PostgreSQL (production) and SQLite
+                // (tests) alike, unlike the MySQL-specific CONCAT_WS().
+                DB::raw("TRIM(COALESCE(g.first_name || ' ', '') || COALESCE(g.middle_name || ' ', '') || COALESCE(g.last_name || ' ', '') || COALESCE(g.suffix, '')) as full_name"),
                 'c.code as course',
                 'd.code as department',
                 'g.graduation_year as batch_year',

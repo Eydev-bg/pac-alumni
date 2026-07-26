@@ -182,11 +182,16 @@ class Graduate extends Model
         $prefix = sprintf('PAC-%d-', $graduationYear);
 
         // Find the highest existing sequence number for this year.
-        // We extract the numeric suffix from any alumni_id_number that
-        // matches our format and use the max as the basis for the next one.
+        // We extract the numeric suffix from any matching alumni_id_number and
+        // compute the max in PHP. Doing this driver-side avoids database-
+        // specific string functions (MySQL SUBSTRING_INDEX / CAST AS UNSIGNED
+        // vs PostgreSQL SPLIT_PART / CAST AS INTEGER) and works on any driver,
+        // including SQLite used in tests. The matching set is small (scoped to
+        // a single graduation year), so parsing in PHP is inexpensive.
         $lastNumber = static::where('alumni_id_number', 'LIKE', $prefix . '%')
-            ->selectRaw("MAX(CAST(SUBSTRING_INDEX(alumni_id_number, '-', -1) AS UNSIGNED)) as last_num")
-            ->value('last_num') ?? 0;
+            ->pluck('alumni_id_number')
+            ->map(fn ($id) => (int) substr((string) $id, strlen($prefix)))
+            ->max() ?? 0;
 
         return sprintf('%s%04d', $prefix, $lastNumber + 1);
     }
