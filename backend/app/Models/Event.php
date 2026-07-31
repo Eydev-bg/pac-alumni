@@ -6,6 +6,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ResolvesStorageUrl;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Event extends Model
 {
     use SoftDeletes;
+    use ResolvesStorageUrl;
 
     protected $fillable = [
         'admin_id',
@@ -41,6 +44,17 @@ class Event extends Model
             'start_datetime' => 'datetime',
             'end_datetime'   => 'datetime',
         ];
+    }
+
+    // ─── Accessors ───────────────────────────────────────────
+
+    /**
+     * Resolve the stored banner image path to a servable URL at read time.
+     * See ResolvesStorageUrl for why this can't just be the raw DB value.
+     */
+    protected function image(): Attribute
+    {
+        return $this->storageUrlAttribute();
     }
 
     // ─── Relationships ───────────────────────────────────────
@@ -85,19 +99,19 @@ class Event extends Model
             $q->where('target_type', 'all');
 
             if (!empty($context['education_level'])) {
-                $q->orWhere(fn ($s) => $s->where('target_type', 'education_level')
+                $q->orWhere(fn($s) => $s->where('target_type', 'education_level')
                     ->where('target_value', (string) $context['education_level']));
             }
             if (!empty($context['department_id'])) {
-                $q->orWhere(fn ($s) => $s->where('target_type', 'department')
+                $q->orWhere(fn($s) => $s->where('target_type', 'department')
                     ->where('target_value', (string) $context['department_id']));
             }
             if (!empty($context['course_id'])) {
-                $q->orWhere(fn ($s) => $s->where('target_type', 'course')
+                $q->orWhere(fn($s) => $s->where('target_type', 'course')
                     ->where('target_value', (string) $context['course_id']));
             }
             if (!empty($context['graduation_year'])) {
-                $q->orWhere(fn ($s) => $s->where('target_type', 'batch')
+                $q->orWhere(fn($s) => $s->where('target_type', 'batch')
                     ->where('target_value', (string) $context['graduation_year']));
             }
         });

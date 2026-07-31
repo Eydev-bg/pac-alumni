@@ -55,7 +55,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -84,7 +84,7 @@ return [
             'secret' => env('SUPABASE_STORAGE_SECRET'),
             'region' => env('SUPABASE_STORAGE_REGION', 'ap-south-1'),
             'bucket' => env('SUPABASE_STORAGE_BUCKET', 'alumni-files'),
-            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://lhlygngsmfnpymdqsxoj.supabase.co/storage/v1/s3'),
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT', 'https://lhlygngsmfnpymdqsxoj.storage.supabase.co/storage/v1/s3'),
             'use_path_style_endpoint' => true,
             'throw' => true,
             'visibility' => 'private',
