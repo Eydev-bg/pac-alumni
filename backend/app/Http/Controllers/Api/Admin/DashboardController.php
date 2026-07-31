@@ -35,7 +35,7 @@ class DashboardController extends Controller
      */
     public function index(): JsonResponse
     {
-        $data = $this->dashboardCache->remember(fn () => [
+        $data = $this->dashboardCache->remember(fn() => [
             'stats' => $this->getStatsCards(),
             'graduates_per_year' => $this->getGraduatesPerYear(),
             'employment_type_breakdown' => $this->getEmploymentTypeBreakdown(),
@@ -66,7 +66,7 @@ class DashboardController extends Controller
             ->where('status', 'active')
             ->where(function ($query) {
                 $query->whereNull('last_login_at')
-                      ->orWhere('last_login_at', '<', now()->subDays(30));
+                    ->orWhere('last_login_at', '<', now()->subDays(30));
             })
             ->count();
 
@@ -92,6 +92,9 @@ class DashboardController extends Controller
         )->count();
         $employed = $this->excludeTrashedGraduates(
             AlumniProfile::where('employment_status', 'employed')
+        )->count();
+        $unemployed = $this->excludeTrashedGraduates(
+            AlumniProfile::where('employment_status', 'unemployed')
         )->count();
         $employmentRate = $totalProfiles > 0 ? round(($employed / $totalProfiles) * 100, 1) : 0;
 
@@ -124,6 +127,7 @@ class DashboardController extends Controller
             'employment_known_count' => $totalProfiles,
             'employment_total_profiles' => $this->excludeTrashedGraduates(AlumniProfile::query())->count(),
             'employed_count' => $employed,
+            'unemployed_count' => $unemployed,
             'new_alumni_this_month' => $thisMonthAlumni,
             'alumni_growth_percent' => $alumniGrowth,
         ];
@@ -167,7 +171,7 @@ class DashboardController extends Controller
             ->pluck('count', 'employment_type');
 
         $types = collect(EmploymentType::cases())
-            ->map(fn (EmploymentType $type) => [
+            ->map(fn(EmploymentType $type) => [
                 'type' => $type->label(),
                 'count' => (int) ($counts[$type->value] ?? 0),
             ])

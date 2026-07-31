@@ -7,6 +7,7 @@ use App\Jobs\SendContentPublishedEmails;
 use App\Models\ContentEmailLog;
 use App\Models\Event;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -21,12 +22,12 @@ class EventService
         return Event::query()
             ->with('admin:id,uuid,first_name,middle_name,last_name,suffix')
             ->withCount([
-                'rsvps as going_count'      => fn ($q) => $q->where('status', RsvpStatus::GOING->value),
-                'rsvps as interested_count' => fn ($q) => $q->where('status', RsvpStatus::INTERESTED->value),
+                'rsvps as going_count'      => fn($q) => $q->where('status', RsvpStatus::GOING->value),
+                'rsvps as interested_count' => fn($q) => $q->where('status', RsvpStatus::INTERESTED->value),
             ])
-            ->when($filters['target_type'] ?? null, fn ($q, $type) => $q->where('target_type', $type))
-            ->when(isset($filters['is_published']), fn ($q) => $q->where('is_published', (bool) $filters['is_published']))
-            ->when($filters['search'] ?? null, fn ($q, $search) => $q->search($search))
+            ->when($filters['target_type'] ?? null, fn($q, $type) => $q->where('target_type', $type))
+            ->when(isset($filters['is_published']), fn($q) => $q->where('is_published', (bool) $filters['is_published']))
+            ->when($filters['search'] ?? null, fn($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
@@ -39,8 +40,8 @@ class EventService
     {
         $event = Event::with('admin:id,uuid,first_name,middle_name,last_name,suffix')
             ->withCount([
-                'rsvps as going_count'      => fn ($q) => $q->where('status', RsvpStatus::GOING->value),
-                'rsvps as interested_count' => fn ($q) => $q->where('status', RsvpStatus::INTERESTED->value),
+                'rsvps as going_count'      => fn($q) => $q->where('status', RsvpStatus::GOING->value),
+                'rsvps as interested_count' => fn($q) => $q->where('status', RsvpStatus::INTERESTED->value),
             ])
             ->find($id);
 
@@ -49,6 +50,18 @@ class EventService
         }
 
         return $event;
+    }
+
+    /**
+     * The admin form sends naive local wall-clock strings (e.g. "2026-07-31T08:30")
+     * meant as Asia/Manila time, but the app timezone is UTC — so without this
+     * conversion, Eloquent's `datetime` cast would store 08:30 as if it were
+     * already UTC, shifting the displayed time by +8 hours. Convert explicitly
+     * before it ever reaches the model/cast.
+     */
+    private function toUtc(string $localDatetime): string
+    {
+        return Carbon::parse($localDatetime, 'Asia/Manila')->utc()->format('Y-m-d H:i:s');
     }
 
     /**
@@ -65,8 +78,8 @@ class EventService
             'image'          => $image ? $this->storeFile($image, 'events', $admin->uuid) : null,
             'target_type'    => $data['target_type'],
             'target_value'   => $data['target_type'] === 'all' ? null : ($data['target_value'] ?? null),
-            'start_datetime' => $data['start_datetime'],
-            'end_datetime'   => $data['end_datetime'],
+            'start_datetime' => $this->toUtc($data['start_datetime']),
+            'end_datetime'   => $this->toUtc($data['end_datetime']),
             'location'       => $data['location'],
             'is_pinned'      => (bool) ($data['is_pinned'] ?? false),
             'is_published'   => $publish,
@@ -102,6 +115,15 @@ class EventService
         // Clear the target value when switching back to "all".
         if (($data['target_type'] ?? $event->target_type) === 'all') {
             $data['target_value'] = null;
+        }
+
+        // Same Manila → UTC conversion as create() — only when the field is
+        // actually being changed in this request.
+        if (isset($data['start_datetime'])) {
+            $data['start_datetime'] = $this->toUtc($data['start_datetime']);
+        }
+        if (isset($data['end_datetime'])) {
+            $data['end_datetime'] = $this->toUtc($data['end_datetime']);
         }
 
         $event->update($data);

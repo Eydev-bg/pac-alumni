@@ -58,8 +58,11 @@ export default function DashboardPage() {
     const { stats } = data;
     const employedCount = stats.employed_count || 0;
     const totalAlumni = stats.registered_alumni ?? 0;
-    const unemployedCount = 0;
-    const unknownCount = Math.max(0, totalAlumni - employedCount - unemployedCount);
+    const unemployedCount = stats.unemployed_count || 0;
+    const unknownCount = Math.max(
+      0,
+      totalAlumni - employedCount - unemployedCount,
+    );
 
     const breakdown = [
       { name: "Employed", value: employedCount },
@@ -179,7 +182,9 @@ export default function DashboardPage() {
                   <span className="text-slate-300 font-semibold tabular-nums">
                     {stats.inactive_alumni ?? 0}
                   </span>
-                  <span className="text-slate-500">inactive (30+ days no login)</span>
+                  <span className="text-slate-500">
+                    inactive (30+ days no login)
+                  </span>
                 </div>
               </div>
             }
@@ -191,7 +196,9 @@ export default function DashboardPage() {
           {/* Employment Type Distribution — horizontal bar (full width) */}
           <EmploymentTypeChart
             data={employment_type_breakdown?.types ?? employment_type_breakdown}
-            totalAlumni={(employment_type_breakdown?.total ?? stats.registered_alumni) || 1}
+            totalAlumni={
+              (employment_type_breakdown?.total ?? stats.registered_alumni) || 1
+            }
           />
 
           {/* Employment Overview pie — left */}

@@ -76,7 +76,9 @@ export default function AlumniJobDetailPage() {
         <BackLink onClick={() => navigate("/alumni/careers")} />
         <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
           <HiOutlineBriefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-500">{error || "Job opening not found."}</p>
+          <p className="text-sm text-slate-500">
+            {error || "Job opening not found."}
+          </p>
         </div>
       </div>
     );
@@ -163,7 +165,7 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Description ━━━━ */}
       <Section icon={HiOutlineBriefcase} title="Job Description">
         <div
-          className="job-content text-sm text-slate-600 leading-relaxed"
+          className="job-content text-sm text-slate-600 leading-relaxed break-words"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(job.description),
           }}
@@ -173,7 +175,7 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Requirements ━━━━ */}
       {job.requirements && (
         <Section icon={HiOutlineClipboardDocumentList} title="Requirements">
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line break-words">
             {job.requirements}
           </p>
         </Section>
@@ -182,20 +184,21 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Benefits ━━━━ */}
       {job.benefits && (
         <Section icon={HiOutlineGift} title="Benefits">
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line break-words">
             {job.benefits}
           </p>
         </Section>
       )}
 
       {/* Minimal styling for rendered rich-text content (light surface). */}
-      <style>{`.job-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#1e293b}
+      <style>{`.job-content{overflow-wrap:break-word;word-break:break-word}
+        .job-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#1e293b}
         .job-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0;color:#1e293b}
         .job-content h3{font-size:1rem;font-weight:600;margin:.5rem 0;color:#1e293b}
         .job-content p{margin:.5rem 0}
         .job-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .job-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .job-content a{color:#2563eb;text-decoration:underline}
+        .job-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
         .job-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}`}</style>
     </div>
   );
@@ -214,7 +217,7 @@ function BackLink({ onClick }) {
 
 function Section({ icon: Icon, title, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 min-w-0">
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-4 h-4 text-blue-600" />
         <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">

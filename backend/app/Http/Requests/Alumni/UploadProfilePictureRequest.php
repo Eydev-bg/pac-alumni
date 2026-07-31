@@ -21,10 +21,9 @@ class UploadProfilePictureRequest extends FormRequest
         return [
             'profile_picture' => [
                 'required',
-                'image',
-                'mimes:jpeg,jpg,png,webp',
+                'file',
+                'mimes:jpeg,jpg,png,webp,heic,heif',
                 'max:5120', // 5MB max
-                'dimensions:min_width=50,min_height=50,max_width=5000,max_height=5000',
             ],
         ];
     }
@@ -32,11 +31,10 @@ class UploadProfilePictureRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'profile_picture.required'   => 'Please select an image to upload.',
-            'profile_picture.image'      => 'The file must be an image.',
-            'profile_picture.mimes'      => 'Only JPEG, JPG, PNG, and WebP images are accepted.',
-            'profile_picture.max'        => 'Image must not exceed 5MB.',
-            'profile_picture.dimensions' => 'Image must be between 50x50 and 5000x5000 pixels.',
+            'profile_picture.required' => 'Please select an image to upload.',
+            'profile_picture.file'     => 'The upload must be a valid file.',
+            'profile_picture.mimes'    => 'Only JPEG, PNG, WebP, or iPhone (HEIC) images are accepted.',
+            'profile_picture.max'      => 'Image must not exceed 5MB.',
         ];
     }
 }

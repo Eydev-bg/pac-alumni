@@ -16,6 +16,7 @@ import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
+import { prepareImageForUpload } from "../../../utils/imageCompression";
 import StatusBadge from "../../../components/common/StatusBadge";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import {
@@ -157,18 +158,39 @@ export default function AlumniProfilePage() {
   const handlePictureSelect = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Only JPEG, PNG, and WebP images are accepted.");
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("Image must not exceed 2MB.");
+    const validTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+    ];
+    const isHeicByName = /\.(heic|heif)$/i.test(file.name || "");
+    if (!validTypes.includes(file.type) && !isHeicByName) {
+      toast.error(
+        "Only JPEG, PNG, WebP, or iPhone (HEIC) images are accepted.",
+      );
       return;
     }
     setUploadingPicture(true);
     try {
-      await alumniApi.uploadProfilePicture(file);
+      // Pipeline: convert HEIC (iPhone photos) to JPEG first, since almost
+      // no browser besides Safari can preview/decode HEIC — then downscale
+      // + re-encode if the result is still over 2MB. Modern phone cameras
+      // (iPhone, Honor, Samsung, etc.) easily exceed 2MB straight out of
+      // the camera, so only actually-oversized images get compressed.
+      const uploadFile = await prepareImageForUpload(file, 2 * 1024 * 1024, {
+        maxWidth: 1600,
+        maxHeight: 1600,
+        quality: 0.8,
+        mimeType: file.type === "image/png" ? "image/png" : "image/jpeg",
+      });
+      if (uploadFile.size > 2 * 1024 * 1024) {
+        toast.error("Image must not exceed 2MB, even after compression.");
+        return;
+      }
+      await alumniApi.uploadProfilePicture(uploadFile);
       await loadProfile();
       bump();
       toast.success("Profile picture updated!");
@@ -247,7 +269,9 @@ export default function AlumniProfilePage() {
               <img
                 src={storageUrl(personal.profile_picture)}
                 alt={personal.full_name}
-                onClick={() => setLightboxSrc(storageUrl(personal.profile_picture))}
+                onClick={() =>
+                  setLightboxSrc(storageUrl(personal.profile_picture))
+                }
                 title="Click to view full size"
                 className="w-24 h-24 rounded-full object-cover border border-slate-200 cursor-pointer"
               />
@@ -422,7 +446,10 @@ export default function AlumniProfilePage() {
                   autoComplete="street-address"
                   value={editForm.current_location}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, current_location: e.target.value })
+                    setEditForm({
+                      ...editForm,
+                      current_location: e.target.value,
+                    })
                   }
                   placeholder="e.g. Cagayan de Oro City, Philippines"
                   maxLength={300}
@@ -456,7 +483,11 @@ export default function AlumniProfilePage() {
             </div>
 
             <div className="flex items-center gap-2 pt-1">
-              <button onClick={handleSave} disabled={saving} className={btnPrimary}>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className={btnPrimary}
+              >
                 {saving ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -469,17 +500,37 @@ export default function AlumniProfilePage() {
                   </>
                 )}
               </button>
-              <button onClick={handleCancel} disabled={saving} className={btnGhost}>
+              <button
+                onClick={handleCancel}
+                disabled={saving}
+                className={btnGhost}
+              >
                 Cancel
               </button>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-            <InfoRow icon={HiOutlineUser} label="Full Name" value={personal.full_name} />
-            <InfoRow icon={HiOutlineEnvelope} label="Email Address" value={personal.email} />
-            <InfoRow icon={HiOutlinePhone} label="Contact Number" value={personal.phone || "Not set"} />
-            <InfoRow icon={HiOutlineMapPin} label="Current Location" value={location.current_location || "Not set"} />
+            <InfoRow
+              icon={HiOutlineUser}
+              label="Full Name"
+              value={personal.full_name}
+            />
+            <InfoRow
+              icon={HiOutlineEnvelope}
+              label="Email Address"
+              value={personal.email}
+            />
+            <InfoRow
+              icon={HiOutlinePhone}
+              label="Contact Number"
+              value={personal.phone || "Not set"}
+            />
+            <InfoRow
+              icon={HiOutlineMapPin}
+              label="Current Location"
+              value={location.current_location || "Not set"}
+            />
           </div>
         )}
       </AlumniCard>
@@ -488,15 +539,36 @@ export default function AlumniProfilePage() {
       <AlumniCard>
         <SectionHeader title="Academic Information" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
-          <InfoRow icon={HiOutlineIdentification} label="Alumni ID" value={academic.alumni_id || "Not yet assigned"} highlight />
+          <InfoRow
+            icon={HiOutlineIdentification}
+            label="Alumni ID"
+            value={academic.alumni_id || "Not yet assigned"}
+            highlight
+          />
           <InfoRow
             icon={HiOutlineAcademicCap}
             label="Course"
-            value={academic.course_code ? `${academic.course_code} — ${academic.course_name}` : "N/A"}
+            value={
+              academic.course_code
+                ? `${academic.course_code} — ${academic.course_name}`
+                : "N/A"
+            }
           />
-          <InfoRow icon={HiOutlineBuildingOffice2} label="Department" value={academic.department_name || "N/A"} />
-          <InfoRow icon={HiOutlineCalendarDays} label="Graduation Year / Batch" value={academic.graduation_year} />
-          <InfoRow icon={HiOutlineClipboardDocumentCheck} label="Board Program" value={academic.is_board_program ? "Yes" : "No"} />
+          <InfoRow
+            icon={HiOutlineBuildingOffice2}
+            label="Department"
+            value={academic.department_name || "N/A"}
+          />
+          <InfoRow
+            icon={HiOutlineCalendarDays}
+            label="Graduation Year / Batch"
+            value={academic.graduation_year}
+          />
+          <InfoRow
+            icon={HiOutlineClipboardDocumentCheck}
+            label="Board Program"
+            value={academic.is_board_program ? "Yes" : "No"}
+          />
         </div>
       </AlumniCard>
 
@@ -722,7 +794,10 @@ function EmploymentSection({ onSaved }) {
         title="Employment Information"
         action={
           !loading && current ? (
-            <EmploymentBadge value={current.employment_status} label={current.employment_label} />
+            <EmploymentBadge
+              value={current.employment_status}
+              label={current.employment_label}
+            />
           ) : null
         }
       />
@@ -740,8 +815,12 @@ function EmploymentSection({ onSaved }) {
                   <p className="text-[0.65rem] text-emerald-600 font-semibold uppercase tracking-wider">
                     Current Position
                   </p>
-                  <h4 className="text-sm font-bold text-emerald-900">{currentJob.job_title}</h4>
-                  <p className="text-xs text-emerald-700 font-medium">{currentJob.company_name}</p>
+                  <h4 className="text-sm font-bold text-emerald-900">
+                    {currentJob.job_title}
+                  </h4>
+                  <p className="text-xs text-emerald-700 font-medium">
+                    {currentJob.company_name}
+                  </p>
                   <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[0.7rem] text-emerald-600">
                     <span className="inline-flex items-center gap-1">
                       <HiOutlineBriefcase className="w-3.5 h-3.5" />
@@ -781,13 +860,25 @@ function EmploymentSection({ onSaved }) {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Status choice */}
               <div>
-                <label id="emp-status-label" className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
+                <label
+                  id="emp-status-label"
+                  className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
+                >
                   Employment Status <span className="text-red-400">*</span>
                 </label>
-                <div role="group" aria-labelledby="emp-status-label" className="grid grid-cols-2 gap-3">
+                <div
+                  role="group"
+                  aria-labelledby="emp-status-label"
+                  className="grid grid-cols-2 gap-3"
+                >
                   <StatusChoice
                     active={formData.employment_status === "employed"}
-                    onClick={() => setFormData({ ...formData, employment_status: "employed" })}
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        employment_status: "employed",
+                      })
+                    }
                     icon={HiOutlineBriefcase}
                     tone="emerald"
                     title="Employed"
@@ -813,7 +904,9 @@ function EmploymentSection({ onSaved }) {
                   />
                 </div>
                 {fieldErrors.employment_status && (
-                  <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.employment_status[0]}</p>
+                  <p className="text-[0.68rem] text-red-500 mt-1">
+                    {fieldErrors.employment_status[0]}
+                  </p>
                 )}
               </div>
 
@@ -832,14 +925,21 @@ function EmploymentSection({ onSaved }) {
                           type="text"
                           autoComplete="organization"
                           value={formData.company_name}
-                          onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              company_name: e.target.value,
+                            })
+                          }
                           placeholder="e.g. Accenture Philippines"
                           maxLength={300}
                           className={`${inputBase} pl-10 pr-3 ${fieldErrors.company_name ? inputErr : inputOk}`}
                         />
                       </div>
                       {fieldErrors.company_name && (
-                        <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.company_name[0]}</p>
+                        <p className="text-[0.68rem] text-red-500 mt-1">
+                          {fieldErrors.company_name[0]}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -853,14 +953,21 @@ function EmploymentSection({ onSaved }) {
                           type="text"
                           autoComplete="organization-title"
                           value={formData.job_title}
-                          onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              job_title: e.target.value,
+                            })
+                          }
                           placeholder="e.g. Software Engineer"
                           maxLength={200}
                           className={`${inputBase} pl-10 pr-3 ${fieldErrors.job_title ? inputErr : inputOk}`}
                         />
                       </div>
                       {fieldErrors.job_title && (
-                        <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.job_title[0]}</p>
+                        <p className="text-[0.68rem] text-red-500 mt-1">
+                          {fieldErrors.job_title[0]}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -873,20 +980,31 @@ function EmploymentSection({ onSaved }) {
                       <Select
                         id="emp-industry"
                         value={formData.industry}
-                        onChange={(v) => setFormData({ ...formData, industry: v })}
-                        options={industries.map((ind) => ({ value: ind, label: ind }))}
+                        onChange={(v) =>
+                          setFormData({ ...formData, industry: v })
+                        }
+                        options={industries.map((ind) => ({
+                          value: ind,
+                          label: ind,
+                        }))}
                         placeholder="Select industry"
                         error={!!fieldErrors.industry}
                       />
                       {fieldErrors.industry && (
-                        <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.industry[0]}</p>
+                        <p className="text-[0.68rem] text-red-500 mt-1">
+                          {fieldErrors.industry[0]}
+                        </p>
                       )}
                     </div>
                     <div>
                       <label id="emp-type-label" className={fieldLabel}>
                         Employment Type <span className="text-red-400">*</span>
                       </label>
-                      <div role="group" aria-labelledby="emp-type-label" className="grid grid-cols-3 gap-2">
+                      <div
+                        role="group"
+                        aria-labelledby="emp-type-label"
+                        className="grid grid-cols-3 gap-2"
+                      >
                         {Object.entries(typeConfig).map(([key, cfg]) => {
                           const TypeIcon = cfg.icon;
                           const selected = formData.employment_type === key;
@@ -894,13 +1012,24 @@ function EmploymentSection({ onSaved }) {
                             <button
                               key={key}
                               type="button"
-                              onClick={() => setFormData({ ...formData, employment_type: key })}
+                              onClick={() =>
+                                setFormData({
+                                  ...formData,
+                                  employment_type: key,
+                                })
+                              }
                               className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
-                                selected ? "border-blue-500 bg-blue-50 shadow-sm" : "border-slate-200 hover:border-slate-300 bg-white"
+                                selected
+                                  ? "border-blue-500 bg-blue-50 shadow-sm"
+                                  : "border-slate-200 hover:border-slate-300 bg-white"
                               }`}
                             >
-                              <TypeIcon className={`w-4 h-4 ${selected ? "text-blue-600" : "text-slate-400"}`} />
-                              <span className={`text-[0.65rem] font-semibold ${selected ? "text-blue-700" : "text-slate-500"}`}>
+                              <TypeIcon
+                                className={`w-4 h-4 ${selected ? "text-blue-600" : "text-slate-400"}`}
+                              />
+                              <span
+                                className={`text-[0.65rem] font-semibold ${selected ? "text-blue-700" : "text-slate-500"}`}
+                              >
                                 {cfg.label}
                               </span>
                             </button>
@@ -908,14 +1037,19 @@ function EmploymentSection({ onSaved }) {
                         })}
                       </div>
                       {fieldErrors.employment_type && (
-                        <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.employment_type[0]}</p>
+                        <p className="text-[0.68rem] text-red-500 mt-1">
+                          {fieldErrors.employment_type[0]}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="max-w-xs">
                     <label htmlFor="emp-start" className={fieldLabel}>
-                      Start Date <span className="text-slate-400 font-normal">(Optional)</span>
+                      Start Date{" "}
+                      <span className="text-slate-400 font-normal">
+                        (Optional)
+                      </span>
                     </label>
                     <div className="relative">
                       <HiOutlineCalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -923,7 +1057,12 @@ function EmploymentSection({ onSaved }) {
                         id="emp-start"
                         type="date"
                         value={formData.start_date}
-                        onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            start_date: e.target.value,
+                          })
+                        }
                         max={new Date().toISOString().split("T")[0]}
                         className={`${inputBase} pl-10 pr-3 ${inputOk}`}
                       />
@@ -937,8 +1076,8 @@ function EmploymentSection({ onSaved }) {
                   <div className="flex items-start gap-2.5">
                     <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[0.72rem] text-blue-700 leading-relaxed">
-                      The <span className="font-semibold">Admin</span> team will be automatically
-                      notified about this employment update.
+                      The <span className="font-semibold">Admin</span> team will
+                      be automatically notified about this employment update.
                     </p>
                   </div>
                 </div>
@@ -951,7 +1090,10 @@ function EmploymentSection({ onSaved }) {
                     submitting ||
                     !formData.employment_status ||
                     (formData.employment_status === "employed" &&
-                      (!formData.company_name || !formData.job_title || !formData.industry || !formData.employment_type))
+                      (!formData.company_name ||
+                        !formData.job_title ||
+                        !formData.industry ||
+                        !formData.employment_type))
                   }
                   className={btnPrimary}
                 >
@@ -967,7 +1109,12 @@ function EmploymentSection({ onSaved }) {
                     </>
                   )}
                 </button>
-                <button type="button" onClick={cancelForm} disabled={submitting} className={btnGhost}>
+                <button
+                  type="button"
+                  onClick={cancelForm}
+                  disabled={submitting}
+                  className={btnGhost}
+                >
                   Cancel
                 </button>
               </div>
@@ -982,7 +1129,8 @@ function EmploymentSection({ onSaved }) {
               </p>
               <div className="divide-y divide-slate-100">
                 {records.map((rec) => {
-                  const tc = typeConfig[rec.employment_type] || typeConfig.local;
+                  const tc =
+                    typeConfig[rec.employment_type] || typeConfig.local;
                   const TypeIcon = tc.icon;
                   return (
                     <div key={rec.id} className="py-3 flex items-start gap-3">
@@ -993,10 +1141,16 @@ function EmploymentSection({ onSaved }) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h5 className="text-[0.82rem] font-bold text-slate-800">{rec.job_title}</h5>
-                          {rec.is_current && <Badge color="green">Current</Badge>}
+                          <h5 className="text-[0.82rem] font-bold text-slate-800">
+                            {rec.job_title}
+                          </h5>
+                          {rec.is_current && (
+                            <Badge color="green">Current</Badge>
+                          )}
                         </div>
-                        <p className="text-[0.78rem] text-slate-600 font-medium">{rec.company_name}</p>
+                        <p className="text-[0.78rem] text-slate-600 font-medium">
+                          {rec.company_name}
+                        </p>
                         <div className="flex flex-wrap items-center gap-3 mt-1 text-[0.7rem] text-slate-500">
                           <span className="inline-flex items-center gap-1">
                             <TypeIcon className="w-3.5 h-3.5" />
@@ -1013,7 +1167,8 @@ function EmploymentSection({ onSaved }) {
                               {rec.end_date ? (
                                 <>
                                   {" "}
-                                  <HiOutlineChevronRight className="w-3 h-3" /> {formatDateOnly(rec.end_date)}
+                                  <HiOutlineChevronRight className="w-3 h-3" />{" "}
+                                  {formatDateOnly(rec.end_date)}
                                 </>
                               ) : (
                                 <> — Present</>
@@ -1040,15 +1195,25 @@ function StatusChoice({ active, onClick, icon: Icon, tone, title, subtitle }) {
       ? "border-emerald-400 bg-emerald-50"
       : "border-amber-300 bg-amber-50"
     : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50";
-  const iconBg = active ? (tone === "emerald" ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600") : "bg-slate-100 text-slate-400";
-  const titleCls = active ? (tone === "emerald" ? "text-emerald-800" : "text-amber-800") : "text-slate-700";
+  const iconBg = active
+    ? tone === "emerald"
+      ? "bg-emerald-100 text-emerald-600"
+      : "bg-amber-100 text-amber-600"
+    : "bg-slate-100 text-slate-400";
+  const titleCls = active
+    ? tone === "emerald"
+      ? "text-emerald-800"
+      : "text-amber-800"
+    : "text-slate-700";
   return (
     <button
       type="button"
       onClick={onClick}
       className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${toneCls}`}
     >
-      <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
+      <span
+        className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}
+      >
         <Icon className="w-5 h-5" />
       </span>
       <span className="text-left">
@@ -1060,8 +1225,17 @@ function StatusChoice({ active, onClick, icon: Icon, tone, title, subtitle }) {
 }
 
 function EmploymentBadge({ value, label }) {
-  const color = value === "employed" ? "green" : value === "unemployed" ? "orange" : "slate";
-  return <Badge color={color} size="md">{label}</Badge>;
+  const color =
+    value === "employed"
+      ? "green"
+      : value === "unemployed"
+        ? "orange"
+        : "slate";
+  return (
+    <Badge color={color} size="md">
+      {label}
+    </Badge>
+  );
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1103,7 +1277,12 @@ function BoardExamSection({ onSaved }) {
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "application/pdf"];
+    const validTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "application/pdf",
+    ];
     if (!validTypes.includes(file.type)) {
       toast.error("Only JPEG, PNG, or PDF files are accepted.");
       e.target.value = "";
@@ -1137,7 +1316,9 @@ function BoardExamSection({ onSaved }) {
       setFormData({ status: "", exam_year: "" });
       setProofFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-      toast.success("Board exam result submitted successfully! The Admin team has been notified.");
+      toast.success(
+        "Board exam result submitted successfully! The Admin team has been notified.",
+      );
     } catch (err) {
       if (err.response?.status === 422) {
         setFieldErrors(err.response.data.errors || {});
@@ -1167,7 +1348,10 @@ function BoardExamSection({ onSaved }) {
         title="Board Exam Information"
         action={
           !loading && current ? (
-            <StatusBadge status={current.board_status} label={current.board_label} />
+            <StatusBadge
+              status={current.board_status}
+              label={current.board_label}
+            />
           ) : null
         }
       />
@@ -1191,8 +1375,10 @@ function BoardExamSection({ onSaved }) {
                     Congratulations, Licensed Professional!
                   </h4>
                   <p className="text-[0.75rem] text-emerald-600 mt-0.5 leading-relaxed">
-                    You have passed the {course?.board_exam_name || "board exam"}. Your achievement
-                    is recorded. You may still submit additional records if applicable.
+                    You have passed the{" "}
+                    {course?.board_exam_name || "board exam"}. Your achievement
+                    is recorded. You may still submit additional records if
+                    applicable.
                   </p>
                 </div>
               </div>
@@ -1205,7 +1391,9 @@ function BoardExamSection({ onSaved }) {
               className="inline-flex items-center gap-1.5 px-4 py-2 text-[0.75rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
             >
               <HiOutlineClipboardDocumentCheck className="w-4 h-4" />
-              {hasRecords ? "Submit Another Result" : "Record Board Exam Result"}
+              {hasRecords
+                ? "Submit Another Result"
+                : "Record Board Exam Result"}
             </button>
           )}
 
@@ -1227,20 +1415,32 @@ function BoardExamSection({ onSaved }) {
                   type="button"
                   onClick={() => setFormData({ ...formData, status: "passed" })}
                   className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all ${
-                    formData.status === "passed" ? "border-emerald-400 bg-emerald-50 shadow-sm" : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    formData.status === "passed"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                   }`}
                 >
-                  <span className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.status === "passed" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400"}`}>
+                  <span
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.status === "passed" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400"}`}
+                  >
                     <HiOutlineCheckCircle className="w-5 h-5" />
                   </span>
                   <span className="text-left">
-                    <span className={`block text-sm font-bold ${formData.status === "passed" ? "text-emerald-800" : "text-slate-700"}`}>
+                    <span
+                      className={`block text-sm font-bold ${formData.status === "passed" ? "text-emerald-800" : "text-slate-700"}`}
+                    >
                       Passed
                     </span>
-                    <span className="block text-[0.68rem] text-slate-400">I passed the exam</span>
+                    <span className="block text-[0.68rem] text-slate-400">
+                      I passed the exam
+                    </span>
                   </span>
                 </button>
-                {fieldErrors.status && <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.status[0]}</p>}
+                {fieldErrors.status && (
+                  <p className="text-[0.68rem] text-red-500 mt-1">
+                    {fieldErrors.status[0]}
+                  </p>
+                )}
               </div>
 
               {/* Exam Year */}
@@ -1252,18 +1452,26 @@ function BoardExamSection({ onSaved }) {
                   id="board-year"
                   value={formData.exam_year}
                   onChange={(v) => setFormData({ ...formData, exam_year: v })}
-                  options={yearOptions.map((y) => ({ value: String(y), label: String(y) }))}
+                  options={yearOptions.map((y) => ({
+                    value: String(y),
+                    label: String(y),
+                  }))}
                   placeholder="Select exam year"
                   error={!!fieldErrors.exam_year}
                   leftIcon={HiOutlineCalendarDays}
                 />
-                {fieldErrors.exam_year && <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.exam_year[0]}</p>}
+                {fieldErrors.exam_year && (
+                  <p className="text-[0.68rem] text-red-500 mt-1">
+                    {fieldErrors.exam_year[0]}
+                  </p>
+                )}
               </div>
 
               {/* Proof (optional) */}
               <div>
                 <label htmlFor="board-proof" className={fieldLabel}>
-                  Proof Document <span className="text-slate-400 font-normal">(Optional)</span>
+                  Proof Document{" "}
+                  <span className="text-slate-400 font-normal">(Optional)</span>
                 </label>
                 {!proofFile ? (
                   <div
@@ -1273,21 +1481,34 @@ function BoardExamSection({ onSaved }) {
                     <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center mx-auto mb-2 transition-colors">
                       <HiOutlineDocumentArrowUp className="w-5 h-5 text-slate-400 group-hover:text-blue-600" />
                     </div>
-                    <p className="text-[0.78rem] font-medium text-slate-600">Click to upload proof</p>
-                    <p className="text-[0.68rem] text-slate-400 mt-0.5">JPEG, PNG, or PDF — Max 5MB</p>
+                    <p className="text-[0.78rem] font-medium text-slate-600">
+                      Click to upload proof
+                    </p>
+                    <p className="text-[0.68rem] text-slate-400 mt-0.5">
+                      JPEG, PNG, or PDF — Max 5MB
+                    </p>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
-                    <IconChip icon={HiOutlinePaperClip} color="blue" size="sm" />
+                    <IconChip
+                      icon={HiOutlinePaperClip}
+                      color="blue"
+                      size="sm"
+                    />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[0.78rem] font-medium text-slate-700 truncate">{proofFile.name}</p>
-                      <p className="text-[0.65rem] text-slate-400">{(proofFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      <p className="text-[0.78rem] font-medium text-slate-700 truncate">
+                        {proofFile.name}
+                      </p>
+                      <p className="text-[0.65rem] text-slate-400">
+                        {(proofFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
                         setProofFile(null);
-                        if (fileInputRef.current) fileInputRef.current.value = "";
+                        if (fileInputRef.current)
+                          fileInputRef.current.value = "";
                       }}
                       className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
                     >
@@ -1304,21 +1525,32 @@ function BoardExamSection({ onSaved }) {
                   aria-label="Upload proof document"
                   onChange={handleFileSelect}
                 />
-                {fieldErrors.proof_file && <p className="text-[0.68rem] text-red-500 mt-1">{fieldErrors.proof_file[0]}</p>}
+                {fieldErrors.proof_file && (
+                  <p className="text-[0.68rem] text-red-500 mt-1">
+                    {fieldErrors.proof_file[0]}
+                  </p>
+                )}
               </div>
 
               <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
                 <div className="flex items-start gap-2.5">
                   <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <p className="text-[0.72rem] text-blue-700 leading-relaxed">
-                    Upon submission, the <span className="font-semibold">Admin</span> team will be
+                    Upon submission, the{" "}
+                    <span className="font-semibold">Admin</span> team will be
                     automatically notified about your board exam result.
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <button type="submit" disabled={submitting || !formData.status || !formData.exam_year} className={btnPrimary}>
+                <button
+                  type="submit"
+                  disabled={
+                    submitting || !formData.status || !formData.exam_year
+                  }
+                  className={btnPrimary}
+                >
                   {submitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1331,7 +1563,12 @@ function BoardExamSection({ onSaved }) {
                     </>
                   )}
                 </button>
-                <button type="button" onClick={cancelForm} disabled={submitting} className={btnGhost}>
+                <button
+                  type="button"
+                  onClick={cancelForm}
+                  disabled={submitting}
+                  className={btnGhost}
+                >
                   Cancel
                 </button>
               </div>
@@ -1348,15 +1585,26 @@ function BoardExamSection({ onSaved }) {
                 {records.map((rec) => (
                   <div key={rec.id} className="py-3 flex items-start gap-3">
                     <IconChip
-                      icon={rec.status === "passed" ? HiOutlineTrophy : HiOutlineDocumentText}
+                      icon={
+                        rec.status === "passed"
+                          ? HiOutlineTrophy
+                          : HiOutlineDocumentText
+                      }
                       color={rec.status === "passed" ? "green" : "slate"}
                       size="sm"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h5 className="text-[0.82rem] font-bold text-slate-800">{rec.exam_name}</h5>
-                        <StatusBadge status={rec.status} label={rec.status_label} />
-                        {rec.is_current && <Badge color="purple">Current</Badge>}
+                        <h5 className="text-[0.82rem] font-bold text-slate-800">
+                          {rec.exam_name}
+                        </h5>
+                        <StatusBadge
+                          status={rec.status}
+                          label={rec.status_label}
+                        />
+                        {rec.is_current && (
+                          <Badge color="purple">Current</Badge>
+                        )}
                       </div>
                       <div className="flex items-center gap-4 mt-1 flex-wrap text-[0.7rem] text-slate-500">
                         <span className="inline-flex items-center gap-1">
@@ -1413,7 +1661,10 @@ function CompletionSection({ reloadSignal }) {
     alumniApi
       .getProfileCompletion()
       .then((res) => active && setData(res.data.data))
-      .catch((err) => { if (import.meta.env.DEV) console.error("Profile completion section failed:", err); })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Profile completion section failed:", err);
+      })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;

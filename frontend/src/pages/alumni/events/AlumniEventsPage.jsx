@@ -6,7 +6,12 @@ import Pagination from "../../../components/common/Pagination";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
 import useModalA11y from "../../../hooks/useModalA11y";
-import { formatDate, storageUrl, cn, stripHtml } from "../../../utils/formatters";
+import {
+  formatDate,
+  storageUrl,
+  cn,
+  stripHtml,
+} from "../../../utils/formatters";
 import { RSVP_STATUSES } from "../../../config/eventOptions";
 import { IconChip } from "../../../components/alumni/ui";
 import {
@@ -143,7 +148,9 @@ export default function AlumniEventsPage() {
       <div className="flex items-center gap-3">
         <IconChip icon={HiOutlineCalendarDays} color="blue" size="lg" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Events</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            Events
+          </h1>
           <p className="text-sm text-slate-500">
             Upcoming events and gatherings for alumni.
           </p>
@@ -368,7 +375,7 @@ function EventModal({ event: a, onClose, onRsvp }) {
           aria-modal="true"
           aria-labelledby="event-modal-title"
           tabIndex={-1}
-          className="relative bg-white border border-slate-200 rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none"
+          className="relative bg-white border border-slate-200 rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none overflow-hidden"
         >
           <button
             onClick={onClose}
@@ -386,7 +393,7 @@ function EventModal({ event: a, onClose, onRsvp }) {
             />
           )}
 
-          <div className="p-6">
+          <div className="p-6 min-w-0">
             <div className="flex items-start gap-4">
               <DateBadge iso={a.start_datetime} size="lg" />
               <div className="flex-1 min-w-0">
@@ -394,7 +401,10 @@ function EventModal({ event: a, onClose, onRsvp }) {
                   {a.is_pinned && <PinnedBadge />}
                   {past && <PastBadge />}
                 </div>
-                <h2 id="event-modal-title" className="text-xl font-bold text-slate-900">
+                <h2
+                  id="event-modal-title"
+                  className="text-xl font-bold text-slate-900"
+                >
                   {a.title}
                 </h2>
                 {a.location && (
@@ -407,7 +417,8 @@ function EventModal({ event: a, onClose, onRsvp }) {
                   {a.start_datetime && (
                     <span className="flex items-center gap-1">
                       <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                      {formatDate(a.start_datetime)} &rarr; {formatDate(a.end_datetime)}
+                      {formatDate(a.start_datetime)} &rarr;{" "}
+                      {formatDate(a.end_datetime)}
                     </span>
                   )}
                   {a.posted_by && (
@@ -426,21 +437,24 @@ function EventModal({ event: a, onClose, onRsvp }) {
             )}
 
             <div
-              className="event-content mt-4 text-sm text-slate-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(a.content) }}
+              className="event-content mt-4 text-sm text-slate-700 leading-relaxed break-words"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(a.content),
+              }}
             />
           </div>
         </div>
       </div>
 
       {/* Minimal styling for rendered rich-text content (light surface). */}
-      <style>{`.event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#1e293b}
+      <style>{`.event-content{overflow-wrap:break-word;word-break:break-word}
+        .event-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0;color:#1e293b}
         .event-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0;color:#1e293b}
         .event-content h3{font-size:1rem;font-weight:600;margin:.5rem 0;color:#1e293b}
         .event-content p{margin:.5rem 0}
         .event-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .event-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .event-content a{color:#2563eb;text-decoration:underline}
+        .event-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
         .event-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}
         .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>

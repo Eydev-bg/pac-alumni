@@ -43,7 +43,10 @@ export default function AlumniAnnouncementsPage() {
     alumniApi
       .getAnnouncementsUnreadCount()
       .then((res) => setUnread(res.data.data.unread_count))
-      .catch((err) => { if (import.meta.env.DEV) console.error("Announcements unread count failed:", err); });
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Announcements unread count failed:", err);
+      });
   }, []);
 
   const load = useCallback(() => {
@@ -71,7 +74,9 @@ export default function AlumniAnnouncementsPage() {
     if (a.is_read) return;
     try {
       await alumniApi.markAnnouncementRead(a.id);
-      setItems((prev) => prev.map((x) => (x.id === a.id ? { ...x, is_read: true } : x)));
+      setItems((prev) =>
+        prev.map((x) => (x.id === a.id ? { ...x, is_read: true } : x)),
+      );
       setUnread((u) => Math.max(0, u - 1));
     } catch {
       // Non-fatal — viewing still works even if the read receipt fails.
@@ -113,13 +118,22 @@ export default function AlumniAnnouncementsPage() {
       ) : (
         <div className="space-y-3">
           {items.map((a) => (
-            <AnnouncementCard key={a.id} announcement={a} onOpen={() => openAnnouncement(a)} />
+            <AnnouncementCard
+              key={a.id}
+              announcement={a}
+              onOpen={() => openAnnouncement(a)}
+            />
           ))}
           <Pagination meta={meta} onPageChange={handlePageChange} />
         </div>
       )}
 
-      {active && <AnnouncementModal announcement={active} onClose={() => setActive(null)} />}
+      {active && (
+        <AnnouncementModal
+          announcement={active}
+          onClose={() => setActive(null)}
+        />
+      )}
     </div>
   );
 }
@@ -134,7 +148,10 @@ function AnnouncementCard({ announcement: a, onOpen }) {
     >
       <div className="flex items-start gap-3">
         {!a.is_read && (
-          <span className="mt-1.5 w-2 h-2 rounded-full bg-blue-600 flex-shrink-0" title="Unread" />
+          <span
+            className="mt-1.5 w-2 h-2 rounded-full bg-blue-600 flex-shrink-0"
+            title="Unread"
+          />
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -145,7 +162,9 @@ function AnnouncementCard({ announcement: a, onOpen }) {
             )}
             <h3
               className={`text-sm truncate ${
-                a.is_read ? "font-semibold text-slate-700" : "font-bold text-slate-900"
+                a.is_read
+                  ? "font-semibold text-slate-700"
+                  : "font-bold text-slate-900"
               }`}
             >
               {a.title}
@@ -162,7 +181,8 @@ function AnnouncementCard({ announcement: a, onOpen }) {
             )}
             {a.published_at && (
               <span className="flex items-center gap-1">
-                <HiOutlineClock className="w-3.5 h-3.5" /> {timeAgo(a.published_at)}
+                <HiOutlineClock className="w-3.5 h-3.5" />{" "}
+                {timeAgo(a.published_at)}
               </span>
             )}
           </div>
@@ -188,7 +208,7 @@ function AnnouncementModal({ announcement: a, onClose }) {
           aria-modal="true"
           aria-labelledby="announcement-modal-title"
           tabIndex={-1}
-          className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none"
+          className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none overflow-hidden"
         >
           <button
             onClick={onClose}
@@ -206,7 +226,7 @@ function AnnouncementModal({ announcement: a, onClose }) {
             />
           )}
 
-          <div className="p-6">
+          <div className="p-6 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-2">
               {a.is_pinned && (
                 <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
@@ -214,7 +234,10 @@ function AnnouncementModal({ announcement: a, onClose }) {
                 </span>
               )}
             </div>
-            <h2 id="announcement-modal-title" className="text-xl font-bold text-slate-900">
+            <h2
+              id="announcement-modal-title"
+              className="text-xl font-bold text-slate-900"
+            >
               {a.title}
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
@@ -225,27 +248,31 @@ function AnnouncementModal({ announcement: a, onClose }) {
               )}
               {a.published_at && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineClock className="w-3.5 h-3.5" /> {timeAgo(a.published_at)}
+                  <HiOutlineClock className="w-3.5 h-3.5" />{" "}
+                  {timeAgo(a.published_at)}
                 </span>
               )}
             </div>
 
             <div
-              className="announcement-content mt-4 text-sm text-slate-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(a.content) }}
+              className="announcement-content mt-4 text-sm text-slate-700 leading-relaxed break-words"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(a.content),
+              }}
             />
           </div>
         </div>
       </div>
 
       {/* Minimal styling for rendered rich-text content. */}
-      <style>{`.announcement-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0}
+      <style>{`.announcement-content{overflow-wrap:break-word;word-break:break-word}
+        .announcement-content h1{font-size:1.25rem;font-weight:700;margin:.5rem 0}
         .announcement-content h2{font-size:1.1rem;font-weight:700;margin:.5rem 0}
         .announcement-content h3{font-size:1rem;font-weight:600;margin:.5rem 0}
         .announcement-content p{margin:.5rem 0}
         .announcement-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .announcement-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
-        .announcement-content a{color:#2563eb;text-decoration:underline}
+        .announcement-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
         .announcement-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#475569;margin:.5rem 0}
         .announcement-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
     </div>
