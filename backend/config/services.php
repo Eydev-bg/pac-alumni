@@ -22,6 +22,14 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    // Brevo transactional email API. Used instead of SMTP because Railway
+    // blocks outbound SMTP ports (25/465/587) on the Hobby/Free plan — the
+    // HTTPS API is the supported way to send mail from there. See
+    // config/mail.php for the "brevo" mailer transport definition.
+    'brevo' => [
+        'key' => env('BREVO_API_KEY'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

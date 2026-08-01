@@ -3,7 +3,10 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
@@ -13,7 +16,9 @@
         "league/flysystem-aws-s3-v3": "^3.0",
         "maatwebsite/excel": "^3.1",
         "mews/purifier": "^3.4",
-        "php-open-source-saver/jwt-auth": "^2.8"
+        "php-open-source-saver/jwt-auth": "^2.8",
+        "symfony/brevo-mailer": "*",
+        "symfony/http-client": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

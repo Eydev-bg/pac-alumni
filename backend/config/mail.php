@@ -65,6 +65,14 @@ return [
             'transport' => 'resend',
         ],
 
+        // Brevo transactional email API (HTTPS, not SMTP). Registered as a
+        // custom transport in AppServiceProvider::boot() because Railway
+        // blocks outbound SMTP ports on the Hobby/Free plan — this sends
+        // over HTTPS instead, which is not blocked.
+        'brevo' => [
+            'transport' => 'brevo',
+        ],
+
         'sendmail' => [
             'transport' => 'sendmail',
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),
