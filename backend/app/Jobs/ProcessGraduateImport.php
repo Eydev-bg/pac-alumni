@@ -34,7 +34,7 @@ class ProcessGraduateImport implements ShouldQueue
 
         // Batch removed before processing — clean up the orphaned file.
         if (!$batch) {
-            Storage::delete($this->storedPath);
+            Storage::disk(config('filesystems.uploads_disk'))->delete($this->storedPath);
             return;
         }
 
@@ -57,6 +57,6 @@ class ProcessGraduateImport implements ShouldQueue
             ]);
         }
 
-        Storage::delete($this->storedPath);
+        Storage::disk(config('filesystems.uploads_disk'))->delete($this->storedPath);
     }
 }

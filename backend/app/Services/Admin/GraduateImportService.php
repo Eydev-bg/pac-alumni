@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 
 class GraduateImportService
 {
-    /** Sub-directory (on the default filesystem disk) for queued import files. */
+    /** Sub-directory (on the shared disk) for queued import files. */
     private const STORAGE_DIR = 'imports';
 
     public function __construct(
@@ -38,7 +38,15 @@ class GraduateImportService
     {
         // Capture the original name before store() moves the temp file.
         $originalName = $file->getClientOriginalName();
-        $storedPath = $file->store(self::STORAGE_DIR);
+
+        // IMPORTANT: must use the shared (Supabase S3) disk, not the default
+        // local disk. The upload happens on the web service (welcoming-victory)
+        // but processing runs on a separate queue-worker service (pac-alumni) —
+        // each has its own container filesystem, so a file saved to the local
+        // disk here is invisible to the worker that later reads it. The shared
+        // disk (STORAGE_DISK env var, same one alumni file uploads use) is
+        // reachable from both.
+        $storedPath = $file->store(self::STORAGE_DIR, config('filesystems.uploads_disk'));
 
         $batch = ImportBatch::create([
             'uploaded_by' => $uploadedBy,
@@ -62,9 +70,18 @@ class GraduateImportService
     public function process(ImportBatch $batch, string $storedPath): void
     {
         $educationLevel = $batch->education_level->value;
+        $disk = config('filesystems.uploads_disk');
+
+        // PhpSpreadsheet needs a real local file path — it can't read an S3
+        // stream directly — so download the file from the shared disk into a
+        // throwaway local temp file before parsing. This temp file is separate
+        // from $storedPath (which lives on the shared disk) and is cleaned up
+        // in its own finally block below, regardless of the shared-disk cleanup.
+        $localTempPath = tempnam(sys_get_temp_dir(), 'import_');
+        file_put_contents($localTempPath, Storage::disk($disk)->get($storedPath));
 
         try {
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(Storage::path($storedPath));
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($localTempPath);
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
@@ -243,8 +260,10 @@ class GraduateImportService
                 'completed_at' => now(),
             ]);
         } finally {
-            // Remove the queued file regardless of outcome.
-            Storage::delete($storedPath);
+            // Remove both the local scratch copy and the queued file on the
+            // shared disk, regardless of outcome.
+            @unlink($localTempPath);
+            Storage::disk($disk)->delete($storedPath);
         }
     }
 
@@ -273,16 +292,16 @@ class GraduateImportService
 
         return [
             'coursesByCode' => $courses
-                ->groupBy(fn (Course $c) => strtoupper(trim((string) $c->code)))
+                ->groupBy(fn(Course $c) => strtoupper(trim((string) $c->code)))
                 ->map->first(),
             'firstCourseByDept' => $courses
                 ->groupBy('department_id')
                 ->map->first(),
             'departmentsByCode' => $departments
-                ->groupBy(fn (Department $d) => strtoupper(trim((string) $d->code)))
+                ->groupBy(fn(Department $d) => strtoupper(trim((string) $d->code)))
                 ->map->first(),
             'activeDeptByLevel' => $departments
-                ->filter(fn (Department $d) => $d->status === DepartmentStatus::ACTIVE)
+                ->filter(fn(Department $d) => $d->status === DepartmentStatus::ACTIVE)
                 ->groupBy('education_level')
                 ->map->first(),
         ];
@@ -320,21 +339,21 @@ class GraduateImportService
         $alumniIds = empty($providedIds)
             ? []
             : Graduate::whereIn('alumni_id_number', $providedIds)
-                ->pluck('alumni_id_number')
-                ->mapWithKeys(fn ($id) => [$this->alumniIdKey($id) => true])
-                ->all();
+            ->pluck('alumni_id_number')
+            ->mapWithKeys(fn($id) => [$this->alumniIdKey($id) => true])
+            ->all();
 
         // Name+year duplicate check is scoped to the education level (as before)
         // and narrowed to the years present in the file.
         $nameKeys = empty($years)
             ? []
             : Graduate::where('education_level', $educationLevel)
-                ->whereIn('graduation_year', $years)
-                ->get(['first_name', 'last_name', 'graduation_year'])
-                ->mapWithKeys(fn (Graduate $g) => [
-                    $this->nameKey($g->first_name, $g->last_name, (int) $g->graduation_year) => true,
-                ])
-                ->all();
+            ->whereIn('graduation_year', $years)
+            ->get(['first_name', 'last_name', 'graduation_year'])
+            ->mapWithKeys(fn(Graduate $g) => [
+                $this->nameKey($g->first_name, $g->last_name, (int) $g->graduation_year) => true,
+            ])
+            ->all();
 
         return ['alumniIds' => $alumniIds, 'nameKeys' => $nameKeys];
     }
