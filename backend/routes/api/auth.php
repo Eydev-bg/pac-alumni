@@ -25,6 +25,14 @@ Route::prefix('auth')->group(function () {
         ->middleware('throttle:5,1')
         ->name('auth.reset-password');
 
+    Route::post('/verify-email', [AuthController::class, 'verifyEmail'])
+        ->middleware('throttle:10,1')
+        ->name('auth.verify-email');
+
+    Route::post('/resend-verification', [AuthController::class, 'resendVerification'])
+        ->middleware('throttle:3,1') // SECURITY: same rate as forgot-password
+        ->name('auth.resend-verification');
+
     // ─── Protected (JWT required) ────────────────────────
     // Logout must stay reachable during maintenance: CheckMaintenanceMode 503s
     // non-admins, so a logged-in alumnus would otherwise be unable to end their

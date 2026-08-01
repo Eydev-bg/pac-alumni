@@ -79,6 +79,12 @@ class UserService
             $data['password'] = Str::random(16);
         }
 
+        // Admin-created accounts (admins themselves, or alumni added manually
+        // by an admin rather than through self-registration) skip the email
+        // verification flow entirely — there's no self-registration link to
+        // click, so require one would permanently lock the account out.
+        $data['email_verified_at'] = $data['email_verified_at'] ?? now();
+
         $user = $this->userRepo->create($data);
 
         $this->auditLog->record(AuditAction::USER_CREATED, $user, [

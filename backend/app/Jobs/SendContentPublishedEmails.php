@@ -212,11 +212,39 @@ class SendContentPublishedEmails implements ShouldQueue, ShouldBeUnique
     }
 
     /**
-     * Content is sanitized rich-text HTML; the mailables take plain text.
-     * Capped so a huge post doesn't bloat every one of ~20k emails.
+     * Content is sanitized rich-text HTML (from the Quill editor); the
+     * mailables take plain text. Capped so a huge post doesn't bloat every
+     * one of ~20k emails.
+     *
+     * IMPORTANT: strip_tags() alone deletes block tags without inserting
+     * any whitespace, so "<p>A</p><p>B</p>" becomes "AB" — two paragraphs
+     * glued into one run-on line with no wrap point, which is what made
+     * these emails render as a single unbroken horizontal line on some
+     * clients. We insert a blank line at each block-level boundary first,
+     * so the stripped text keeps its original paragraph/line structure.
      */
     private function plainText(?string $html): string
     {
-        return Str::limit(trim(html_entity_decode(strip_tags((string) $html), ENT_QUOTES)), 2000);
+        $html = (string) $html;
+
+        // Insert paragraph breaks at closing block tags and explicit <br>,
+        // BEFORE stripping tags, so paragraphs/list items don't collapse
+        // into each other.
+        $withBreaks = preg_replace(
+            '/<\/(p|div|li|h[1-6])\s*>|<br\s*\/?>/i',
+            "$0\n\n",
+            $html
+        );
+
+        $stripped = strip_tags((string) $withBreaks);
+        $decoded = html_entity_decode($stripped, ENT_QUOTES);
+
+        // Collapse the whitespace *within* each line (multiple spaces/tabs)
+        // without merging separate lines back together, then collapse 3+
+        // consecutive blank lines down to a single blank line.
+        $normalized = preg_replace('/[ \t]+/', ' ', $decoded);
+        $normalized = preg_replace('/\n{3,}/', "\n\n", $normalized);
+
+        return Str::limit(trim($normalized), 2000);
     }
 }

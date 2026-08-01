@@ -18,7 +18,6 @@ class ReminderStatsService
     private const TYPE_LABELS = [
         EmailReminderLog::TYPE_LOGIN => 'Login Reminders',
         EmailReminderLog::TYPE_EMPLOYMENT => 'Employment Updates',
-        EmailReminderLog::TYPE_PROFILE => 'Profile Completion',
     ];
 
     /**

@@ -11,12 +11,10 @@ Reset Password
 
 This link will expire in **1 hour**. If you believe this was a mistake, please contact your administrator — your password will stay the same until you set a new one.
 
-Thanks,<br>
-{{ config('app.name') }}
-
-@slot('subcopy')
 If you're having trouble clicking the "Reset Password" button, copy and paste the URL below into your web browser:
 
-[{{ $resetUrl }}]({{ $resetUrl }})
-@endslot
+{{ $resetUrl }}
+
+Thanks,<br>
+{{ config('app.name') }}
 @endcomponent

@@ -62,6 +62,16 @@ class AuthService
             throw \App\Exceptions\DomainException::forbidden('Your account has been ' . $user->status->value . '. Please contact the administrator.');
         }
 
+        // ─── Step 4.5: Check email verification ──────────────
+        // Alumni self-registrations start with email_verified_at = null
+        // (see VerificationService::verifyAndRegister). Admin-created
+        // accounts are always pre-verified (see UserService::create), so
+        // this only ever blocks someone who hasn't clicked their link yet.
+        if ($user->email_verified_at === null) {
+            $this->logAttempt($user->id, $email, $ip, $userAgent, LoginAttemptStatus::BLOCKED);
+            throw new \App\Exceptions\EmailNotVerifiedException();
+        }
+
         // ─── Step 5: Generate token ──────────────────────────
         $token = JWTAuth::fromUser($user);
 

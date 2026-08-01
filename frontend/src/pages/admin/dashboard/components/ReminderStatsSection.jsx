@@ -3,17 +3,27 @@ import {
   HiOutlineBriefcase,
   HiOutlineEnvelope,
   HiOutlineUserPlus,
-  HiOutlineClipboardDocumentList,
 } from "react-icons/hi2";
 
 // ─── Automated Reminder Stats ────────────────────────────
 const REMINDER_TYPE_META = {
-  login_reminder: { icon: HiOutlineUserPlus, color: "text-blue-400", bg: "bg-blue-500/15" },
-  employment_update: { icon: HiOutlineBriefcase, color: "text-gold-500", bg: "bg-gold-500/15" },
-  profile_completion: { icon: HiOutlineClipboardDocumentList, color: "text-emerald-400", bg: "bg-emerald-500/15" },
+  login_reminder: {
+    icon: HiOutlineUserPlus,
+    color: "text-blue-400",
+    bg: "bg-blue-500/15",
+  },
+  employment_update: {
+    icon: HiOutlineBriefcase,
+    color: "text-gold-500",
+    bg: "bg-gold-500/15",
+  },
 };
 
-const DEFAULT_TYPE_META = { icon: HiOutlineEnvelope, color: "text-slate-400", bg: "bg-slate-500/15" };
+const DEFAULT_TYPE_META = {
+  icon: HiOutlineEnvelope,
+  color: "text-slate-400",
+  bg: "bg-slate-500/15",
+};
 
 // Memoized: re-renders only when the reminder `stats` prop changes.
 function ReminderStatsSection({ stats }) {
@@ -70,8 +80,12 @@ function ReminderStatsSection({ stats }) {
             <tr className="bg-white/[0.03] text-[10px] uppercase tracking-[0.08em] text-slate-500">
               <th className="px-4 py-2.5 font-semibold">Reminder Type</th>
               <th className="px-3 py-2.5 font-semibold text-right">Today</th>
-              <th className="px-3 py-2.5 font-semibold text-right">This Week</th>
-              <th className="px-3 py-2.5 font-semibold text-right">This Month</th>
+              <th className="px-3 py-2.5 font-semibold text-right">
+                This Week
+              </th>
+              <th className="px-3 py-2.5 font-semibold text-right">
+                This Month
+              </th>
               <th className="px-4 py-2.5 font-semibold text-right">Total</th>
             </tr>
           </thead>
@@ -86,7 +100,9 @@ function ReminderStatsSection({ stats }) {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <span className={`w-7 h-7 rounded-lg ${meta.bg} flex items-center justify-center flex-shrink-0`}>
+                      <span
+                        className={`w-7 h-7 rounded-lg ${meta.bg} flex items-center justify-center flex-shrink-0`}
+                      >
                         <Icon className={`w-4 h-4 ${meta.color}`} />
                       </span>
                       <span className="text-[13px] font-medium text-slate-200">

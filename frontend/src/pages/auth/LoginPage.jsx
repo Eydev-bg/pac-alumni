@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import authApi from "../../api/authApi";
 import {
   HiOutlineEnvelope,
   HiOutlineLockClosed,
@@ -31,12 +32,18 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const from = location.state?.from?.pathname;
 
   // Dev-only seeded admin credentials (see backend AdminUserSeeder).
   // Stripped from production builds via the import.meta.env.DEV guard below.
-  const DEV_CREDENTIALS = { email: "admin@pac.edu.ph", password: "P@cAdmin2026!" };
+  const DEV_CREDENTIALS = {
+    email: "admin@pac.edu.ph",
+    password: "P@cAdmin2026!",
+  };
 
   const ROLE_DASHBOARDS = {
     admin: "/admin/dashboard",
@@ -46,6 +53,8 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setNeedsVerification(false);
+    setResent(false);
     setLoading(true);
 
     try {
@@ -57,8 +66,22 @@ export default function LoginPage() {
         err.response?.data?.message ||
         "Unable to connect to server. Please try again.";
       setError(msg);
+      if (err.response?.data?.errors?.code === "EMAIL_NOT_VERIFIED") {
+        setNeedsVerification(true);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!form.email) return;
+    setResending(true);
+    try {
+      await authApi.resendVerification(form.email);
+      setResent(true);
+    } finally {
+      setResending(false);
     }
   };
 
@@ -105,156 +128,180 @@ export default function LoginPage() {
             </p>
 
             {/* Error */}
-          {error && (
-            <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <svg
-                className="w-3.5 h-3.5 text-red-500 shrink-0"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <p className="text-[0.72rem] text-red-600">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit}>
-            {/* Email */}
-            <div className="mb-3">
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1">
-                Email (PAC Alumni)
-              </label>
-              <div className="relative">
-                <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  required
-                  autoComplete="email"
-                  placeholder="Email (PAC Alumni)"
-                  className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
-                />
+            {error && (
+              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+                <svg
+                  className="w-3.5 h-3.5 text-red-500 shrink-0"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p className="text-[0.72rem] text-red-600">{error}</p>
               </div>
-            </div>
+            )}
 
-            {/* Password */}
-            <div className="mb-3.5">
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-[0.72rem] font-semibold text-slate-600">
-                  Password
+            {needsVerification && (
+              <div className="mb-3">
+                {resent ? (
+                  <p className="text-[0.72rem] text-emerald-600">
+                    If that email is registered and not yet verified, a new
+                    verification link has been sent.
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resending}
+                    className="text-[0.72rem] font-semibold text-blue-600 hover:text-blue-700 hover:underline disabled:opacity-50"
+                  >
+                    {resending ? "Sending…" : "Resend verification email"}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              {/* Email */}
+              <div className="mb-3">
+                <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1">
+                  Email (PAC Alumni)
                 </label>
-                <a
-                  href="/forgot-password"
-                  className="text-[0.68rem] font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                >
-                  Forgot password?
-                </a>
+                <div className="relative">
+                  <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) =>
+                      setForm({ ...form, email: e.target.value })
+                    }
+                    required
+                    autoComplete="email"
+                    placeholder="Email (PAC Alumni)"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) =>
-                    setForm({ ...form, password: e.target.value })
-                  }
-                  required
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  className="w-full pl-9 pr-10 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <HiOutlineEyeSlash className="w-4 h-4" />
-                  ) : (
-                    <HiOutlineEye className="w-4 h-4" />
-                  )}
-                </button>
+
+              {/* Password */}
+              <div className="mb-3.5">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[0.72rem] font-semibold text-slate-600">
+                    Password
+                  </label>
+                  <a
+                    href="/forgot-password"
+                    className="text-[0.68rem] font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+                <div className="relative">
+                  <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={form.password}
+                    onChange={(e) =>
+                      setForm({ ...form, password: e.target.value })
+                    }
+                    required
+                    autoComplete="current-password"
+                    placeholder="Enter your password"
+                    className="w-full pl-9 pr-10 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <HiOutlineEyeSlash className="w-4 h-4" />
+                    ) : (
+                      <HiOutlineEye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-2.5 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        fill="none"
+                        opacity="0.25"
+                      />
+                      <path
+                        fill="currentColor"
+                        opacity="0.85"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Signing in…
+                  </>
+                ) : (
+                  "Log In"
+                )}
+              </button>
+            </form>
+
+            {/* Dev-only credentials hint — removed from production builds */}
+            {import.meta.env.DEV && (
+              <div className="mt-3 p-2.5 bg-amber-50 border border-dashed border-amber-300 rounded-lg">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-[0.62rem] font-bold uppercase tracking-wide text-amber-700">
+                    Dev — Seeded Admin
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setForm(DEV_CREDENTIALS)}
+                    className="text-[0.62rem] font-semibold text-amber-700 hover:text-amber-900 hover:underline"
+                  >
+                    Autofill
+                  </button>
+                </div>
+                <p className="text-[0.68rem] text-amber-800/90 font-mono leading-relaxed break-all">
+                  {DEV_CREDENTIALS.email}
+                  <br />
+                  {DEV_CREDENTIALS.password}
+                </p>
+              </div>
+            )}
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 my-3">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-[0.68rem] text-slate-400">or</span>
+              <div className="flex-1 h-px bg-slate-200" />
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      fill="none"
-                      opacity="0.25"
-                    />
-                    <path
-                      fill="currentColor"
-                      opacity="0.85"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Signing in…
-                </>
-              ) : (
-                "Log In"
-              )}
-            </button>
-          </form>
-
-          {/* Dev-only credentials hint — removed from production builds */}
-          {import.meta.env.DEV && (
-            <div className="mt-3 p-2.5 bg-amber-50 border border-dashed border-amber-300 rounded-lg">
-              <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-[0.62rem] font-bold uppercase tracking-wide text-amber-700">
-                  Dev — Seeded Admin
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setForm(DEV_CREDENTIALS)}
-                  className="text-[0.62rem] font-semibold text-amber-700 hover:text-amber-900 hover:underline"
-                >
-                  Autofill
-                </button>
-              </div>
-              <p className="text-[0.68rem] text-amber-800/90 font-mono leading-relaxed break-all">
-                {DEV_CREDENTIALS.email}
-                <br />
-                {DEV_CREDENTIALS.password}
-              </p>
-            </div>
-          )}
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-3">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-[0.68rem] text-slate-400">or</span>
-            <div className="flex-1 h-px bg-slate-200" />
-          </div>
-
-          {/* Sign up */}
-          <p className="text-center text-[0.78rem] text-slate-500">
-            Don't have an account?{" "}
-            <a
-              href="/register"
-              className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-            >
-              Sign Up
-            </a>
-          </p>
+            {/* Sign up */}
+            <p className="text-center text-[0.78rem] text-slate-500">
+              Don't have an account?{" "}
+              <a
+                href="/register"
+                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              >
+                Sign Up
+              </a>
+            </p>
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
@@ -265,7 +312,8 @@ export default function LoginPage() {
               className="w-full max-w-[320px] h-auto object-contain"
             />
             <p className="mt-4 text-center text-[0.8rem] text-slate-500 max-w-[260px]">
-              Welcome back to the PAC Alumni community. Sign in to stay connected.
+              Welcome back to the PAC Alumni community. Sign in to stay
+              connected.
             </p>
           </div>
         </div>

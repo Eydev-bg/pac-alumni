@@ -13,4 +13,8 @@ Artisan::command('inspire', function () {
 //   * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 Schedule::command('reminder:login')->dailyAt('09:00');
 Schedule::command('reminder:employment')->weeklyOn(1, '09:00');  // Monday
-Schedule::command('reminder:profile')->weeklyOn(3, '09:00');     // Wednesday
+
+// ─── Phase 3: Auto-delete unverified alumni accounts ────────
+// Sweeps alumni self-registrations whose email was never verified within
+// the grace period (see CleanupUnverifiedAlumni for the 7-day cutoff).
+Schedule::command('alumni:cleanup-unverified')->dailyAt('02:00');

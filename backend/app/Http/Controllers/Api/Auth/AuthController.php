@@ -6,13 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResendVerificationRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Http\Resources\Admin\UserResource;
 use App\Models\PasswordReset;
 use App\Models\User;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\Auth\AuthService;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Auth\PasswordResetService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +31,7 @@ class AuthController extends Controller
         protected AuthService $authService,
         protected UserRepositoryInterface $userRepo,
         protected PasswordResetService $passwordResetService,
+        protected EmailVerificationService $emailVerificationService,
     ) {}
 
     /**
@@ -63,6 +67,12 @@ class AuthController extends Controller
                 'expires_in' => $result['expires_in'],
                 'user' => new UserResource($this->withBoardProgramFlag($result['user'])),
             ], 'Login successful.');
+        } catch (\App\Exceptions\EmailNotVerifiedException $e) {
+            // Machine-readable code so the frontend can show a "Resend
+            // verification email" action instead of a plain error message.
+            return $this->error($e->getMessage(), $e->getCode() ?: 403, [
+                'code' => 'EMAIL_NOT_VERIFIED',
+            ]);
         } catch (\Exception $e) {
             return $this->error($e->getMessage(), $e->getCode() ?: 401);
         }
@@ -202,5 +212,38 @@ class AuthController extends Controller
         PasswordReset::where('email', $request->validated('email'))->delete();
 
         return $this->success(null, 'Password has been reset successfully.');
+    }
+
+    /**
+     * POST /api/auth/verify-email
+     */
+    public function verifyEmail(VerifyEmailRequest $request): JsonResponse
+    {
+        try {
+            $this->emailVerificationService->verify(
+                $request->validated('email'),
+                $request->validated('token'),
+            );
+
+            return $this->success(null, 'Email verified successfully. You can now log in.');
+        } catch (\App\Exceptions\DomainException $e) {
+            return $this->error($e->getMessage(), $e->status());
+        }
+    }
+
+    /**
+     * POST /api/auth/resend-verification
+     */
+    public function resendVerification(ResendVerificationRequest $request): JsonResponse
+    {
+        // SECURITY: Always return the same generic message regardless of
+        // whether the email exists or is already verified, so this endpoint
+        // cannot be used to enumerate registered emails (mirrors forgotPassword).
+        $this->emailVerificationService->resend($request->validated('email'));
+
+        return $this->success(
+            null,
+            'If that email is registered and not yet verified, a new verification link has been sent.'
+        );
     }
 }

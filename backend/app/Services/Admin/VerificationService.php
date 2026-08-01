@@ -16,6 +16,7 @@ use App\Models\RegistrationBlacklist;
 use App\Models\RegistrationSetting;
 use App\Models\User;
 use App\Models\VerificationLog;
+use App\Services\Auth\EmailVerificationService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -24,6 +25,7 @@ class VerificationService
     public function __construct(
         protected DashboardCacheService $dashboardCache,
         protected GraduateTracerService $tracerService,
+        protected EmailVerificationService $emailVerificationService,
     ) {}
 
     /**
@@ -97,7 +99,11 @@ class VerificationService
                 'middle_name' => $graduate->middle_name,
                 'last_name' => $graduate->last_name,
                 'suffix' => $graduate->suffix,
-                'email_verified_at' => now(),
+                // Alumni self-registrations must verify their email before they
+                // can log in (see AuthService::login). Admin-created accounts
+                // still go through UserService::create, which sets this
+                // immediately — this path is alumni self-registration only.
+                'email_verified_at' => null,
             ]);
 
             // Link graduate to user
@@ -145,6 +151,11 @@ class VerificationService
         // registration never clears a still-accurate cache.
         $this->dashboardCache->flush();
         $this->tracerService->clearCache();
+
+        // Send the verification email only after the transaction commits, so a
+        // rolled-back registration never ends up emailing a link for an
+        // account that doesn't actually exist.
+        $this->emailVerificationService->sendVerificationEmail($result['user']);
 
         return $result;
     }

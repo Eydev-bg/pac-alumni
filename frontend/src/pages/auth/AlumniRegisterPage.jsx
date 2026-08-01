@@ -103,7 +103,10 @@ export default function AlumniRegisterPage() {
       .then((res) => {
         if (!res.data.data.is_open) setRegistrationClosed(true);
       })
-      .catch((err) => { if (import.meta.env.DEV) console.error("Registration status check failed:", err); })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Registration status check failed:", err);
+      })
       .finally(() => setCheckingStatus(false));
   }, []);
 
@@ -230,8 +233,9 @@ export default function AlumniRegisterPage() {
               Registration Successful!
             </h2>
             <p className="text-sm text-slate-500 mb-5">
-              Your alumni account has been verified and created. You can now log
-              in using your email and password.
+              Your alumni account has been created. We've sent a verification
+              link to your email — please check your inbox (and spam folder) and
+              click the link before logging in. The link expires in 24 hours.
             </p>
             <button
               onClick={() => navigate("/login")}
@@ -283,220 +287,220 @@ export default function AlumniRegisterPage() {
               </div>
             </div>
 
-          {/* Header row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
-            <div>
-              <h2 className="text-[1.05rem] font-bold text-slate-800 mb-0.5">
-                Create Your Alumni Account
-              </h2>
-              <p className="text-[0.72rem] text-slate-400">
-                College graduates only — verify your identity to register
+            {/* Header row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3">
+              <div>
+                <h2 className="text-[1.05rem] font-bold text-slate-800 mb-0.5">
+                  Create Your Alumni Account
+                </h2>
+                <p className="text-[0.72rem] text-slate-400">
+                  College graduates only — verify your identity to register
+                </p>
+              </div>
+              <p className="text-[0.68rem] text-slate-400 mt-1 sm:mt-0 hidden md:block">
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                >
+                  Log In
+                </a>
               </p>
             </div>
-            <p className="text-[0.68rem] text-slate-400 mt-1 sm:mt-0 hidden md:block">
-              Already have an account?{" "}
-              <a
-                href="/login"
-                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-              >
-                Log In
-              </a>
-            </p>
-          </div>
 
-          {/* Error */}
-          {error && (
-            <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <HiOutlineExclamationTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-[0.72rem] text-red-600 leading-relaxed">
-                {error}
-              </p>
-            </div>
-          )}
+            {/* Error */}
+            {error && (
+              <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                <HiOutlineExclamationTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-[0.72rem] text-red-600 leading-relaxed">
+                  {error}
+                </p>
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit}>
-            {/* 2-Column Grid (desktop) / Stacked (mobile) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-0">
-              {/* LEFT: Graduate Verification */}
-              <div className="space-y-2.5">
-                <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2.5">
-                  <p className="text-[0.68rem] font-semibold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <HiOutlineIdentification className="w-3.5 h-3.5" />
-                    Graduate Verification
-                  </p>
-                  <InputField
-                    icon={HiOutlineIdentification}
-                    label="Alumni ID"
-                    field="alumni_id"
-                    placeholder="e.g. PAC-2023-0001"
-                    autoComplete="off"
-                    maxLength={50}
-                    value={form.alumni_id}
-                    onChange={handleChange}
-                    error={getFieldError("alumni_id")}
-                  />
-                  <div className="grid grid-cols-2 gap-2.5">
-                    <InputField
-                      icon={HiOutlineUser}
-                      label="First Name"
-                      field="first_name"
-                      placeholder="Juan"
-                      autoComplete="given-name"
-                      maxLength={100}
-                      value={form.first_name}
-                      onChange={handleChange}
-                      error={getFieldError("first_name")}
-                    />
-                    <InputField
-                      icon={HiOutlineUser}
-                      label="Last Name"
-                      field="last_name"
-                      placeholder="Dela Cruz"
-                      autoComplete="family-name"
-                      maxLength={100}
-                      value={form.last_name}
-                      onChange={handleChange}
-                      error={getFieldError("last_name")}
-                    />
-                  </div>
-                  <div className="bg-blue-100/50 border border-blue-200/60 rounded-md px-2.5 py-2 mt-1">
-                    <p className="text-[0.65rem] text-blue-600 leading-relaxed">
-                      <span className="font-semibold">
-                        How to find your Alumni ID:
-                      </span>{" "}
-                      Your Alumni ID was assigned upon graduation (format:
-                      PAC-YYYY-XXXX). Check your diploma, transcript, or contact
-                      the Registrar's Office.
+            <form onSubmit={handleSubmit}>
+              {/* 2-Column Grid (desktop) / Stacked (mobile) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-0">
+                {/* LEFT: Graduate Verification */}
+                <div className="space-y-2.5">
+                  <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-3 space-y-2.5">
+                    <p className="text-[0.68rem] font-semibold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <HiOutlineIdentification className="w-3.5 h-3.5" />
+                      Graduate Verification
                     </p>
+                    <InputField
+                      icon={HiOutlineIdentification}
+                      label="Alumni ID"
+                      field="alumni_id"
+                      placeholder="e.g. PAC-2023-0001"
+                      autoComplete="off"
+                      maxLength={50}
+                      value={form.alumni_id}
+                      onChange={handleChange}
+                      error={getFieldError("alumni_id")}
+                    />
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <InputField
+                        icon={HiOutlineUser}
+                        label="First Name"
+                        field="first_name"
+                        placeholder="Juan"
+                        autoComplete="given-name"
+                        maxLength={100}
+                        value={form.first_name}
+                        onChange={handleChange}
+                        error={getFieldError("first_name")}
+                      />
+                      <InputField
+                        icon={HiOutlineUser}
+                        label="Last Name"
+                        field="last_name"
+                        placeholder="Dela Cruz"
+                        autoComplete="family-name"
+                        maxLength={100}
+                        value={form.last_name}
+                        onChange={handleChange}
+                        error={getFieldError("last_name")}
+                      />
+                    </div>
+                    <div className="bg-blue-100/50 border border-blue-200/60 rounded-md px-2.5 py-2 mt-1">
+                      <p className="text-[0.65rem] text-blue-600 leading-relaxed">
+                        <span className="font-semibold">
+                          How to find your Alumni ID:
+                        </span>{" "}
+                        Your Alumni ID was assigned upon graduation (format:
+                        PAC-YYYY-XXXX). Check your diploma, transcript, or
+                        contact the Registrar's Office.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT: Account Details */}
+                <div className="space-y-2.5 mt-2.5 md:mt-0">
+                  <div className="bg-slate-50/60 border border-slate-200/80 rounded-lg p-3 space-y-2.5">
+                    <p className="text-[0.68rem] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <HiOutlineLockClosed className="w-3.5 h-3.5" />
+                      Account Details
+                    </p>
+                    <InputField
+                      icon={HiOutlineEnvelope}
+                      label="Email Address"
+                      field="email"
+                      type="email"
+                      placeholder="you@email.com"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      error={getFieldError("email")}
+                    />
+                    <InputField
+                      icon={HiOutlineLockClosed}
+                      label="Password"
+                      field="password"
+                      isPassword
+                      showToggle={showPassword}
+                      onToggle={() => setShowPassword(!showPassword)}
+                      placeholder="Create a strong password"
+                      autoComplete="new-password"
+                      value={form.password}
+                      onChange={handleChange}
+                      error={getFieldError("password")}
+                    />
+                    <InputField
+                      icon={HiOutlineLockClosed}
+                      label="Confirm Password"
+                      field="password_confirmation"
+                      isPassword
+                      showToggle={showConfirm}
+                      onToggle={() => setShowConfirm(!showConfirm)}
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      value={form.password_confirmation}
+                      onChange={handleChange}
+                      error={getFieldError("password_confirmation")}
+                    />
+
+                    {/* Password strength */}
+                    {form.password.length > 0 && (
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 px-1 pt-0.5">
+                        {[
+                          { key: "length", text: "8+ characters" },
+                          { key: "uppercase", text: "Uppercase letter" },
+                          { key: "lowercase", text: "Lowercase letter" },
+                          { key: "number", text: "Number" },
+                          { key: "special", text: "Special character" },
+                          { key: "match", text: "Passwords match" },
+                        ].map(({ key, text }) => (
+                          <span
+                            key={key}
+                            className={`flex items-center gap-1 text-[0.65rem] transition-colors ${
+                              passwordChecks[key]
+                                ? "text-emerald-600"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            <span className="text-[0.7rem]">
+                              {passwordChecks[key] ? "✓" : "○"}
+                            </span>
+                            {text}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* RIGHT: Account Details */}
-              <div className="space-y-2.5 mt-2.5 md:mt-0">
-                <div className="bg-slate-50/60 border border-slate-200/80 rounded-lg p-3 space-y-2.5">
-                  <p className="text-[0.68rem] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <HiOutlineLockClosed className="w-3.5 h-3.5" />
-                    Account Details
-                  </p>
-                  <InputField
-                    icon={HiOutlineEnvelope}
-                    label="Email Address"
-                    field="email"
-                    type="email"
-                    placeholder="you@email.com"
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    error={getFieldError("email")}
-                  />
-                  <InputField
-                    icon={HiOutlineLockClosed}
-                    label="Password"
-                    field="password"
-                    isPassword
-                    showToggle={showPassword}
-                    onToggle={() => setShowPassword(!showPassword)}
-                    placeholder="Create a strong password"
-                    autoComplete="new-password"
-                    value={form.password}
-                    onChange={handleChange}
-                    error={getFieldError("password")}
-                  />
-                  <InputField
-                    icon={HiOutlineLockClosed}
-                    label="Confirm Password"
-                    field="password_confirmation"
-                    isPassword
-                    showToggle={showConfirm}
-                    onToggle={() => setShowConfirm(!showConfirm)}
-                    placeholder="Confirm your password"
-                    autoComplete="new-password"
-                    value={form.password_confirmation}
-                    onChange={handleChange}
-                    error={getFieldError("password_confirmation")}
-                  />
-
-                  {/* Password strength */}
-                  {form.password.length > 0 && (
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 px-1 pt-0.5">
-                      {[
-                        { key: "length", text: "8+ characters" },
-                        { key: "uppercase", text: "Uppercase letter" },
-                        { key: "lowercase", text: "Lowercase letter" },
-                        { key: "number", text: "Number" },
-                        { key: "special", text: "Special character" },
-                        { key: "match", text: "Passwords match" },
-                      ].map(({ key, text }) => (
-                        <span
-                          key={key}
-                          className={`flex items-center gap-1 text-[0.65rem] transition-colors ${
-                            passwordChecks[key]
-                              ? "text-emerald-600"
-                              : "text-slate-400"
-                          }`}
-                        >
-                          <span className="text-[0.7rem]">
-                            {passwordChecks[key] ? "✓" : "○"}
-                          </span>
-                          {text}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading || !allPasswordChecksPass}
-              className="w-full py-2.5 mt-4 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                    <circle
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="3"
-                      fill="none"
-                      opacity="0.25"
-                    />
-                    <path
-                      fill="currentColor"
-                      opacity="0.85"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Verifying & Creating Account…
-                </>
-              ) : (
-                "Create Alumni Account"
-              )}
-            </button>
-          </form>
-
-          {/* Mobile-only login link */}
-          <div className="md:hidden">
-            <div className="flex items-center gap-3 my-3">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-[0.68rem] text-slate-400">or</span>
-              <div className="flex-1 h-px bg-slate-200" />
-            </div>
-            <p className="text-center text-[0.78rem] text-slate-500">
-              Already have an account?{" "}
-              <a
-                href="/login"
-                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={loading || !allPasswordChecksPass}
+                className="w-full py-2.5 mt-4 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
               >
-                Log In
-              </a>
-            </p>
-          </div>
+                {loading ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        fill="none"
+                        opacity="0.25"
+                      />
+                      <path
+                        fill="currentColor"
+                        opacity="0.85"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Verifying & Creating Account…
+                  </>
+                ) : (
+                  "Create Alumni Account"
+                )}
+              </button>
+            </form>
+
+            {/* Mobile-only login link */}
+            <div className="md:hidden">
+              <div className="flex items-center gap-3 my-3">
+                <div className="flex-1 h-px bg-slate-200" />
+                <span className="text-[0.68rem] text-slate-400">or</span>
+                <div className="flex-1 h-px bg-slate-200" />
+              </div>
+              <p className="text-center text-[0.78rem] text-slate-500">
+                Already have an account?{" "}
+                <a
+                  href="/login"
+                  className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+                >
+                  Log In
+                </a>
+              </p>
+            </div>
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
@@ -507,7 +511,8 @@ export default function AlumniRegisterPage() {
               className="w-full max-w-[300px] h-auto object-contain"
             />
             <p className="mt-4 text-center text-[0.8rem] text-slate-500 max-w-[240px]">
-              Join the PAC Alumni network. Verify your graduate ID to get started.
+              Join the PAC Alumni network. Verify your graduate ID to get
+              started.
             </p>
           </div>
         </div>
