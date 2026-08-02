@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
         api: __DIR__ . '/../routes/api.php',
+        // Loads Broadcast::channel() authorization callbacks (routes/channels.php).
+        // NOTE: this does NOT register Laravel's default session-based
+        // /broadcasting/auth route — this app is JWT-only (auth:api), so
+        // that endpoint is registered manually in routes/api/*.php instead,
+        // pointed at App\Http\Controllers\Api\BroadcastAuthController.
+        channels: __DIR__ . '/../routes/channels.php',
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )

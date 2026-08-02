@@ -13,6 +13,9 @@
 // ─── Auth Routes (Public + Authenticated) ────────────────
 require __DIR__ . '/api/auth.php';
 
+// ─── Broadcasting Auth (Protected: auth only — admin + alumni) ──
+require __DIR__ . '/api/broadcasting.php';
+
 // ─── Admin Routes (Protected: auth + role:admin) ─────────
 require __DIR__ . '/api/admin.php';
 
