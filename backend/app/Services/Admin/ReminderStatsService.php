@@ -32,11 +32,16 @@ class ReminderStatsService
         $startOfMonth = now()->startOfMonth();
 
         // Single grouped query: type → window counts.
+        //
+        // IMPORTANT: SUM(sent_at >= ?) works on MySQL (booleans coerce to
+        // 0/1) but fails on PostgreSQL with "function sum(boolean) does not
+        // exist" — a boolean comparison result isn't implicitly summable
+        // there. CASE WHEN ... THEN 1 ELSE 0 END is portable across both.
         $rows = EmailReminderLog::select('type')
             ->selectRaw('COUNT(*) as total')
-            ->selectRaw('SUM(sent_at >= ?) as today', [$startOfToday])
-            ->selectRaw('SUM(sent_at >= ?) as this_week', [$startOfWeek])
-            ->selectRaw('SUM(sent_at >= ?) as this_month', [$startOfMonth])
+            ->selectRaw('SUM(CASE WHEN sent_at >= ? THEN 1 ELSE 0 END) as today', [$startOfToday])
+            ->selectRaw('SUM(CASE WHEN sent_at >= ? THEN 1 ELSE 0 END) as this_week', [$startOfWeek])
+            ->selectRaw('SUM(CASE WHEN sent_at >= ? THEN 1 ELSE 0 END) as this_month', [$startOfMonth])
             ->groupBy('type')
             ->get()
             ->keyBy('type');
