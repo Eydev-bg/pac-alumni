@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y \
     git curl libpng-dev libjpeg62-turbo-dev libfreetype6-dev \
     libzip-dev libpq-dev libicu-dev unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd zip pdo_pgsql bcmath intl \
+    && docker-php-ext-install -j$(nproc) gd zip pdo_pgsql bcmath intl pcntl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
