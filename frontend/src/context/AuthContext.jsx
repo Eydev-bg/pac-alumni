@@ -1,5 +1,12 @@
-import { createContext, useState, useEffect, useCallback, useMemo } from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import authApi from "../api/authApi";
+import { initEcho, disconnectEcho } from "../config/echo";
 import { tokenStorage } from "../utils/storage";
 
 export const AuthContext = createContext(null);
@@ -33,6 +40,7 @@ export function AuthProvider({ children }) {
         const response = await authApi.getMe();
         setUser(response.data.data);
         tokenStorage.setUser(response.data.data);
+        initEcho();
       } catch {
         // Token invalid or expired — clear everything
         tokenStorage.clearAll();
@@ -57,6 +65,7 @@ export function AuthProvider({ children }) {
     tokenStorage.setUser(userData);
     setToken(newToken);
     setUser(userData);
+    initEcho();
 
     return userData;
   }, []);
@@ -70,6 +79,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Even if server call fails, clear local state
     } finally {
+      disconnectEcho();
       tokenStorage.clearAll();
       setToken(null);
       setUser(null);
@@ -104,15 +114,15 @@ export function AuthProvider({ children }) {
   /**
    * Check if user has a specific role.
    */
- const hasRole = useCallback(
-   (role) => {
-     if (!user) return false;
-     const userRole = user.role || user.role_label;
-     if (Array.isArray(role)) return role.includes(userRole);
-     return userRole === role;
-   },
-   [user],
- );
+  const hasRole = useCallback(
+    (role) => {
+      if (!user) return false;
+      const userRole = user.role || user.role_label;
+      if (Array.isArray(role)) return role.includes(userRole);
+      return userRole === role;
+    },
+    [user],
+  );
   // Memoize the provided value so consumers only re-render when an actual
   // auth field/callback changes, not on every AuthProvider render. The
   // callbacks below are already useCallback-stable.
