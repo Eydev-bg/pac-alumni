@@ -6,9 +6,9 @@ use App\Jobs\SendContentPublishedEmails;
 use App\Models\Announcement;
 use App\Models\ContentEmailLog;
 use App\Models\User;
+use App\Services\StorageService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class AnnouncementService
 {
@@ -20,9 +20,9 @@ class AnnouncementService
         return Announcement::query()
             ->with('admin:id,uuid,first_name,middle_name,last_name,suffix')
             ->withCount('reads')
-            ->when($filters['target_type'] ?? null, fn ($q, $type) => $q->where('target_type', $type))
-            ->when(isset($filters['is_published']), fn ($q) => $q->where('is_published', (bool) $filters['is_published']))
-            ->when($filters['search'] ?? null, fn ($q, $search) => $q->search($search))
+            ->when($filters['target_type'] ?? null, fn($q, $type) => $q->where('target_type', $type))
+            ->when(isset($filters['is_published']), fn($q) => $q->where('is_published', (bool) $filters['is_published']))
+            ->when($filters['search'] ?? null, fn($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
@@ -85,7 +85,7 @@ class AnnouncementService
         }
 
         if ($image) {
-            $this->deleteFile($announcement->image);
+            $this->deleteFile($announcement->getRawOriginal('image'));
             $data['image'] = $this->storeFile($image, 'announcements', $announcement->admin->uuid);
         }
 
@@ -152,33 +152,32 @@ class AnnouncementService
     public function destroy(int $id): void
     {
         $announcement = $this->find($id);
-        $this->deleteFile($announcement->image);
+        $this->deleteFile($announcement->getRawOriginal('image'));
         $announcement->delete();
     }
 
     /**
-     * Store an uploaded file on the public disk and return its public path.
+     * Store an uploaded file on the configured upload disk (local 'public'
+     * or cloud 'supabase') and return its RAW storage path. The URL is
+     * resolved at read time by the Announcement model's `image` accessor.
      */
     private function storeFile(UploadedFile $file, string $folder, string $uuid): string
     {
         $filename = $folder . '/' . $uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('', $filename, 'public');
 
-        return '/storage/' . $path;
+        return StorageService::store($file, $filename);
     }
 
     /**
-     * Delete a previously stored public file by its public path.
+     * Delete a previously stored file. Handles both legacy "/storage/..."
+     * values and new raw paths — StorageService::delete() figures out which.
      */
-    private function deleteFile(?string $publicPath): void
+    private function deleteFile(?string $storedPath): void
     {
-        if (!$publicPath) {
+        if (!$storedPath) {
             return;
         }
 
-        $path = str_replace('/storage/', '', $publicPath);
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        StorageService::delete($storedPath);
     }
 }

@@ -7,9 +7,9 @@ use App\Jobs\SendContentPublishedEmails;
 use App\Models\ContentEmailLog;
 use App\Models\JobPosting;
 use App\Models\User;
+use App\Services\StorageService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class AdminJobPostingService
 {
@@ -20,8 +20,8 @@ class AdminJobPostingService
     {
         return JobPosting::query()
             ->with('postedBy:id,uuid,first_name,middle_name,last_name,suffix')
-            ->when($filters['status'] ?? null, fn ($q, $status) => $q->where('status', $status))
-            ->when($filters['search'] ?? null, fn ($q, $search) => $q->search($search))
+            ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            ->when($filters['search'] ?? null, fn($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->latest()
             ->paginate(min((int) ($filters['per_page'] ?? 15), 100));
@@ -98,7 +98,7 @@ class AdminJobPostingService
         }
 
         if ($logo) {
-            $this->deleteFile($job->company_logo);
+            $this->deleteFile($job->getRawOriginal('company_logo'));
             $data['company_logo'] = $this->storeFile($logo, 'job-logos', $job->postedBy->uuid);
         }
 
@@ -147,33 +147,32 @@ class AdminJobPostingService
     public function destroy(int $id): void
     {
         $job = $this->find($id);
-        $this->deleteFile($job->company_logo);
+        $this->deleteFile($job->getRawOriginal('company_logo'));
         $job->delete();
     }
 
     /**
-     * Store an uploaded file on the public disk and return its public path.
+     * Store an uploaded file on the configured upload disk (local 'public'
+     * or cloud 'supabase') and return its RAW storage path. The URL is
+     * resolved at read time by the JobPosting model's `company_logo` accessor.
      */
     private function storeFile(UploadedFile $file, string $folder, string $uuid): string
     {
         $filename = $folder . '/' . $uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('', $filename, 'public');
 
-        return '/storage/' . $path;
+        return StorageService::store($file, $filename);
     }
 
     /**
-     * Delete a previously stored public file by its public path.
+     * Delete a previously stored file. Handles both legacy "/storage/..."
+     * values and new raw paths — StorageService::delete() figures out which.
      */
-    private function deleteFile(?string $publicPath): void
+    private function deleteFile(?string $storedPath): void
     {
-        if (!$publicPath) {
+        if (!$storedPath) {
             return;
         }
 
-        $path = str_replace('/storage/', '', $publicPath);
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        StorageService::delete($storedPath);
     }
 }

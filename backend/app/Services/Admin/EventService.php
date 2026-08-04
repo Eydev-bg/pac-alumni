@@ -7,10 +7,10 @@ use App\Jobs\SendContentPublishedEmails;
 use App\Models\ContentEmailLog;
 use App\Models\Event;
 use App\Models\User;
+use App\Services\StorageService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class EventService
 {
@@ -108,7 +108,7 @@ class EventService
         }
 
         if ($image) {
-            $this->deleteFile($event->image);
+            $this->deleteFile($event->getRawOriginal('image'));
             $data['image'] = $this->storeFile($image, 'events', $event->admin->uuid);
         }
 
@@ -184,33 +184,32 @@ class EventService
     public function destroy(int $id): void
     {
         $event = $this->find($id);
-        $this->deleteFile($event->image);
+        $this->deleteFile($event->getRawOriginal('image'));
         $event->delete();
     }
 
     /**
-     * Store an uploaded file on the public disk and return its public path.
+     * Store an uploaded file on the configured upload disk (local 'public'
+     * or cloud 'supabase') and return its RAW storage path. The URL is
+     * resolved at read time by the Event model's `image` accessor.
      */
     private function storeFile(UploadedFile $file, string $folder, string $uuid): string
     {
         $filename = $folder . '/' . $uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('', $filename, 'public');
 
-        return '/storage/' . $path;
+        return StorageService::store($file, $filename);
     }
 
     /**
-     * Delete a previously stored public file by its public path.
+     * Delete a previously stored file. Handles both legacy "/storage/..."
+     * values and new raw paths — StorageService::delete() figures out which.
      */
-    private function deleteFile(?string $publicPath): void
+    private function deleteFile(?string $storedPath): void
     {
-        if (!$publicPath) {
+        if (!$storedPath) {
             return;
         }
 
-        $path = str_replace('/storage/', '', $publicPath);
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        StorageService::delete($storedPath);
     }
 }

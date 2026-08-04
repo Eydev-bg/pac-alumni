@@ -8,6 +8,8 @@ namespace App\Models;
 
 use App\Enums\JobEmploymentType;
 use App\Enums\JobStatus;
+use App\Models\Concerns\ResolvesStorageUrl;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class JobPosting extends Model
 {
     use SoftDeletes;
+    use ResolvesStorageUrl;
 
     protected $fillable = [
         'posted_by',
@@ -44,6 +47,17 @@ class JobPosting extends Model
             'employment_type'      => JobEmploymentType::class,
             'is_pinned'            => 'boolean',
         ];
+    }
+
+    // ─── Accessors ───────────────────────────────────────────
+
+    /**
+     * Resolve the stored company logo path to a servable URL at read time.
+     * See ResolvesStorageUrl for why this can't just be the raw DB value.
+     */
+    protected function companyLogo(): Attribute
+    {
+        return $this->storageUrlAttribute();
     }
 
     // ─── Relationships ───────────────────────────────────────
