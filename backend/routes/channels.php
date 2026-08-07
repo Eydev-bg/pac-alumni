@@ -70,19 +70,6 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 Broadcast::presence('conversation.{conversationId}.presence', function (User $user, int $conversationId) {
     $conversation = Conversation::find($conversationId);
 
-    // TEMP DEBUG — remove after diagnosing the 403.
-    \Illuminate\Support\Facades\Log::info('presence-auth-debug', [
-        'conversationId' => $conversationId,
-        'conversationId_type' => gettype($conversationId),
-        'user_id' => $user->id,
-        'user_id_type' => gettype($user->id),
-        'conversation_found' => $conversation ? true : false,
-        'participant_one_id' => $conversation?->participant_one_id,
-        'participant_one_id_type' => gettype($conversation?->participant_one_id),
-        'participant_two_id' => $conversation?->participant_two_id,
-        'participant_two_id_type' => gettype($conversation?->participant_two_id),
-    ]);
-
     if (!$conversation) {
         return false;
     }
@@ -99,6 +86,7 @@ Broadcast::presence('conversation.{conversationId}.presence', function (User $us
     // to know WHO is online/typing, never a raw numeric id.
     return ['uuid' => $user->uuid, 'name' => $user->full_name];
 });
+
 /*
 |--------------------------------------------------------------------------
 | Private admin-wide channel — Phase 2 will use this for the live
