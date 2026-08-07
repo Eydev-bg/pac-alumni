@@ -10,6 +10,9 @@ import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
+import { useRealtimeReadReceipts } from "../../../hooks/useRealtimeReadReceipts";
+import { useConversationPresence } from "../../../hooks/useConversationPresence";
+import { getEcho } from "../../../config/echo";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
 import { Avatar } from "../../../components/alumni/ui";
@@ -20,6 +23,10 @@ import {
 } from "react-icons/hi2";
 
 const MAX_LEN = 1000;
+// How often (ms) a "typing" whisper is sent while the user keeps typing —
+// not on every keystroke, just enough to keep the other side's 4s
+// TYPING_TIMEOUT_MS (see useConversationPresence) topped up.
+const TYPING_WHISPER_INTERVAL_MS = 2000;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
 function bubbleTime(iso) {
@@ -28,6 +35,12 @@ function bubbleTime(iso) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+/** "Read • 2:14 PM" label for a read own-message; null while unread. */
+function readLabel(m) {
+  if (!m.is_read || !m.read_at) return null;
+  return `Read • ${bubbleTime(m.read_at)}`;
 }
 
 /**
@@ -121,6 +134,57 @@ export default function ConversationThread({
     load(false);
   });
 
+  // Real-time: flip our own sent bubbles from "Sent" to "Read • 2:14 PM"
+  // the instant the other participant opens the thread and reads them.
+  useRealtimeReadReceipts(conversationId, (payload) => {
+    const ids = new Set(payload.message_ids ?? []);
+    if (ids.size === 0) return;
+    setMessages((prev) =>
+      prev.map((m) =>
+        ids.has(m.id) ? { ...m, is_read: true, read_at: payload.read_at } : m,
+      ),
+    );
+  });
+
+  // useRealtimeMessages and useRealtimeReadReceipts both listen on the same
+  // conversation.{id} private channel but (deliberately) don't leave() it on
+  // their own cleanup, since either could unmount while the other is still
+  // active. This effect owns the channel's actual lifecycle: subscribe once
+  // per conversation, leave once when the thread closes or switches.
+  useEffect(() => {
+    if (!conversationId) return;
+    const echo = getEcho();
+    if (!echo) return;
+    echo.private(`conversation.${conversationId}`);
+    return () => {
+      echo.leave(`conversation.${conversationId}`);
+    };
+  }, [conversationId]);
+
+  // Real-time presence: the other participant's online status + typing
+  // ("responding…") indicator, via the conversation's presence channel.
+  const { isOnline, isTyping, sendTyping, sendStoppedTyping } =
+    useConversationPresence(conversationId, other?.uuid);
+
+  // Throttle outgoing "typing" whispers — send at most once per
+  // TYPING_WHISPER_INTERVAL_MS while the user keeps typing, not on every
+  // keystroke.
+  const lastTypingSentRef = useRef(0);
+  const handleContentChange = (e) => {
+    const value = e.target.value.slice(0, MAX_LEN);
+    setContent(value);
+
+    if (!value.trim()) {
+      sendStoppedTyping();
+      return;
+    }
+    const now = Date.now();
+    if (now - lastTypingSentRef.current >= TYPING_WHISPER_INTERVAL_MS) {
+      lastTypingSentRef.current = now;
+      sendTyping();
+    }
+  };
+
   // Auto-scroll to the latest message when the list grows (including when an
   // optimistic bubble is added to `pending`).
   useEffect(() => {
@@ -143,6 +207,7 @@ export default function ConversationThread({
 
     setPending((prev) => [...prev, optimistic]);
     setContent(""); // clear input immediately (Messenger behaviour)
+    sendStoppedTyping();
     setSending(true);
     setError("");
 
@@ -201,17 +266,37 @@ export default function ConversationThread({
             }
             className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl px-1 -mx-1 py-0.5 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
-            <Avatar src={other.profile_picture} name={other.name} size="sm" />
+            <span className="relative flex-shrink-0">
+              <Avatar src={other.profile_picture} name={other.name} size="sm" />
+              {isOnline && (
+                <span
+                  className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white"
+                  aria-label="Online"
+                  title="Online"
+                />
+              )}
+            </span>
             <div className="min-w-0">
               <h2 className="text-sm font-semibold text-slate-900 truncate">
                 {other.name}
               </h2>
-              {(other.course_code || other.graduation_year) && (
-                <p className="text-[0.7rem] text-slate-400 truncate">
-                  {[other.course_code, other.graduation_year]
-                    .filter(Boolean)
-                    .join(" • ")}
+              {isTyping ? (
+                <p className="text-[0.7rem] text-blue-600 font-medium truncate flex items-center gap-1">
+                  <span className="inline-flex gap-0.5" aria-hidden="true">
+                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.2s]" />
+                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.1s]" />
+                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce" />
+                  </span>
+                  {other.name?.split(" ")[0] || "They"} is responding…
                 </p>
+              ) : (
+                (other.course_code || other.graduation_year) && (
+                  <p className="text-[0.7rem] text-slate-400 truncate">
+                    {[other.course_code, other.graduation_year]
+                      .filter(Boolean)
+                      .join(" • ")}
+                  </p>
+                )
               )}
             </div>
           </button>
@@ -239,6 +324,10 @@ export default function ConversationThread({
             // different sender (or there is no next message).
             const next = allMessages[i + 1];
             const isLastOfGroup = !next || isOwnMessage(next) !== own;
+            // Sent/Read status only makes sense on the very last message in
+            // the whole thread (Messenger-style) — showing it on every own
+            // bubble would be noisy and redundant.
+            const isLastOverall = i === allMessages.length - 1;
             return (
               <div
                 key={m.id}
@@ -290,6 +379,8 @@ export default function ConversationThread({
                       "Sending…"
                     ) : own && m._status === "failed" ? (
                       <span className="text-red-500">Failed to send</span>
+                    ) : own && isLastOverall ? (
+                      (readLabel(m) ?? "Sent")
                     ) : (
                       bubbleTime(m.created_at)
                     )}
@@ -310,7 +401,7 @@ export default function ConversationThread({
         <form onSubmit={handleSend} className="flex items-end gap-2">
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value.slice(0, MAX_LEN))}
+            onChange={handleContentChange}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();

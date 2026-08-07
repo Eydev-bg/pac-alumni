@@ -8,6 +8,13 @@
 //  Handles subscribe/unsubscribe across conversation changes, same shape
 //  as useRealtimeNotifications but scoped to one conversation at a time.
 //
+//  NOTE: this conversation.{id} channel is also used by
+//  useRealtimeReadReceipts (a different event on the same channel), so
+//  cleanup here only removes THIS hook's own listener — it deliberately
+//  does not echo.leave() the channel, which would tear down the other
+//  hook's subscription too if both are mounted (as they are together in
+//  ConversationThread.jsx).
+//
 // ═══════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from "react";
@@ -35,7 +42,6 @@ export function useRealtimeMessages(conversationId, onMessage) {
 
     return () => {
       channel.stopListening(".message.created", handler);
-      echo.leave(`conversation.${conversationId}`);
     };
   }, [conversationId]);
 }
