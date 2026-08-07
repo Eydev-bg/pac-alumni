@@ -46,9 +46,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // SECURITY: Attach hardening headers to every response and reject JWTs
         // whose password fingerprint is stale (invalidated after a password change).
+        // TrackLastActive: best-effort "online status" heartbeat (throttled
+        // write, see the middleware itself) — powers the simple green-dot /
+        // "Active X ago" chat presence indicator without a WebSocket
+        // presence channel.
         $middleware->append([
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\EnsureTokenPasswordIsCurrent::class,
+            \App\Http\Middleware\TrackLastActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

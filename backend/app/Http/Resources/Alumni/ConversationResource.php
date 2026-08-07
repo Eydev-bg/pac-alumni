@@ -27,6 +27,7 @@ class ConversationResource extends JsonResource
                 'profile_picture' => $other?->profile_picture,
                 'course_code'     => $graduate?->course?->code,
                 'graduation_year' => $graduate?->graduation_year,
+                'last_active_at'  => $other?->last_active_at?->toISOString(),
             ],
             'last_message' => $this->whenLoaded('latestMessage', function () use ($authUserId) {
                 if (!$this->latestMessage) {

@@ -53,6 +53,7 @@ class User extends Authenticatable implements JWTSubject
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
             'last_profile_update_at' => 'datetime',
+            'last_active_at' => 'datetime',
             'password' => 'hashed', // Auto-hash on set (Laravel 10+)
         ];
     }

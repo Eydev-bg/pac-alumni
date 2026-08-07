@@ -22,27 +22,15 @@ use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------
-| Explicit auth guard for broadcasting — THE FIX
+| Explicit auth guard for broadcasting
 |--------------------------------------------------------------------------
 |
-| Laravel's PusherBroadcaster resolves "who is the current user" two
-| different ways depending on channel type:
-|   - Private channels: the User is resolved by auth:api (via the
-|     controller's own middleware) and handed straight to the
-|     Broadcast::channel() callback — this always worked.
-|   - Presence channels: PusherBroadcaster additionally calls
-|     retrieveUser(), which — with NO explicit resolver registered —
-|     falls back to the app's DEFAULT guard ('web', session-based; see
-|     config/auth.php). This app has no sessions, so that resolves to
-|     null, and Broadcaster::verifyUserCanAccessChannel() rejects the
-|     subscription with an empty-message AccessDeniedHttpException
-|     BEFORE the presence callback below ever runs. That's why every
-|     presence channel 403'd (even a static one with no parameters at
-|     all) while private channels worked fine.
-|
-| resolveAuthenticatedUserUsing() tells Laravel explicitly which guard's
-| resolved user to hand to ANY channel callback (private or presence),
-| overriding the default-guard fallback above.
+| Kept even though this app now only uses private channels (no presence
+| channels — see conversation.{conversationId} below, and the typing
+| indicator's whisper events on that same channel): private-channel auth
+| already worked without this, but registering the guard explicitly here
+| is harmless and future-proofs against ever needing a presence channel
+| again without re-hitting the same investigation.
 |--------------------------------------------------------------------------
 */
 
@@ -65,12 +53,14 @@ Broadcast::channel('user.{uuid}', function (User $user, string $uuid) {
 
 /*
 |--------------------------------------------------------------------------
-| Private conversation channel — Phase 2 will use this for the alumni
-| messaging feature. Only the two participants of that conversation may
-| subscribe. Conversation is looked up by its numeric id (internal,
-| never exposed as a route param to the browser — only used as the
-| channel's path segment, same as today's /api/alumni/messages/{id}
-| routes already do).
+| Private conversation channel — used for the alumni messaging feature.
+| Only the two participants of that conversation may subscribe. Also
+| carries the "typing…" whisper events (client-to-client, no backend
+| round trip) that power the "Dave is responding…" indicator — no
+| separate presence channel needed for that. Conversation is looked up
+| by its numeric id (internal, never exposed as a route param to the
+| browser — only used as the channel's path segment, same as today's
+| /api/alumni/messages/{id} routes already do).
 |--------------------------------------------------------------------------
 */
 Broadcast::channel('conversation.{conversationId}', function (User $user, int $conversationId) {
@@ -82,47 +72,6 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 
     return $conversation->participant_one_id === $user->id
         || $conversation->participant_two_id === $user->id;
-});
-
-/*
-|--------------------------------------------------------------------------
-| Presence conversation channel — separate from the private conversation
-| channel above. A private channel only tells you whether YOU may listen;
-| a presence channel additionally tells every subscriber WHO ELSE is
-| currently subscribed (via .here/.joining/.leaving on the frontend) and
-| lets clients broadcast ephemeral "whisper" events to each other without
-| a round trip to the backend — exactly what the chat's online green dot
-| and "Dave is responding…" typing indicator need. Authorization mirrors
-| the private channel (same two-participant check); the difference is
-| purely in what Reverb does with the subscription once authorized.
-|
-| Named "conversation-presence.{conversationId}" (not
-| "conversation.{conversationId}.presence") so its route pattern can't be
-| mistaken for the private "conversation.{conversationId}" channel above —
-| Laravel matches channel name patterns as regex, and a trailing static
-| segment after the {conversationId} placeholder was resolving against the
-| wrong registered pattern, causing every presence-channel auth request to
-| 403 even for valid participants.
-|--------------------------------------------------------------------------
-*/
-Broadcast::presence('conversation-presence.{conversationId}', function (User $user, int $conversationId) {
-    $conversation = Conversation::find($conversationId);
-
-    if (!$conversation) {
-        return false;
-    }
-
-    $isParticipant = $conversation->participant_one_id === $user->id
-        || $conversation->participant_two_id === $user->id;
-
-    if (!$isParticipant) {
-        return false;
-    }
-
-    // Returned array becomes this user's presence-channel member info —
-    // the frontend reads .uuid off members it sees in .here()/.joining()
-    // to know WHO is online/typing, never a raw numeric id.
-    return ['uuid' => $user->uuid, 'name' => $user->full_name];
 });
 
 /*
