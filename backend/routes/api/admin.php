@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('admin')
-    ->middleware(['auth:api', 'account.status', 'role:admin'])
+    ->middleware(['auth:api', 'account.status', 'role:admin', \App\Http\Middleware\TrackLastActive::class])
     ->name('admin.')
     ->group(function () {
 
@@ -158,21 +158,21 @@ Route::prefix('admin')
 
 
 
-    // ─── Graduate Tracer Analytics ───────────────────
-    Route::prefix('tracer')->name('tracer.')->group(function () {
-        Route::get('/summary', [GraduateTracerController::class, 'summary'])
-            ->name('summary');
+        // ─── Graduate Tracer Analytics ───────────────────
+        Route::prefix('tracer')->name('tracer.')->group(function () {
+            Route::get('/summary', [GraduateTracerController::class, 'summary'])
+                ->name('summary');
 
-        Route::get('/by-course', [GraduateTracerController::class, 'byCourse'])
-            ->name('by-course');
+            Route::get('/by-course', [GraduateTracerController::class, 'byCourse'])
+                ->name('by-course');
 
-        Route::get('/employment-trend', [GraduateTracerController::class, 'employmentTrend'])
-            ->name('employment-trend');
+            Route::get('/employment-trend', [GraduateTracerController::class, 'employmentTrend'])
+                ->name('employment-trend');
 
-        Route::get('/export', [GraduateTracerController::class, 'export'])
-            ->name('export')
-            ->middleware('throttle:10,1'); // Rate limit: 10 exports per minute
-    });
+            Route::get('/export', [GraduateTracerController::class, 'export'])
+                ->name('export')
+                ->middleware('throttle:10,1'); // Rate limit: 10 exports per minute
+        });
 
         // ─── Analytics Dashboard (Phase 5) ───────────────
         Route::prefix('analytics')->name('analytics.')->group(function () {
@@ -273,5 +273,4 @@ Route::prefix('admin')
             ->whereNumber('id')->name('job-postings.publish');
         Route::patch('/job-postings/{id}/mark-expired', [AdminJobPostingController::class, 'markExpired'])
             ->whereNumber('id')->name('job-postings.mark-expired');
-
     });
