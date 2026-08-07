@@ -65,9 +65,17 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 | and "Dave is responding…" typing indicator need. Authorization mirrors
 | the private channel (same two-participant check); the difference is
 | purely in what Reverb does with the subscription once authorized.
+|
+| Named "conversation-presence.{conversationId}" (not
+| "conversation.{conversationId}.presence") so its route pattern can't be
+| mistaken for the private "conversation.{conversationId}" channel above —
+| Laravel matches channel name patterns as regex, and a trailing static
+| segment after the {conversationId} placeholder was resolving against the
+| wrong registered pattern, causing every presence-channel auth request to
+| 403 even for valid participants.
 |--------------------------------------------------------------------------
 */
-Broadcast::presence('conversation.{conversationId}.presence', function (User $user, int $conversationId) {
+Broadcast::presence('conversation-presence.{conversationId}', function (User $user, int $conversationId) {
     $conversation = Conversation::find($conversationId);
 
     if (!$conversation) {

@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 //
 //  Joins the conversation's presence channel (see
-//  Broadcast::presence('conversation.{id}.presence') in
+//  Broadcast::presence('conversation-presence.{id}') in
 //  routes/channels.php) to power two things in ConversationThread.jsx:
 //
 //    1. The other participant's online green dot — derived from whether
@@ -53,7 +53,7 @@ export function useConversationPresence(conversationId, otherUuid) {
     const echo = getEcho();
     if (!echo) return;
 
-    const channel = echo.join(`conversation.${conversationId}.presence`);
+    const channel = echo.join(`conversation-presence.${conversationId}`);
     channelRef.current = channel;
 
     const clearGrace = () => {
@@ -104,7 +104,7 @@ export function useConversationPresence(conversationId, otherUuid) {
     return () => {
       clearGrace();
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
-      echo.leave(`conversation.${conversationId}.presence`);
+      echo.leave(`conversation-presence.${conversationId}`);
       channelRef.current = null;
     };
   }, [conversationId, otherUuid]);
