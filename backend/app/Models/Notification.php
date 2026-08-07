@@ -6,6 +6,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Events\NotificationCreated;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
@@ -19,6 +20,13 @@ class Notification extends Model
         'is_read',
         'read_at',
     ];
+
+    protected static function booted(): void
+    {
+        static::created(function (Notification $notification) {
+            broadcast(new NotificationCreated($notification));
+        });
+    }
 
     protected function casts(): array
     {
