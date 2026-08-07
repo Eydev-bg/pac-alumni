@@ -8,6 +8,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import useModalA11y from "../../../hooks/useModalA11y";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
+import { useRealtimeInboxMessages } from "../../../hooks/useRealtimeInboxMessages";
 import { useDebounce } from "../../../hooks/useDebounce";
 import { timeAgo } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
@@ -74,7 +75,10 @@ export default function AlumniInboxPage() {
     alumniApi
       .getConversations()
       .then((res) => setConversations(res.data.data ?? []))
-      .catch((err) => { if (import.meta.env.DEV) console.error("Conversations load/poll failed:", err); })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Conversations load/poll failed:", err);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -83,8 +87,20 @@ export default function AlumniInboxPage() {
   }, [load]);
 
   // Auto-refresh the conversation list every 30 seconds — paused while the
-  // tab is hidden, catches up immediately on return.
+  // tab is hidden, catches up immediately on return. Kept as a fallback
+  // safety net alongside the realtime listener below.
   useVisibilityPolling(() => load(false), 30000);
+
+  // Real-time: resort the list + bump the unread dot the instant a message
+  // arrives on any conversation, instead of waiting for the next 30s poll.
+  // Skip when the message belongs to the thread already open in the right
+  // panel — ConversationThread's own realtime listener already triggers
+  // this same load(false) via onActivity, so refreshing here too would
+  // just be a redundant duplicate fetch.
+  useRealtimeInboxMessages((payload) => {
+    if (payload.conversation_id === selectedId) return;
+    load(false);
+  });
 
   // Desktop opens the thread in the right panel; mobile navigates to the
   // standalone full-screen conversation page.
@@ -126,7 +142,9 @@ export default function AlumniInboxPage() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900">Messages</h1>
-            <p className="text-sm text-slate-500">Connect with fellow PAC alumni</p>
+            <p className="text-sm text-slate-500">
+              Connect with fellow PAC alumni
+            </p>
           </div>
         </div>
         <button
@@ -166,7 +184,9 @@ export default function AlumniInboxPage() {
                         <button
                           onClick={() => openConversation(c.id)}
                           className={`w-full text-left flex items-center gap-3 px-4 py-3 transition-colors ${
-                            isActive ? "bg-[#2563eb]/[0.06]" : "hover:bg-slate-50"
+                            isActive
+                              ? "bg-[#2563eb]/[0.06]"
+                              : "hover:bg-slate-50"
                           }`}
                         >
                           <Avatar
@@ -301,7 +321,10 @@ function NewMessageModal({ onClose, onStarted }) {
         className="relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden focus:outline-none"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <h3 id="new-message-modal-title" className="text-base font-bold text-slate-900">
+          <h3
+            id="new-message-modal-title"
+            className="text-base font-bold text-slate-900"
+          >
             New Message
           </h3>
           <button
@@ -330,7 +353,9 @@ function NewMessageModal({ onClose, onStarted }) {
 
           <div className="mt-3 max-h-72 overflow-y-auto">
             {loading ? (
-              <p className="py-6 text-center text-sm text-slate-400">Searching…</p>
+              <p className="py-6 text-center text-sm text-slate-400">
+                Searching…
+              </p>
             ) : results.length === 0 ? (
               <p className="py-6 text-center text-sm text-slate-400">
                 {search ? "No alumni found." : "Type a name to search."}

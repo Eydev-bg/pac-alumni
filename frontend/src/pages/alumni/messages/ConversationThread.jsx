@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
+import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
 import { Avatar } from "../../../components/alumni/ui";
@@ -37,7 +38,11 @@ function bubbleTime(iso) {
  * @param {Function} [onActivity]    Called after load/send so the parent inbox
  *                                   can refresh ordering + unread badges.
  */
-export default function ConversationThread({ conversationId, onBack, onActivity }) {
+export default function ConversationThread({
+  conversationId,
+  onBack,
+  onActivity,
+}) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [other, setOther] = useState(null);
@@ -91,9 +96,29 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
   }, [conversationId, load]);
 
   // Auto-refresh every 30 seconds — paused while the tab is hidden,
-  // catches up immediately on return.
+  // catches up immediately on return. Kept as a fallback safety net
+  // alongside the realtime listener below (covers reconnect gaps).
   useVisibilityPolling(() => load(false), 30000, {
     enabled: !!conversationId,
+  });
+
+  // Real-time: append the other participant's message the instant it's
+  // broadcast, instead of waiting for the next 30s poll. Our own sent
+  // messages already land via handleSend's optimistic flow, so skip them
+  // here to avoid a duplicate bubble.
+  useRealtimeMessages(conversationId, (payload) => {
+    if (String(payload.sender?.uuid ?? "") === String(user?.uuid ?? "")) {
+      return;
+    }
+    setMessages((prev) =>
+      prev.some((m) => m.id === payload.id) ? prev : [...prev, payload],
+    );
+    // The other party's message just arrived while this thread is open.
+    // getMessages() is also what marks it read server-side (see
+    // MessageService::messages()) — silent reload reconciles our locally
+    // appended bubble with the server copy and clears the unread flag,
+    // then refreshes the inbox list/badges via onActivity.
+    load(false);
   });
 
   // Auto-scroll to the latest message when the list grows (including when an
@@ -136,7 +161,9 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
         prev.map((p) => (p.id === tempId ? { ...p, _status: "failed" } : p)),
       );
       if (err?.response?.status === 429) {
-        setError("You're sending messages too quickly. Please try again later.");
+        setError(
+          "You're sending messages too quickly. Please try again later.",
+        );
       } else {
         setError(
           err?.response?.data?.message || "Failed to send. Please try again.",
@@ -169,7 +196,9 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
             onClick={() =>
               other?.uuid && navigate(`/alumni/directory/${other.uuid}`)
             }
-            title={other?.name ? `View ${other.name}'s profile` : "View profile"}
+            title={
+              other?.name ? `View ${other.name}'s profile` : "View profile"
+            }
             className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl px-1 -mx-1 py-0.5 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
             <Avatar src={other.profile_picture} name={other.name} size="sm" />
@@ -196,7 +225,9 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
       {/* ── Messages ── */}
       <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50">
         {loading ? (
-          <p className="text-center text-sm text-slate-400 mt-6">Loading messages…</p>
+          <p className="text-center text-sm text-slate-400 mt-6">
+            Loading messages…
+          </p>
         ) : allMessages.length === 0 ? (
           <p className="text-center text-sm text-slate-400 mt-6">
             No messages yet. Say hello! 👋
@@ -255,11 +286,13 @@ export default function ConversationThread({ conversationId, onBack, onActivity 
                       own ? "text-right" : "text-left"
                     }`}
                   >
-                    {own && m._status === "sending"
-                      ? "Sending…"
-                      : own && m._status === "failed"
-                        ? <span className="text-red-500">Failed to send</span>
-                        : bubbleTime(m.created_at)}
+                    {own && m._status === "sending" ? (
+                      "Sending…"
+                    ) : own && m._status === "failed" ? (
+                      <span className="text-red-500">Failed to send</span>
+                    ) : (
+                      bubbleTime(m.created_at)
+                    )}
                   </p>
                 </div>
               </div>
