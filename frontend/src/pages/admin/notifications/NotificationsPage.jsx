@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import adminApi from "../../../api/adminApi";
 import Pagination from "../../../components/common/Pagination";
 import { useToast } from "../../../hooks/useToast";
+import { useAdminUnread } from "../../../context/AdminUnreadContext";
 import { formatDate } from "../../../utils/formatters";
 import { PAGINATION } from "../../../config/constants";
 import Card from "../../../ui/Card";
@@ -13,6 +14,9 @@ import { HiOutlineBell, HiOutlineCheckCircle } from "react-icons/hi2";
 
 export default function NotificationsPage() {
   const toast = useToast();
+  // Shared with the Header bell badge — decrementing here updates the
+  // badge instantly instead of waiting for the next 60s poll.
+  const adminUnread = useAdminUnread();
   const [notifications, setNotifications] = useState([]);
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,8 @@ export default function NotificationsPage() {
       await adminApi.markAllNotificationsRead();
       toast.success("All notifications marked as read.");
       fetch();
+      // Bell badge should drop to 0 — refetch rather than guess the delta.
+      adminUnread?.refetchNotifications();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to mark as read.");
     }
@@ -54,6 +60,7 @@ export default function NotificationsPage() {
     try {
       await adminApi.markNotificationRead(id);
       fetch();
+      adminUnread?.decrementNotifications();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to mark as read.");
     }

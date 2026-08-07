@@ -2,13 +2,11 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useUnread } from "../../context/UnreadContext";
-import adminApi from "../../api/adminApi";
+import { useAdminUnread } from "../../context/AdminUnreadContext";
 import alumniApi from "../../api/alumniApi";
 import { timeAgo } from "../../utils/formatters";
 import { useDebounce } from "../../hooks/useDebounce";
 import Avatar from "../alumni/ui/Avatar";
-import { useRealtimeNotifications } from "../../hooks/useRealtimeNotifications";
-import { useToast } from "../../hooks/useToast";
 import {
   HiOutlineBars3,
   HiOutlineArrowRightOnRectangle,
@@ -35,17 +33,21 @@ export default function Header({
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   // Shared alumni unread source (null in layouts without UnreadProvider,
-  // e.g. the admin layout — admin keeps its own poll below).
+  // e.g. the admin layout).
   const unread = useUnread();
-  const toast = useToast();
+  // Shared admin unread source — same count NotificationsPage decrements
+  // when an admin marks a notification read, so the bell badge updates
+  // instantly instead of waiting for the next 60s poll.
+  const adminUnread = useAdminUnread();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   // Mobile-only: the global search collapses to an icon and expands to a
   // full-width overlay under the header (desktop keeps the inline input).
   const [searchOpen, setSearchOpen] = useState(false);
-  const [adminUnreadCount, setAdminUnreadCount] = useState(0);
   const unreadCount =
-    user?.role === "alumni" ? (unread?.notifications ?? 0) : adminUnreadCount;
+    user?.role === "alumni"
+      ? (unread?.notifications ?? 0)
+      : (adminUnread?.notifications ?? 0);
   const isAlumni = user?.role === "alumni";
   const unreadMessages = unread?.messages ?? 0;
   // Recent notifications shown in the alumni bell dropdown (fetched on open).
@@ -84,13 +86,8 @@ export default function Header({
   const contentOffset =
     sidebarOpen === undefined ? "" : sidebarOpen ? "lg:pl-64" : "lg:pl-20";
 
-  // Real-time push for admins — alumni already get this via UnreadContext.
-  useRealtimeNotifications((payload) => {
-    if (user?.role === "admin") {
-      setAdminUnreadCount((c) => c + 1);
-      toast.info(payload.title || "New notification");
-    }
-  });
+  // Real-time push for admins now lives in AdminUnreadContext (shared with
+  // NotificationsPage); alumni already get this via UnreadContext.
 
   // Close the bell dropdown on Escape and return focus to the bell button.
   useEffect(() => {
@@ -124,26 +121,7 @@ export default function Header({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch unread notification count on mount and poll every 60 seconds.
-  // Admin only — the alumni count comes from the shared UnreadContext.
-  useEffect(() => {
-    if (user?.role !== "admin") return;
-    let active = true;
-    const fetchUnreadCount = async () => {
-      try {
-        const res = await adminApi.getUnreadCount();
-        if (active) setAdminUnreadCount(res.data.data.count ?? 0);
-      } catch {
-        // silently ignore — count stays at previous value
-      }
-    };
-    fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 60000);
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
-  }, [user?.role]);
+  // Admin unread count fetch/poll now lives in AdminUnreadContext.
 
   // Load the few most recent notifications whenever the alumni opens the bell.
   useEffect(() => {
