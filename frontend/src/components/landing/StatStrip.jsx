@@ -1,4 +1,10 @@
 import { useState, useEffect } from "react";
+import {
+  TbSchool,
+  TbBriefcase,
+  TbChartBar,
+  TbBuildingBank,
+} from "react-icons/tb";
 import api from "../../api/axios";
 
 const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
@@ -10,59 +16,83 @@ const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
  * numbers ever flash. On success we render the real numbers. Only if the
  * request fails do we fall back to sample values, dimmed and clearly labelled.
  */
-const CARD_CLASS =
-  "rounded-xl border border-slate-200/80 bg-white shadow-sm p-3.5";
+
+// Icon + accent-underline per stat, matched by id, for the dark panel layout.
+const STAT_META = {
+  verified_alumni: { icon: TbSchool },
+  employment_rate: { icon: TbBriefcase },
+  board_passing_rate: { icon: TbChartBar },
+  degree_programs: { icon: TbBuildingBank },
+};
 
 // Sample fallback — shown ONLY on API error so the strip is never empty.
 const SAMPLE_STATS = [
-  { id: "verified_alumni", value: "4,820", label: "Verified alumni" },
-  { id: "employment_rate", value: "87", suffix: "%", label: "Employment rate" },
-  { id: "board_passing_rate", value: "91", suffix: "%", label: "Board passing rate" },
-  { id: "degree_programs", value: "24", label: "Degree programs" },
+  { id: "verified_alumni", value: "4,820", label: "Verified Alumni" },
+  { id: "employment_rate", value: "87", suffix: "%", label: "Employment Rate" },
+  {
+    id: "board_passing_rate",
+    value: "91",
+    suffix: "%",
+    label: "Board Passing Rate",
+  },
+  { id: "degree_programs", value: "24", label: "Degree Programs" },
 ];
 
 // Map the API payload onto the card shape. Any missing field falls back to its
 // sample value so a partial response still renders cleanly.
 function buildStats(d) {
-  const num = (v) => (v === null || v === undefined || Number.isNaN(Number(v)) ? null : Number(v));
+  const num = (v) =>
+    v === null || v === undefined || Number.isNaN(Number(v)) ? null : Number(v);
   const withFallback = (v, fallback) => (v === null ? fallback : v);
   return [
     {
       id: "verified_alumni",
-      value: withFallback(num(d.verified_alumni)?.toLocaleString() ?? null, "4,820"),
-      label: "Verified alumni",
+      value: withFallback(
+        num(d.verified_alumni)?.toLocaleString() ?? null,
+        "4,820",
+      ),
+      label: "Verified Alumni",
     },
     {
       id: "employment_rate",
-      value: withFallback(num(d.employment_rate) !== null ? String(num(d.employment_rate)) : null, "87"),
+      value: withFallback(
+        num(d.employment_rate) !== null ? String(num(d.employment_rate)) : null,
+        "87",
+      ),
       suffix: "%",
-      label: "Employment rate",
+      label: "Employment Rate",
     },
     {
       id: "board_passing_rate",
-      value: withFallback(num(d.board_passing_rate) !== null ? String(num(d.board_passing_rate)) : null, "91"),
+      value: withFallback(
+        num(d.board_passing_rate) !== null
+          ? String(num(d.board_passing_rate))
+          : null,
+        "91",
+      ),
       suffix: "%",
-      label: "Board passing rate",
+      label: "Board Passing Rate",
     },
     {
       id: "degree_programs",
-      value: withFallback(num(d.degree_programs) !== null ? String(num(d.degree_programs)) : null, "24"),
-      label: "Degree programs",
+      value: withFallback(
+        num(d.degree_programs) !== null ? String(num(d.degree_programs)) : null,
+        "24",
+      ),
+      label: "Degree Programs",
     },
   ];
 }
 
-// One loading placeholder card. Uses em-based bar heights so the card height
-// exactly matches a real card (same font-size/line-height boxes), and shimmer
-// bar widths roughly track "4,820" and "Verified alumni".
-function SkeletonCard() {
+// One loading placeholder, sized to match a real stat's icon + number +
+// label footprint so the panel height never shifts once data arrives.
+function SkeletonStat() {
   return (
-    <div className={CARD_CLASS} aria-hidden="true">
-      <div className="text-[23px] leading-none">
-        <div className="h-[0.82em] w-16 animate-pulse rounded bg-slate-200" />
-      </div>
-      <div className="mt-1.5 text-[10.5px] leading-snug">
-        <div className="h-[0.9em] w-20 animate-pulse rounded bg-slate-100" />
+    <div className="flex items-center gap-3.5" aria-hidden="true">
+      <div className="h-11 w-11 flex-none animate-pulse rounded-full bg-white/10" />
+      <div>
+        <div className="h-[1.6em] w-14 animate-pulse rounded bg-white/10" />
+        <div className="mt-1.5 h-[0.9em] w-20 animate-pulse rounded bg-white/[0.06]" />
       </div>
     </div>
   );
@@ -98,35 +128,55 @@ export default function StatStrip() {
     };
   }, []);
 
-  // Loading: render skeletons in the identical grid so layout never shifts.
+  // Loading: render skeletons inside the identical panel so layout never shifts.
   if (stats === null) {
     return (
-      <div className="mt-7 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[0, 1, 2, 3].map((i) => (
-          <SkeletonCard key={i} />
-        ))}
+      <div className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7">
+        <div className="grid grid-cols-2 gap-y-6 sm:grid-cols-4 sm:gap-y-0">
+          {[0, 1, 2, 3].map((i) => (
+            <SkeletonStat key={i} />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mt-7">
-      <div className={`grid grid-cols-2 gap-3 sm:grid-cols-4 ${isSample ? "opacity-70" : ""}`}>
-        {stats.map((stat) => (
-          <div key={stat.id} className={CARD_CLASS}>
-            <div className="text-[23px] font-extrabold leading-none text-blue-600" style={SERIF}>
-              {stat.value}
-              {stat.suffix && <span className="text-[15px]">{stat.suffix}</span>}
+    <div className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7">
+      <div
+        className={`grid grid-cols-2 gap-y-6 sm:grid-cols-4 sm:gap-y-0 ${isSample ? "opacity-70" : ""}`}
+      >
+        {stats.map((stat, i) => {
+          const Icon = STAT_META[stat.id]?.icon ?? TbSchool;
+          const isLast = i === stats.length - 1;
+          return (
+            <div
+              key={stat.id}
+              className={`flex items-center gap-3.5 px-2 sm:px-5 ${
+                !isLast ? "sm:border-r sm:border-white/10" : ""
+              } ${i === 0 ? "sm:pl-0" : ""}`}
+            >
+              <div className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-blue-500)_0%,var(--color-blue-700)_100%)]">
+                <Icon aria-hidden="true" className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <div
+                  className="text-[22px] font-extrabold leading-none text-white"
+                  style={SERIF}
+                >
+                  {stat.value}
+                  {stat.suffix && (
+                    <span className="text-[16px]">{stat.suffix}</span>
+                  )}
+                </div>
+                <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] leading-snug text-slate-400">
+                  {stat.label}
+                </div>
+              </div>
             </div>
-            <div className="mt-1.5 text-[10.5px] leading-snug text-slate-500">
-              {stat.label}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {isSample && (
-        <p className="mt-2 text-[10px] italic text-slate-400">(sample data)</p>
-      )}
     </div>
   );
 }

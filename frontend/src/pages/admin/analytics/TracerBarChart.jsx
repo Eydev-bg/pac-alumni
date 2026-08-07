@@ -108,7 +108,7 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
       {/* Header */}
       <div className="mb-5">
         <h3 className="text-[16px] font-bold text-white">
-          Year-by-Year Analytics
+          Graduates Analytics
         </h3>
         <p className="text-[11px] text-slate-400 mt-1">
           {isBoardProgram

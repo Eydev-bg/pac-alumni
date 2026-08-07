@@ -159,7 +159,7 @@ function AlumniLayoutInner() {
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-all duration-200"
           >
             <HiOutlineArrowRightOnRectangle className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="flex-1 text-left">Logout</span>}
+            {sidebarOpen && <span className="flex-1 text-left">Sign out</span>}
           </button>
         </div>
       </nav>
@@ -206,7 +206,11 @@ function AlumniLayoutInner() {
           <HiOutlineXMark className="w-5 h-5" />
         </button>
         <div className="flex items-center gap-3 pr-8">
-          <Avatar src={user?.profile_picture} name={user?.full_name} size="lg" />
+          <Avatar
+            src={user?.profile_picture}
+            name={user?.full_name}
+            size="lg"
+          />
           <div className="min-w-0">
             <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
               {user?.full_name}

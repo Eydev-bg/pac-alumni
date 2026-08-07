@@ -12,11 +12,6 @@ import {
   HiOutlineExclamationTriangle,
 } from "react-icons/hi2";
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  InputField — MUST be outside the main component.
-//  If defined inside, React re-creates it on every state
-//  change → unmounts/remounts input → loses focus.
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 function InputField({
   icon: Icon,
   label,
@@ -504,7 +499,7 @@ export default function AlumniRegisterPage() {
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
-          <div className="hidden md:flex md:w-[38%] flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 px-7 py-10">
+          <div className="hidden md:flex md:w-[38%] flex-col items-center justify-center bg-white px-7 py-10">
             <img
               src="/Sign_up-rafiki.png"
               alt="Alumni creating an account"

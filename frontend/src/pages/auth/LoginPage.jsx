@@ -9,20 +9,6 @@ import {
   HiOutlineEyeSlash,
 } from "react-icons/hi2";
 
-// ╔══════════════════════════════════════════════════════════════════╗
-// ║  SAAN ILAGAY YUNG IMAGES:                                       ║
-// ║                                                                  ║
-// ║  public/                                                         ║
-// ║    ├── pac-logo.jpg       ← School seal / logo                   ║
-// ║    └── campus-bg.jpg      ← Campus background photo              ║
-// ║                                                                  ║
-// ║  Kung Vite: same — public/ folder din.                           ║
-// ║  Kung gusto sa src/assets/:                                      ║
-// ║    import campusBg from "../../assets/campus-bg.jpg";            ║
-// ║    import pacLogo from "../../assets/pac-logo.jpg";              ║
-// ║    Then: src={pacLogo} and backgroundImage: `url(${campusBg})`  ║
-// ╚══════════════════════════════════════════════════════════════════╝
-
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -305,7 +291,7 @@ export default function LoginPage() {
           </div>
 
           {/* RIGHT — illustration panel (desktop only) */}
-          <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 px-8 py-10">
+          <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center rounded-r-2xl bg-white px-8 py-10">
             <img
               src="/Login-rafiki.png"
               alt="Alumni signing in"
