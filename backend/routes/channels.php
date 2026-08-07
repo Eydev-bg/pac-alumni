@@ -19,17 +19,35 @@ use App\Enums\UserRole;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Log;
 
-Log::error('[presence-debug] channels.php file loaded/registered');
+/*
+|--------------------------------------------------------------------------
+| Explicit auth guard for broadcasting — THE FIX
+|--------------------------------------------------------------------------
+|
+| Laravel's PusherBroadcaster resolves "who is the current user" two
+| different ways depending on channel type:
+|   - Private channels: the User is resolved by auth:api (via the
+|     controller's own middleware) and handed straight to the
+|     Broadcast::channel() callback — this always worked.
+|   - Presence channels: PusherBroadcaster additionally calls
+|     retrieveUser(), which — with NO explicit resolver registered —
+|     falls back to the app's DEFAULT guard ('web', session-based; see
+|     config/auth.php). This app has no sessions, so that resolves to
+|     null, and Broadcaster::verifyUserCanAccessChannel() rejects the
+|     subscription with an empty-message AccessDeniedHttpException
+|     BEFORE the presence callback below ever runs. That's why every
+|     presence channel 403'd (even a static one with no parameters at
+|     all) while private channels worked fine.
+|
+| resolveAuthenticatedUserUsing() tells Laravel explicitly which guard's
+| resolved user to hand to ANY channel callback (private or presence),
+| overriding the default-guard fallback above.
+|--------------------------------------------------------------------------
+*/
 
-// TEMPORARY isolation test: a presence channel with NO dynamic parameter
-// at all, to rule out {conversationId} placeholder matching as the cause.
-Broadcast::presence('debug-presence-test', function (User $user) {
-    Log::error('[presence-debug] STATIC test channel callback hit', [
-        'user_id' => $user->id,
-    ]);
-    return ['uuid' => $user->uuid, 'name' => $user->full_name];
+Broadcast::resolveAuthenticatedUserUsing(function ($request) {
+    return $request->user('api');
 });
 
 /*
@@ -90,26 +108,12 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 Broadcast::presence('conversation-presence.{conversationId}', function (User $user, int $conversationId) {
     $conversation = Conversation::find($conversationId);
 
-    Log::error('[presence-debug] callback hit', [
-        'user_id'          => $user->id,
-        'user_uuid'        => $user->uuid,
-        'conversationId'   => $conversationId,
-        'conversationId_type' => gettype($conversationId),
-        'conversation_found'  => (bool) $conversation,
-        'participant_one_id'  => $conversation?->participant_one_id,
-        'participant_two_id'  => $conversation?->participant_two_id,
-    ]);
-
     if (!$conversation) {
         return false;
     }
 
     $isParticipant = $conversation->participant_one_id === $user->id
         || $conversation->participant_two_id === $user->id;
-
-    Log::error('[presence-debug] participant check', [
-        'is_participant' => $isParticipant,
-    ]);
 
     if (!$isParticipant) {
         return false;
