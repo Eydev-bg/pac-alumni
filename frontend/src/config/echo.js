@@ -57,6 +57,11 @@ export function initEcho() {
     authorizer: jwtAuthorizer,
   });
 
+  // TEMPORARY DEBUG: expose Echo on window so we can test channel
+  // subscriptions directly from the browser console. Remove once the
+  // presence-channel 403 investigation is done.
+  window.__echoDebug = echoInstance;
+
   return echoInstance;
 }
 
