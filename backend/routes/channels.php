@@ -23,6 +23,15 @@ use Illuminate\Support\Facades\Log;
 
 Log::error('[presence-debug] channels.php file loaded/registered');
 
+// TEMPORARY isolation test: a presence channel with NO dynamic parameter
+// at all, to rule out {conversationId} placeholder matching as the cause.
+Broadcast::presence('debug-presence-test', function (User $user) {
+    Log::error('[presence-debug] STATIC test channel callback hit', [
+        'user_id' => $user->id,
+    ]);
+    return ['uuid' => $user->uuid, 'name' => $user->full_name];
+});
+
 /*
 |--------------------------------------------------------------------------
 | Private per-user channel — Phase 2 will use this for personal
