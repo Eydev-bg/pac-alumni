@@ -19,6 +19,7 @@ class MessageResource extends JsonResource
             'content'    => $this->content,
             'is_mine'    => (int) $this->sender_id === (int) $authUserId,
             'is_read'    => $this->is_read,
+            'read_at'    => $this->read_at?->toISOString(),
             'sender'     => [
                 'uuid' => $this->sender?->uuid,
                 'name' => $this->sender?->full_name ?? 'PAC Alumnus',

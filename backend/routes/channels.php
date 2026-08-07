@@ -56,6 +56,39 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 
 /*
 |--------------------------------------------------------------------------
+| Presence conversation channel — separate from the private conversation
+| channel above. A private channel only tells you whether YOU may listen;
+| a presence channel additionally tells every subscriber WHO ELSE is
+| currently subscribed (via .here/.joining/.leaving on the frontend) and
+| lets clients broadcast ephemeral "whisper" events to each other without
+| a round trip to the backend — exactly what the chat's online green dot
+| and "Dave is responding…" typing indicator need. Authorization mirrors
+| the private channel (same two-participant check); the difference is
+| purely in what Reverb does with the subscription once authorized.
+|--------------------------------------------------------------------------
+*/
+Broadcast::presence('conversation.{conversationId}.presence', function (User $user, int $conversationId) {
+    $conversation = Conversation::find($conversationId);
+
+    if (!$conversation) {
+        return false;
+    }
+
+    $isParticipant = $conversation->participant_one_id === $user->id
+        || $conversation->participant_two_id === $user->id;
+
+    if (!$isParticipant) {
+        return false;
+    }
+
+    // Returned array becomes this user's presence-channel member info —
+    // the frontend reads .uuid off members it sees in .here()/.joining()
+    // to know WHO is online/typing, never a raw numeric id.
+    return ['uuid' => $user->uuid, 'name' => $user->full_name];
+});
+
+/*
+|--------------------------------------------------------------------------
 | Private admin-wide channel — Phase 2 will use this for the live
 | dashboard chart updates (Employment Type Distribution, Employment
 | Overview, Board Exam Overview) and admin notification broadcasts that

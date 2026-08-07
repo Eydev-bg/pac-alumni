@@ -3,6 +3,7 @@
 namespace App\Services\Alumni;
 
 use App\Enums\UserRole;
+use App\Events\MessagesRead;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
@@ -24,7 +25,7 @@ class MessageService
                 'participantTwo.alumniProfile.graduate.course',
                 'latestMessage',
             ])
-            ->withCount(['messages as unread_count' => fn ($q) => $q
+            ->withCount(['messages as unread_count' => fn($q) => $q
                 ->where('is_read', false)
                 ->where('sender_id', '!=', $user->id)])
             // Surface threads with activity first; brand-new (empty) threads fall
@@ -92,16 +93,34 @@ class MessageService
     {
         $conversation = $this->authorizedConversation($user, $conversationId);
 
-        // Mark the other party's messages as read on open.
-        Message::where('conversation_id', $conversation->id)
+        // Mark the other party's messages as read on open, and broadcast the
+        // read receipt so the sender's open thread flips "Sent" -> "Read" live.
+        // A bulk update() bypasses Eloquent model events, so we grab the ids
+        // first and dispatch MessagesRead explicitly rather than relying on a
+        // model hook.
+        $unreadIds = Message::where('conversation_id', $conversation->id)
             ->where('sender_id', '!=', $user->id)
             ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->pluck('id');
+
+        if ($unreadIds->isNotEmpty()) {
+            $readAt = now();
+
+            Message::whereIn('id', $unreadIds)
+                ->update(['is_read' => true, 'read_at' => $readAt]);
+
+            broadcast(new MessagesRead(
+                conversationId: $conversation->id,
+                readerId: $user->id,
+                messageIds: $unreadIds->all(),
+                readAt: $readAt,
+            ));
+        }
 
         $conversation->load([
             'participantOne',
             'participantTwo',
-            'messages' => fn ($q) => $q->with('sender')->orderBy('created_at'),
+            'messages' => fn($q) => $q->with('sender')->orderBy('created_at'),
         ]);
 
         return $conversation;
@@ -136,7 +155,7 @@ class MessageService
     public function unreadCount(User $user): int
     {
         return Message::query()
-            ->whereHas('conversation', fn ($q) => $q->forUser($user->id))
+            ->whereHas('conversation', fn($q) => $q->forUser($user->id))
             ->where('sender_id', '!=', $user->id)
             ->where('is_read', false)
             ->count();
@@ -153,7 +172,7 @@ class MessageService
             ->where('id', '!=', $user->id)
             // Respect the directory opt-out: alumni who hid themselves must not
             // be surfaced as message recipients.
-            ->whereHas('alumniProfile', fn ($q) => $q->where('is_directory_visible', true))
+            ->whereHas('alumniProfile', fn($q) => $q->where('is_directory_visible', true))
             ->search($search)
             ->with('alumniProfile.graduate.course')
             ->orderBy('first_name')

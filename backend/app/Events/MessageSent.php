@@ -74,6 +74,7 @@ class MessageSent implements ShouldBroadcastNow
             'conversation_id' => $this->message->conversation_id,
             'content'         => $this->message->content,
             'is_read'         => $this->message->is_read,
+            'read_at'         => $this->message->read_at?->toISOString(),
             'sender'          => [
                 'uuid' => $this->message->sender?->uuid,
                 'name' => $this->message->sender?->full_name ?? 'PAC Alumnus',

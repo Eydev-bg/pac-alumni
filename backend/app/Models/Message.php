@@ -35,6 +35,7 @@ class Message extends Model
     {
         return [
             'is_read' => 'boolean',
+            'read_at' => 'datetime',
         ];
     }
 
