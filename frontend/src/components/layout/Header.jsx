@@ -7,6 +7,8 @@ import alumniApi from "../../api/alumniApi";
 import { timeAgo } from "../../utils/formatters";
 import { useDebounce } from "../../hooks/useDebounce";
 import Avatar from "../alumni/ui/Avatar";
+import { useRealtimeNotifications } from "../../hooks/useRealtimeNotifications";
+import { useToast } from "../../hooks/useToast";
 import {
   HiOutlineBars3,
   HiOutlineArrowRightOnRectangle,
@@ -35,6 +37,7 @@ export default function Header({
   // Shared alumni unread source (null in layouts without UnreadProvider,
   // e.g. the admin layout — admin keeps its own poll below).
   const unread = useUnread();
+  const toast = useToast();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   // Mobile-only: the global search collapses to an icon and expands to a
@@ -80,6 +83,14 @@ export default function Header({
   // content (e.g. the alumni search) clears it instead of hiding underneath.
   const contentOffset =
     sidebarOpen === undefined ? "" : sidebarOpen ? "lg:pl-64" : "lg:pl-20";
+
+  // Real-time push for admins — alumni already get this via UnreadContext.
+  useRealtimeNotifications((payload) => {
+    if (user?.role === "admin") {
+      setAdminUnreadCount((c) => c + 1);
+      toast.info(payload.title || "New notification");
+    }
+  });
 
   // Close the bell dropdown on Escape and return focus to the bell button.
   useEffect(() => {
@@ -144,7 +155,10 @@ export default function Header({
       .then((res) => {
         if (active) setRecent(res.data.data);
       })
-      .catch((err) => { if (import.meta.env.DEV) console.error("Bell notifications preview failed:", err); })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Bell notifications preview failed:", err);
+      })
       .finally(() => active && setRecentLoading(false));
     return () => {
       active = false;
@@ -213,9 +227,7 @@ export default function Header({
       setSearchActiveIndex((i) => (i + 1) % searchResults.length);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSearchActiveIndex((i) =>
-        i <= 0 ? searchResults.length - 1 : i - 1,
-      );
+      setSearchActiveIndex((i) => (i <= 0 ? searchResults.length - 1 : i - 1));
     } else if (e.key === "Enter") {
       if (searchActiveIndex >= 0 && searchActiveIndex < searchResults.length) {
         e.preventDefault();
@@ -413,306 +425,311 @@ export default function Header({
 
       {/* Right side: notification bell + user menu */}
       <div className="flex items-center gap-2">
-      {/* Mobile search trigger — alumni only (desktop uses the inline input) */}
-      {isAlumni && (
-        <button
-          aria-label="Search"
-          className={`md:hidden p-2 rounded-lg transition-colors ${iconBtnClass}`}
-          onClick={() => setSearchOpen(true)}
-        >
-          <HiOutlineMagnifyingGlass className="w-5 h-5" />
-        </button>
-      )}
-      {/* Messages — alumni only (light theme, unread badge) */}
-      {isAlumni && (
-        <button
-          aria-label={`Messages${unreadMessages > 0 ? `, ${unreadMessages} unread` : ""}`}
-          className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
-          onClick={() => navigate("/alumni/messages")}
-        >
-          <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
-          {unreadMessages > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-              {unreadMessages > 9 ? "9+" : unreadMessages}
-            </span>
-          )}
-        </button>
-      )}
-      {/* Notification bell — admin only (routes to admin-scoped pages) */}
-      {user?.role === "admin" && (
-      <div className="relative" ref={bellRef}>
-        <button
-          ref={bellButtonRef}
-          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
-          aria-expanded={bellOpen}
-          aria-haspopup="true"
-          className={`relative p-2 rounded-lg transition-colors ${
-            dark
-              ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-              : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
-          }`}
-          onClick={() => setBellOpen(!bellOpen)}
-        >
-          <HiOutlineBell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </button>
-
-        {/* Bell dropdown */}
-        {bellOpen && (
-          <div
-            role="menu"
-            className={`absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 ${
-              dark
-                ? "bg-navy-800 border border-white/[0.08] shadow-2xl"
-                : "bg-white border border-slate-200 shadow-lg"
-            }`}
+        {/* Mobile search trigger — alumni only (desktop uses the inline input) */}
+        {isAlumni && (
+          <button
+            aria-label="Search"
+            className={`md:hidden p-2 rounded-lg transition-colors ${iconBtnClass}`}
+            onClick={() => setSearchOpen(true)}
           >
-            <button
-              role="menuitem"
-              onClick={() => {
-                navigate("/admin/notifications");
-                setBellOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                dark
-                  ? "text-slate-300 hover:bg-white/[0.06]"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <HiOutlineBell className="w-4 h-4 flex-shrink-0" />
-              <span>Notifications</span>
-              {unreadCount > 0 && (
-                <span className="ml-auto min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </button>
-            <button
-              role="menuitem"
-              onClick={() => {
-                navigate("/admin/verification/logs");
-                setBellOpen(false);
-              }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                dark
-                  ? "text-slate-300 hover:bg-white/[0.06]"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              <HiOutlineClipboardDocumentCheck className="w-4 h-4 flex-shrink-0" />
-              <span>Verification</span>
-            </button>
-          </div>
+            <HiOutlineMagnifyingGlass className="w-5 h-5" />
+          </button>
         )}
-      </div>
-      )}
-
-      {/* Notification bell — alumni (light theme, recent list + deep links) */}
-      {user?.role === "alumni" && (
-      <div className="relative" ref={bellRef}>
-        <button
-          ref={bellButtonRef}
-          aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
-          aria-expanded={bellOpen}
-          aria-haspopup="true"
-          className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
-          onClick={() => setBellOpen(!bellOpen)}
-        >
-          <HiOutlineBell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </button>
-
-        {/* Bell dropdown */}
-        {bellOpen && (
-          <div role="menu" className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50">
-            <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between dark:border-slate-700">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                Notifications
-              </p>
+        {/* Messages — alumni only (light theme, unread badge) */}
+        {isAlumni && (
+          <button
+            aria-label={`Messages${unreadMessages > 0 ? `, ${unreadMessages} unread` : ""}`}
+            className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+            onClick={() => navigate("/alumni/messages")}
+          >
+            <HiOutlineChatBubbleLeftRight className="w-5 h-5" />
+            {unreadMessages > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                {unreadMessages > 9 ? "9+" : unreadMessages}
+              </span>
+            )}
+          </button>
+        )}
+        {/* Notification bell — admin only (routes to admin-scoped pages) */}
+        {user?.role === "admin" && (
+          <div className="relative" ref={bellRef}>
+            <button
+              ref={bellButtonRef}
+              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+              aria-expanded={bellOpen}
+              aria-haspopup="true"
+              className={`relative p-2 rounded-lg transition-colors ${
+                dark
+                  ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
+              }`}
+              onClick={() => setBellOpen(!bellOpen)}
+            >
+              <HiOutlineBell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-800">
+                <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
-            </div>
+            </button>
 
-            {recentLoading ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-400">
-                Loading…
-              </p>
-            ) : recent.length === 0 ? (
-              <p className="px-4 py-6 text-center text-sm text-slate-400">
-                No notifications yet.
-              </p>
-            ) : (
-              <div className="max-h-72 overflow-y-auto">
-                {recent.map((n) => (
-                  <button
-                    key={n.id}
-                    role="menuitem"
-                    onClick={() => openAlumniNotification(n)}
-                    className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 ${
-                      !n.is_read ? "bg-blue-50 dark:bg-blue-500/10" : ""
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                        !n.is_read ? "bg-blue-600 dark:bg-blue-400" : "bg-transparent"
-                      }`}
-                    />
-                    <span className="flex-1 min-w-0">
-                      <span
-                        className={`block text-sm truncate ${
-                          !n.is_read
-                            ? "font-semibold text-slate-800 dark:text-slate-100"
-                            : "text-slate-600 dark:text-slate-300"
-                        }`}
-                      >
-                        {n.title}
-                      </span>
-                      <span className="block text-xs text-slate-500 truncate dark:text-slate-400">
-                        {n.message}
-                      </span>
-                      <span className="block text-[11px] text-slate-400 mt-0.5 dark:text-slate-400">
-                        {timeAgo(n.created_at)}
-                      </span>
+            {/* Bell dropdown */}
+            {bellOpen && (
+              <div
+                role="menu"
+                className={`absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 ${
+                  dark
+                    ? "bg-navy-800 border border-white/[0.08] shadow-2xl"
+                    : "bg-white border border-slate-200 shadow-lg"
+                }`}
+              >
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    navigate("/admin/notifications");
+                    setBellOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                    dark
+                      ? "text-slate-300 hover:bg-white/[0.06]"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <HiOutlineBell className="w-4 h-4 flex-shrink-0" />
+                  <span>Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="ml-auto min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
                     </span>
-                  </button>
-                ))}
+                  )}
+                </button>
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    navigate("/admin/verification/logs");
+                    setBellOpen(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                    dark
+                      ? "text-slate-300 hover:bg-white/[0.06]"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <HiOutlineClipboardDocumentCheck className="w-4 h-4 flex-shrink-0" />
+                  <span>Verification</span>
+                </button>
               </div>
             )}
-
-            <button
-              role="menuitem"
-              onClick={() => {
-                navigate("/alumni/notifications");
-                setBellOpen(false);
-              }}
-              className="w-full px-4 py-2.5 text-sm font-medium text-blue-600 hover:bg-slate-50 transition-colors border-t border-slate-100 dark:text-blue-400 dark:hover:bg-slate-700 dark:border-slate-700"
-            >
-              See all notifications
-            </button>
           </div>
         )}
-      </div>
-      )}
 
-      {/* User menu */}
-      <div className="relative" ref={dropdownRef}>
-        <button
-          className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-            dark
-              ? "hover:bg-white/[0.06]"
-              : alumniBlueBar
-                ? "hover:bg-white/10 lg:hover:bg-slate-100"
-                : "hover:bg-slate-100"
-          }`}
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-        >
-          {isAlumni ? (
-            <Avatar
-              src={user?.profile_picture}
-              name={user?.full_name}
-              size="sm"
-              className="w-8 h-8"
-            />
-          ) : (
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                dark
-                  ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
-                  : "bg-blue-100"
-              }`}
+        {/* Notification bell — alumni (light theme, recent list + deep links) */}
+        {user?.role === "alumni" && (
+          <div className="relative" ref={bellRef}>
+            <button
+              ref={bellButtonRef}
+              aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+              aria-expanded={bellOpen}
+              aria-haspopup="true"
+              className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+              onClick={() => setBellOpen(!bellOpen)}
             >
-              <HiOutlineUser
-                className={`w-4 h-4 ${dark ? "text-white" : "text-blue-600"}`}
+              <HiOutlineBell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Bell dropdown */}
+            {bellOpen && (
+              <div
+                role="menu"
+                className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
+              >
+                <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between dark:border-slate-700">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    Notifications
+                  </p>
+                  {unreadCount > 0 && (
+                    <span className="min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-slate-800">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </div>
+
+                {recentLoading ? (
+                  <p className="px-4 py-6 text-center text-sm text-slate-400">
+                    Loading…
+                  </p>
+                ) : recent.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-sm text-slate-400">
+                    No notifications yet.
+                  </p>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto">
+                    {recent.map((n) => (
+                      <button
+                        key={n.id}
+                        role="menuitem"
+                        onClick={() => openAlumniNotification(n)}
+                        className={`w-full flex items-start gap-3 px-4 py-2.5 text-left transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 ${
+                          !n.is_read ? "bg-blue-50 dark:bg-blue-500/10" : ""
+                        }`}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                            !n.is_read
+                              ? "bg-blue-600 dark:bg-blue-400"
+                              : "bg-transparent"
+                          }`}
+                        />
+                        <span className="flex-1 min-w-0">
+                          <span
+                            className={`block text-sm truncate ${
+                              !n.is_read
+                                ? "font-semibold text-slate-800 dark:text-slate-100"
+                                : "text-slate-600 dark:text-slate-300"
+                            }`}
+                          >
+                            {n.title}
+                          </span>
+                          <span className="block text-xs text-slate-500 truncate dark:text-slate-400">
+                            {n.message}
+                          </span>
+                          <span className="block text-[11px] text-slate-400 mt-0.5 dark:text-slate-400">
+                            {timeAgo(n.created_at)}
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  role="menuitem"
+                  onClick={() => {
+                    navigate("/alumni/notifications");
+                    setBellOpen(false);
+                  }}
+                  className="w-full px-4 py-2.5 text-sm font-medium text-blue-600 hover:bg-slate-50 transition-colors border-t border-slate-100 dark:text-blue-400 dark:hover:bg-slate-700 dark:border-slate-700"
+                >
+                  See all notifications
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* User menu */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
+              dark
+                ? "hover:bg-white/[0.06]"
+                : alumniBlueBar
+                  ? "hover:bg-white/10 lg:hover:bg-slate-100"
+                  : "hover:bg-slate-100"
+            }`}
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+          >
+            {isAlumni ? (
+              <Avatar
+                src={user?.profile_picture}
+                name={user?.full_name}
+                size="sm"
+                className="w-8 h-8"
               />
+            ) : (
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                  dark
+                    ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
+                    : "bg-blue-100"
+                }`}
+              >
+                <HiOutlineUser
+                  className={`w-4 h-4 ${dark ? "text-white" : "text-blue-600"}`}
+                />
+              </div>
+            )}
+            <div className="hidden sm:block text-left">
+              <p
+                className={`text-sm font-medium ${
+                  dark
+                    ? "text-slate-200"
+                    : alumniBlueBar
+                      ? "text-white lg:text-slate-700 lg:dark:text-slate-200"
+                      : "text-slate-700 dark:text-slate-200"
+                }`}
+              >
+                {user?.full_name}
+              </p>
+              <p
+                className={`text-[11px] ${
+                  dark
+                    ? "text-slate-500"
+                    : alumniBlueBar
+                      ? "text-blue-100 lg:text-slate-400"
+                      : "text-slate-400"
+                }`}
+              >
+                {user?.role_label}
+              </p>
             </div>
-          )}
-          <div className="hidden sm:block text-left">
-            <p
-              className={`text-sm font-medium ${
-                dark
-                  ? "text-slate-200"
-                  : alumniBlueBar
-                    ? "text-white lg:text-slate-700 lg:dark:text-slate-200"
-                    : "text-slate-700 dark:text-slate-200"
-              }`}
-            >
-              {user?.full_name}
-            </p>
-            <p
-              className={`text-[11px] ${
+            <HiOutlineChevronDown
+              className={`w-4 h-4 hidden sm:block ${
                 dark
                   ? "text-slate-500"
                   : alumniBlueBar
                     ? "text-blue-100 lg:text-slate-400"
                     : "text-slate-400"
               }`}
-            >
-              {user?.role_label}
-            </p>
-          </div>
-          <HiOutlineChevronDown
-            className={`w-4 h-4 hidden sm:block ${
-              dark
-                ? "text-slate-500"
-                : alumniBlueBar
-                  ? "text-blue-100 lg:text-slate-400"
-                  : "text-slate-400"
-            }`}
-          />
-        </button>
+            />
+          </button>
 
-        {/* Dropdown */}
-        {dropdownOpen && (
-          <div
-            className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl py-2 z-50 ${
-              dark
-                ? "bg-navy-800 border border-white/[0.08]"
-                : "bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
-            }`}
-          >
+          {/* Dropdown */}
+          {dropdownOpen && (
             <div
-              className={`px-4 py-2 ${
+              className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl py-2 z-50 ${
                 dark
-                  ? "border-b border-white/[0.06]"
-                  : "border-b border-slate-100 dark:border-slate-700"
+                  ? "bg-navy-800 border border-white/[0.08]"
+                  : "bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
               }`}
             >
-              <p
-                className={`text-sm font-medium ${dark ? "text-slate-200" : "text-slate-700 dark:text-white"}`}
+              <div
+                className={`px-4 py-2 ${
+                  dark
+                    ? "border-b border-white/[0.06]"
+                    : "border-b border-slate-100 dark:border-slate-700"
+                }`}
               >
-                {user?.full_name}
-              </p>
-              <p
-                className={`text-[11px] ${dark ? "text-slate-500" : "text-slate-400 dark:text-slate-400"}`}
+                <p
+                  className={`text-sm font-medium ${dark ? "text-slate-200" : "text-slate-700 dark:text-white"}`}
+                >
+                  {user?.full_name}
+                </p>
+                <p
+                  className={`text-[11px] ${dark ? "text-slate-500" : "text-slate-400 dark:text-slate-400"}`}
+                >
+                  {user?.email}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                  dark
+                    ? "text-red-400 hover:bg-red-500/10"
+                    : "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
+                }`}
               >
-                {user?.email}
-              </p>
+                <HiOutlineArrowRightOnRectangle className="w-4 h-4" />
+                Sign out
+              </button>
             </div>
-            <button
-              onClick={handleLogout}
-              className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
-                dark
-                  ? "text-red-400 hover:bg-red-500/10"
-                  : "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
-              }`}
-            >
-              <HiOutlineArrowRightOnRectangle className="w-4 h-4" />
-              Sign out
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
       </div>
     </header>
   );
