@@ -30,7 +30,13 @@ class TrackLastActive
 
     public function handle(Request $request, Closure $next): Response
     {
-        $user = $request->user();
+        // IMPORTANT: must be $request->user('api'), not the bare
+        // $request->user() — this app is JWT-only (no sessions), and the
+        // bare call resolves against Laravel's DEFAULT guard ('web',
+        // session-based), which is always null here. This is the exact
+        // same guard-resolution gap that caused the presence-channel 403
+        // investigation earlier — same fix, explicit guard name.
+        $user = $request->user('api');
 
         if ($user) {
             $cacheKey = "last-active-throttle:{$user->id}";
