@@ -11,7 +11,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
 import { useRealtimeReadReceipts } from "../../../hooks/useRealtimeReadReceipts";
-import { useConversationPresence } from "../../../hooks/useConversationPresence";
+import { useConversationTyping } from "../../../hooks/useConversationTyping";
 import { getEcho } from "../../../config/echo";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
@@ -25,7 +25,7 @@ import {
 const MAX_LEN = 1000;
 // How often (ms) a "typing" whisper is sent while the user keeps typing —
 // not on every keystroke, just enough to keep the other side's 4s
-// TYPING_TIMEOUT_MS (see useConversationPresence) topped up.
+// TYPING_TIMEOUT_MS (see useConversationTyping) topped up.
 const TYPING_WHISPER_INTERVAL_MS = 2000;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
@@ -41,6 +41,32 @@ function bubbleTime(iso) {
 function readLabel(m) {
   if (!m.is_read || !m.read_at) return null;
   return `Read • ${bubbleTime(m.read_at)}`;
+}
+
+/** How recent counts as "available" — matches the backend's
+ * TrackLastActive throttle window with a little slack for polling gaps. */
+const AVAILABLE_WINDOW_MS = 2 * 60 * 1000;
+
+/**
+ * Simple online-status label derived from `last_active_at` — no presence
+ * channel, just "was this person recently active" (see
+ * app/Http/Middleware/TrackLastActive.php). Returns null if there's no
+ * timestamp yet (e.g. they've never loaded a page since this shipped).
+ */
+function onlineStatusLabel(lastActiveAt) {
+  if (!lastActiveAt) return null;
+  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
+  if (diffMs < 0) return "🟢 Available";
+  if (diffMs < AVAILABLE_WINDOW_MS) return "🟢 Available";
+
+  const mins = Math.round(diffMs / 60000);
+  if (mins < 60) return `Active ${mins} minute${mins === 1 ? "" : "s"} ago`;
+
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `Active ${hours} hour${hours === 1 ? "" : "s"} ago`;
+
+  const days = Math.round(hours / 24);
+  return `Active ${days} day${days === 1 ? "" : "s"} ago`;
 }
 
 /**
@@ -161,10 +187,20 @@ export default function ConversationThread({
     };
   }, [conversationId]);
 
-  // Real-time presence: the other participant's online status + typing
-  // ("responding…") indicator, via the conversation's presence channel.
-  const { isOnline, isTyping, sendTyping, sendStoppedTyping } =
-    useConversationPresence(conversationId, other?.uuid);
+  // Real-time typing indicator ("responding…") via whisper on the private
+  // conversation channel — see useConversationTyping's docblock for why
+  // there's no presence channel involved.
+  const { isTyping, sendTyping, sendStoppedTyping } = useConversationTyping(
+    conversationId,
+    other?.uuid,
+  );
+
+  // Simple online status, derived from the other participant's
+  // last_active_at (refreshed on every load()/poll — no live socket
+  // needed for this, a couple of minutes of staleness is fine for
+  // "recently active").
+  const onlineLabel = onlineStatusLabel(other?.last_active_at);
+  const isOnline = onlineLabel === "🟢 Available";
 
   // Throttle outgoing "typing" whispers — send at most once per
   // TYPING_WHISPER_INTERVAL_MS while the user keeps typing, not on every
@@ -288,6 +324,10 @@ export default function ConversationThread({
                     <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce" />
                   </span>
                   {other.name?.split(" ")[0] || "They"} is responding…
+                </p>
+              ) : onlineLabel ? (
+                <p className="text-[0.7rem] text-slate-400 truncate">
+                  {onlineLabel}
                 </p>
               ) : (
                 (other.course_code || other.graduation_year) && (
