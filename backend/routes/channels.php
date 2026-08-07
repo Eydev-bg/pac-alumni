@@ -21,6 +21,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 
+Log::error('[presence-debug] channels.php file loaded/registered');
+
 /*
 |--------------------------------------------------------------------------
 | Private per-user channel — Phase 2 will use this for personal
