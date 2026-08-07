@@ -40,6 +40,11 @@ class BroadcastAuthController extends Controller
      */
     public function authenticate(Request $request)
     {
+        \Illuminate\Support\Facades\Log::error('[presence-debug] auth controller hit', [
+            'channel_name' => $request->input('channel_name'),
+            'socket_id'    => $request->input('socket_id'),
+        ]);
+
         return Broadcast::auth($request);
     }
 }

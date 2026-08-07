@@ -79,7 +79,7 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 Broadcast::presence('conversation-presence.{conversationId}', function (User $user, int $conversationId) {
     $conversation = Conversation::find($conversationId);
 
-    Log::info('[presence-debug] callback hit', [
+    Log::error('[presence-debug] callback hit', [
         'user_id'          => $user->id,
         'user_uuid'        => $user->uuid,
         'conversationId'   => $conversationId,
@@ -96,7 +96,7 @@ Broadcast::presence('conversation-presence.{conversationId}', function (User $us
     $isParticipant = $conversation->participant_one_id === $user->id
         || $conversation->participant_two_id === $user->id;
 
-    Log::info('[presence-debug] participant check', [
+    Log::error('[presence-debug] participant check', [
         'is_participant' => $isParticipant,
     ]);
 
