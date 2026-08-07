@@ -53,6 +53,9 @@ class BroadcastAuthController extends Controller
                 'message'         => $e->getMessage(),
                 'file'            => $e->getFile(),
                 'line'            => $e->getLine(),
+                'trace'           => collect($e->getTrace())->take(10)->map(
+                    fn($t) => ($t['class'] ?? '') . ($t['type'] ?? '') . ($t['function'] ?? '') . ':' . ($t['line'] ?? '?')
+                )->all(),
             ]);
             throw $e;
         }
