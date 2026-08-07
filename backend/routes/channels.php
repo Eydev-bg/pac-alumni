@@ -19,6 +19,7 @@ use App\Enums\UserRole;
 use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,12 +79,26 @@ Broadcast::channel('conversation.{conversationId}', function (User $user, int $c
 Broadcast::presence('conversation-presence.{conversationId}', function (User $user, int $conversationId) {
     $conversation = Conversation::find($conversationId);
 
+    Log::info('[presence-debug] callback hit', [
+        'user_id'          => $user->id,
+        'user_uuid'        => $user->uuid,
+        'conversationId'   => $conversationId,
+        'conversationId_type' => gettype($conversationId),
+        'conversation_found'  => (bool) $conversation,
+        'participant_one_id'  => $conversation?->participant_one_id,
+        'participant_two_id'  => $conversation?->participant_two_id,
+    ]);
+
     if (!$conversation) {
         return false;
     }
 
     $isParticipant = $conversation->participant_one_id === $user->id
         || $conversation->participant_two_id === $user->id;
+
+    Log::info('[presence-debug] participant check', [
+        'is_participant' => $isParticipant,
+    ]);
 
     if (!$isParticipant) {
         return false;
