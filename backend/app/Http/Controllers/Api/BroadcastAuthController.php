@@ -45,6 +45,16 @@ class BroadcastAuthController extends Controller
             'socket_id'    => $request->input('socket_id'),
         ]);
 
-        return Broadcast::auth($request);
+        try {
+            return Broadcast::auth($request);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('[presence-debug] Broadcast::auth threw', [
+                'exception_class' => get_class($e),
+                'message'         => $e->getMessage(),
+                'file'            => $e->getFile(),
+                'line'            => $e->getLine(),
+            ]);
+            throw $e;
+        }
     }
 }
