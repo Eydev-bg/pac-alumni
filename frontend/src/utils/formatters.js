@@ -2,29 +2,29 @@
  * Format ISO date string to readable format.
  */
 export function formatDate(isoString, options = {}) {
-  if (!isoString) return '—';
+  if (!isoString) return "—";
 
   const defaults = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
     ...options,
   };
 
-  return new Date(isoString).toLocaleDateString('en-PH', defaults);
+  return new Date(isoString).toLocaleDateString("en-PH", defaults);
 }
 
 /**
  * Format date only (no time).
  */
 export function formatDateOnly(isoString) {
-  if (!isoString) return '—';
-  return new Date(isoString).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  if (!isoString) return "—";
+  return new Date(isoString).toLocaleDateString("en-PH", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
@@ -32,7 +32,7 @@ export function formatDateOnly(isoString) {
  * Relative time (e.g., "2 hours ago").
  */
 export function timeAgo(isoString) {
-  if (!isoString) return '—';
+  if (!isoString) return "—";
 
   const now = new Date();
   const past = new Date(isoString);
@@ -42,7 +42,7 @@ export function timeAgo(isoString) {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffSecs < 60) return 'Just now';
+  if (diffSecs < 60) return "Just now";
   if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
@@ -54,23 +54,27 @@ export function timeAgo(isoString) {
  * Truncate text with ellipsis.
  */
 export function truncate(str, length = 50) {
-  if (!str) return '';
-  return str.length > length ? str.substring(0, length) + '...' : str;
+  if (!str) return "";
+  return str.length > length ? str.substring(0, length) + "..." : str;
 }
 
 /**
  * Strip HTML tags/entities down to plain text (for list snippets).
  */
 export function stripHtml(html) {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!html) return "";
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 /**
  * Conditional class names (like clsx).
  */
 export function cn(...classes) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 /**
@@ -82,12 +86,28 @@ export function storageUrl(path) {
   if (!path) return null;
 
   // Already a full URL (e.g., https://...) — return as-is
-  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
 
   // Build backend base URL from the API base URL
   // VITE_API_BASE_URL = "http://localhost:8000/api" → we need "http://localhost:8000"
-  const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
-  const backendBase = apiBase.replace(/\/api\/?$/, '');
+  const apiBase =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+  const backendBase = apiBase.replace(/\/api\/?$/, "");
 
   return `${backendBase}${path}`;
+}
+
+/**
+ * "Recently active" window for the simple online-status green dot — no
+ * presence channel, just "was this person recently active" (see
+ * app/Http/Middleware/TrackLastActive.php). Shared by ConversationThread
+ * (thread header) and AlumniInboxPage (conversation list avatars) so both
+ * agree on what counts as "online".
+ */
+const ONLINE_WINDOW_MS = 2 * 60 * 1000;
+
+export function isRecentlyActive(lastActiveAt) {
+  if (!lastActiveAt) return false;
+  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
+  return diffMs < ONLINE_WINDOW_MS;
 }

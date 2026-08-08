@@ -10,7 +10,7 @@ import useModalA11y from "../../../hooks/useModalA11y";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { useRealtimeInboxMessages } from "../../../hooks/useRealtimeInboxMessages";
 import { useDebounce } from "../../../hooks/useDebounce";
-import { timeAgo } from "../../../utils/formatters";
+import { timeAgo, isRecentlyActive } from "../../../utils/formatters";
 import ConversationThread from "./ConversationThread";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import EmptyState from "../../../components/common/EmptyState";
@@ -189,11 +189,22 @@ export default function AlumniInboxPage() {
                               : "hover:bg-slate-50"
                           }`}
                         >
-                          <Avatar
-                            src={c.other_participant?.profile_picture}
-                            name={c.other_participant?.name}
-                            size="md"
-                          />
+                          <span className="relative flex-shrink-0">
+                            <Avatar
+                              src={c.other_participant?.profile_picture}
+                              name={c.other_participant?.name}
+                              size="md"
+                            />
+                            {isRecentlyActive(
+                              c.other_participant?.last_active_at,
+                            ) && (
+                              <span
+                                className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white"
+                                aria-label="Online"
+                                title="Online"
+                              />
+                            )}
+                          </span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <span

@@ -13,6 +13,7 @@ import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
 import { useRealtimeReadReceipts } from "../../../hooks/useRealtimeReadReceipts";
 import { useConversationTyping } from "../../../hooks/useConversationTyping";
 import { getEcho } from "../../../config/echo";
+import { isRecentlyActive } from "../../../utils/formatters";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
 import { Avatar } from "../../../components/alumni/ui";
@@ -43,10 +44,6 @@ function readLabel(m) {
   return `Read • ${bubbleTime(m.read_at)}`;
 }
 
-/** How recent counts as "available" — matches the backend's
- * TrackLastActive throttle window with a little slack for polling gaps. */
-const AVAILABLE_WINDOW_MS = 2 * 60 * 1000;
-
 /**
  * Simple online-status label derived from `last_active_at` — no presence
  * channel, just "was this person recently active" (see
@@ -55,10 +52,9 @@ const AVAILABLE_WINDOW_MS = 2 * 60 * 1000;
  */
 function onlineStatusLabel(lastActiveAt) {
   if (!lastActiveAt) return null;
-  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
-  if (diffMs < 0) return "🟢 Available";
-  if (diffMs < AVAILABLE_WINDOW_MS) return "🟢 Available";
+  if (isRecentlyActive(lastActiveAt)) return "🟢 Available";
 
+  const diffMs = Date.now() - new Date(lastActiveAt).getTime();
   const mins = Math.round(diffMs / 60000);
   if (mins < 60) return `Active ${mins} minute${mins === 1 ? "" : "s"} ago`;
 
