@@ -38,12 +38,6 @@ class TrackLastActive
         // investigation earlier — same fix, explicit guard name.
         $user = $request->user('api');
 
-        \Illuminate\Support\Facades\Log::error('[lastactive-debug] middleware ran', [
-            'path' => $request->path(),
-            'user_api' => optional($user)->id,
-            'has_bearer' => $request->bearerToken() ? 'yes' : 'no',
-        ]);
-
         if ($user) {
             $cacheKey = "last-active-throttle:{$user->id}";
 

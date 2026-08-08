@@ -325,6 +325,16 @@ export default function ConversationThread({
                   </span>
                   {other.name?.split(" ")[0] || "They"} is responding…
                 </p>
+              ) : isOnline ? (
+                // Online is already shown by the green dot on the avatar —
+                // no need to repeat it as text here too.
+                (other.course_code || other.graduation_year) && (
+                  <p className="text-[0.7rem] text-slate-400 truncate">
+                    {[other.course_code, other.graduation_year]
+                      .filter(Boolean)
+                      .join(" • ")}
+                  </p>
+                )
               ) : onlineLabel ? (
                 <p className="text-[0.7rem] text-slate-400 truncate">
                   {onlineLabel}
