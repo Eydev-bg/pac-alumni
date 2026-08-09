@@ -44,6 +44,7 @@ class DirectoryProfileResource extends JsonResource
                 'suffix'          => $this->suffix,
                 'full_name'       => $this->full_name,
                 'profile_picture' => $this->profile_picture,
+                'last_active_at'  => $this->last_active_at?->toISOString(),
                 // NO email, NO phone.
             ],
 
@@ -91,7 +92,7 @@ class DirectoryProfileResource extends JsonResource
         }
 
         $passed = $graduate?->boardExamRecords
-            ?->contains(fn ($record) => $record->status === BoardStatus::PASSED);
+            ?->contains(fn($record) => $record->status === BoardStatus::PASSED);
 
         return $passed ? BoardStatus::PASSED : BoardStatus::NOT_TAKEN;
     }

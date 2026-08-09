@@ -10,8 +10,14 @@ import { useEffect, useState, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useToast } from "../../../hooks/useToast";
-import { storageUrl } from "../../../utils/formatters";
-import { AlumniCard, Avatar, Badge, SectionHeader, ImageLightbox } from "../../../components/alumni/ui";
+import { storageUrl, isRecentlyActive } from "../../../utils/formatters";
+import {
+  AlumniCard,
+  Avatar,
+  Badge,
+  SectionHeader,
+  ImageLightbox,
+} from "../../../components/alumni/ui";
 import {
   HiOutlineArrowLeft,
   HiOutlineChatBubbleLeftRight,
@@ -92,7 +98,8 @@ export default function AlumniPublicProfilePage() {
             This profile isn't available
           </h3>
           <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">
-            It may have been hidden by its owner, or the link is no longer valid.
+            It may have been hidden by its owner, or the link is no longer
+            valid.
           </p>
           <Link
             to="/alumni/directory"
@@ -117,21 +124,32 @@ export default function AlumniPublicProfilePage() {
       {/* ══ Hero ══ */}
       <AlumniCard className="p-5 sm:p-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-          {personal.profile_picture ? (
-            <img
-              src={storageUrl(personal.profile_picture)}
-              alt={personal.full_name}
-              onClick={() => setLightboxSrc(storageUrl(personal.profile_picture))}
-              title="Click to view full size"
-              className="w-24 h-24 rounded-2xl object-cover border border-slate-200 flex-shrink-0 cursor-pointer"
-            />
-          ) : (
-            <Avatar
-              name={personal.full_name}
-              size="xl"
-              className="w-24 h-24 rounded-2xl text-2xl"
-            />
-          )}
+          <span className="relative flex-shrink-0">
+            {personal.profile_picture ? (
+              <img
+                src={storageUrl(personal.profile_picture)}
+                alt={personal.full_name}
+                onClick={() =>
+                  setLightboxSrc(storageUrl(personal.profile_picture))
+                }
+                title="Click to view full size"
+                className="w-24 h-24 rounded-full object-cover border border-slate-200 cursor-pointer"
+              />
+            ) : (
+              <Avatar
+                name={personal.full_name}
+                size="xl"
+                className="w-24 h-24 rounded-full text-2xl"
+              />
+            )}
+            {isRecentlyActive(personal.last_active_at) && (
+              <span
+                className="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full bg-green-500 ring-2 ring-white"
+                aria-label="Online"
+                title="Online"
+              />
+            )}
+          </span>
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
             <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
