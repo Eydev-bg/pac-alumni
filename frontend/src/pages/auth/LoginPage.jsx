@@ -155,7 +155,7 @@ export default function LoginPage() {
               {/* Email */}
               <div className="mb-3">
                 <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1">
-                  Email (PAC Alumni)
+                  Email
                 </label>
                 <div className="relative">
                   <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -167,7 +167,7 @@ export default function LoginPage() {
                     }
                     required
                     autoComplete="email"
-                    placeholder="Email (PAC Alumni)"
+                    placeholder="Email"
                     className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
                   />
                 </div>

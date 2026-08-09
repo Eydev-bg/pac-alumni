@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { format } from "date-fns";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
 import adminApi from "../../../api/adminApi";
+import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { HiOutlineUserGroup, HiOutlineAcademicCap } from "react-icons/hi2";
 import StatCard from "../../../ui/StatCard";
 import EmploymentTypeChart from "./components/EmploymentTypeChart";
@@ -17,20 +18,30 @@ export default function DashboardPage() {
   const [reminderStats, setReminderStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
+  // `silent=true` on poll ticks — the loading spinner should only ever show
+  // once, on first mount, not flash on every 30s background refresh.
+  const fetchDashboard = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
       try {
         const res = await adminApi.getDashboardData();
         setData(res.data.data);
       } catch (err) {
-        toast.error(
-          err.response?.data?.message || "Failed to load dashboard data.",
-        );
+        // A failed background poll shouldn't nag the admin with a toast
+        // every 30s — only surface the error on the initial, blocking load.
+        if (!silent) {
+          toast.error(
+            err.response?.data?.message || "Failed to load dashboard data.",
+          );
+        }
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
-    };
+    },
+    [toast],
+  );
 
+  useEffect(() => {
     // Reminder stats are non-blocking — a failure here must not hide the
     // dashboard, so it fails silently (the section simply doesn't render).
     const fetchReminderStats = async () => {
@@ -44,7 +55,14 @@ export default function DashboardPage() {
 
     fetchDashboard();
     fetchReminderStats();
-  }, [toast]);
+  }, [fetchDashboard]);
+
+  // Keep "active in last 30 days" / "inactive" (and the rest of the stats
+  // card) fresh without a manual refresh — silent, tab-visibility-aware
+  // poll every 60s. Same pattern as the messaging feature's inbox/thread
+  // polling: pauses while the tab is hidden, catches up immediately on
+  // return.
+  useVisibilityPolling(() => fetchDashboard(true), 60000);
 
   // ─── Employment pie data (memoized) ────────────────────
   // Employed comes straight from stats. Without a participation payload we
