@@ -111,22 +111,11 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
     <>
       {/* Logo Area */}
       <div className="flex items-center gap-3 px-5 py-5">
-        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center shadow-lg shadow-gold-500/20">
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
+        <img
+          src="/pac-logo.jpg"
+          alt="PAC"
+          className="flex-shrink-0 w-10 h-10 rounded-full object-cover shadow-lg shadow-gold-500/20 ring-1 ring-white/10"
+        />
         {open && (
           <div className="overflow-hidden">
             <h2 className="text-[13px] font-bold text-white tracking-wide truncate">
