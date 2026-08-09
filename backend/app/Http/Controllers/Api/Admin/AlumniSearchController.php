@@ -27,7 +27,7 @@ class AlumniSearchController extends Controller
     {
         $query = Graduate::with('department:id,name,code')
             ->collegeOnly();
-             
+
 
         // Search by name
         if ($request->filled('search')) {
@@ -72,7 +72,7 @@ class AlumniSearchController extends Controller
      */
     public function profile(int $graduateId): JsonResponse
     {
-        $graduate = Graduate::with('department:id,name,code')->find($graduateId);
+        $graduate = Graduate::with(['department:id,name,code', 'user:id,uuid,email,status'])->find($graduateId);
 
         if (!$graduate) {
             return $this->notFound('Graduate not found.');
@@ -84,6 +84,15 @@ class AlumniSearchController extends Controller
 
         return $this->success([
             'graduate' => new GraduateResource($graduate),
+            // Linked alumni account (login credentials), separate from the
+            // academic record above — lets the admin manage account access
+            // (activate/suspend/deactivate, reset password) from this page.
+            'account' => $graduate->user ? [
+                'uuid' => $graduate->user->uuid,
+                'email' => $graduate->user->email,
+                'status' => $graduate->user->status?->value,
+                'status_label' => $graduate->user->status?->label(),
+            ] : null,
             'alumni_profile' => $alumniProfile ? [
                 'current_location' => $alumniProfile->current_location,
                 'employment_status' => $alumniProfile->employment_status?->value,
