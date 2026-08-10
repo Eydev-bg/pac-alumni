@@ -524,7 +524,7 @@ export default function Header({
             {bellOpen && (
               <div
                 role="menu"
-                className="absolute right-0 mt-2 w-80 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
+                className="fixed left-2 right-2 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-80 max-w-full rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
               >
                 <div className="px-4 py-2 border-b border-slate-100 flex items-center justify-between dark:border-slate-700">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
