@@ -20,9 +20,6 @@ import {
   HiOutlineIdentification,
   HiOutlineAcademicCap,
   HiOutlineBriefcase,
-  HiOutlineShieldCheck,
-  HiOutlineShieldExclamation,
-  HiOutlineKey,
 } from "react-icons/hi2";
 
 export default function GraduateDetailPage() {
@@ -36,12 +33,6 @@ export default function GraduateDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [confirmStatus, setConfirmStatus] = useState({
-    open: false,
-    status: null,
-  });
-  const [statusLoading, setStatusLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
 
   const fetchGraduate = async () => {
     try {
@@ -82,39 +73,6 @@ export default function GraduateDetailPage() {
     }
   };
 
-  const handleStatusChange = async () => {
-    if (!confirmStatus.status || !alumniData?.account) return;
-    setStatusLoading(true);
-    try {
-      await adminApi.updateUserStatus(
-        alumniData.account.uuid,
-        confirmStatus.status,
-      );
-      toast.success("Account status updated.");
-      setConfirmStatus({ open: false, status: null });
-      fetchGraduate();
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Failed to update account status.",
-      );
-    } finally {
-      setStatusLoading(false);
-    }
-  };
-
-  const handleResetPassword = async () => {
-    if (!alumniData?.account) return;
-    setResetLoading(true);
-    try {
-      await adminApi.resetUserPassword(alumniData.account.uuid);
-      toast.success("Password reset link emailed to the alumnus.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send reset link.");
-    } finally {
-      setResetLoading(false);
-    }
-  };
-
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -127,7 +85,6 @@ export default function GraduateDetailPage() {
 
   const isCollege = graduate.education_level === "college";
   const hasAlumniAccount = graduate.has_alumni_account;
-  const account = alumniData?.account;
   const alumniProfile = alumniData?.alumni_profile;
   const boardRecords = alumniData?.board_exam_records || [];
   const employmentRecords = alumniData?.employment_records || [];
@@ -342,82 +299,6 @@ export default function GraduateDetailPage() {
           </div>
         )}
 
-        {/* ═══ 2.5 Account Access — only when a linked alumni login exists ═══ */}
-        {isCollege && hasAlumniAccount && account && (
-          <Card className="mb-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-gold-500 uppercase tracking-wider flex items-center gap-2">
-                <HiOutlineShieldCheck className="w-4 h-4" />
-                Account Access
-              </h2>
-              <StatusBadge
-                status={account.status}
-                label={account.status_label}
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                  Login Email
-                </p>
-                <p className="mt-1 text-sm text-slate-200 font-medium">
-                  {account.email}
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={handleResetPassword}
-                  disabled={resetLoading}
-                  className={`${actionBtn} text-slate-300 bg-white/[0.06] border-white/[0.08] hover:bg-white/[0.1] disabled:opacity-50`}
-                >
-                  <HiOutlineKey className="w-4 h-4" /> Send Password Reset
-                </button>
-
-                {account.status !== "active" && (
-                  <button
-                    onClick={() =>
-                      setConfirmStatus({ open: true, status: "active" })
-                    }
-                    className={`${actionBtn} text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20`}
-                  >
-                    <HiOutlineShieldCheck className="w-4 h-4" /> Activate
-                  </button>
-                )}
-                {account.status !== "suspended" && (
-                  <button
-                    onClick={() =>
-                      setConfirmStatus({ open: true, status: "suspended" })
-                    }
-                    className={`${actionBtn} text-amber-400 bg-amber-500/10 border-amber-500/20 hover:bg-amber-500/20`}
-                  >
-                    <HiOutlineShieldExclamation className="w-4 h-4" /> Suspend
-                  </button>
-                )}
-                {account.status !== "deactivated" && (
-                  <button
-                    onClick={() =>
-                      setConfirmStatus({ open: true, status: "deactivated" })
-                    }
-                    className={`${actionBtn} text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20`}
-                  >
-                    <HiOutlineShieldExclamation className="w-4 h-4" />{" "}
-                    Deactivate
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <p className="mt-4 text-xs text-slate-500">
-              Deactivating or suspending revokes this alumnus's ability to log
-              in. The graduate record cannot be deleted while an account is
-              linked — deactivate the account first if this record needs to be
-              removed.
-            </p>
-          </Card>
-        )}
-
         {/* ═══ 3. Graduate Details — bottom ═══ */}
         <Card>
           <div className="flex items-center justify-between mb-5">
@@ -476,28 +357,6 @@ export default function GraduateDetailPage() {
           loading={actionLoading}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDelete(false)}
-        />
-        <ConfirmDialog
-          open={confirmStatus.open}
-          title={
-            confirmStatus.status === "active"
-              ? "Activate Account"
-              : confirmStatus.status === "suspended"
-                ? "Suspend Account"
-                : "Deactivate Account"
-          }
-          message={
-            confirmStatus.status === "active"
-              ? `Restore login access for "${graduate.full_name}"?`
-              : `"${graduate.full_name}" will immediately lose the ability to log in. Continue?`
-          }
-          confirmLabel={
-            confirmStatus.status === "active" ? "Activate" : "Confirm"
-          }
-          variant={confirmStatus.status === "active" ? "info" : "danger"}
-          loading={statusLoading}
-          onConfirm={handleStatusChange}
-          onCancel={() => setConfirmStatus({ open: false, status: null })}
         />
       </div>
     </>
