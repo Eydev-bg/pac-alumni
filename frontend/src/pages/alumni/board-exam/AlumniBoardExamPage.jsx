@@ -9,6 +9,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { storageUrl, formatDateOnly } from "../../../utils/formatters";
 import StatusBadge from "../../../components/common/StatusBadge";
+import SkeletonCard from "../../../components/common/SkeletonCard";
+import EmptyState from "../../../components/common/EmptyState";
 import { Select } from "../../../components/alumni/ui";
 import {
   HiOutlineClipboardDocumentCheck,
@@ -174,10 +176,9 @@ export default function AlumniBoardExamPage() {
   // ─── Loading ────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1a2e5a] mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Loading board exam data…</p>
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8">
+          <SkeletonCard variant="form" count={1} />
         </div>
       </div>
     );
@@ -187,19 +188,11 @@ export default function AlumniBoardExamPage() {
   if (error === "not_board_program") {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-            <HiOutlineClipboardDocumentCheck className="w-8 h-8 text-slate-400" />
-          </div>
-          <h2 className="text-lg font-bold text-slate-800 mb-2">
-            Not Applicable
-          </h2>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
-            Your course does not require a board exam. This module is only
-            available for alumni from board exam programs such as Nursing,
-            Engineering, and other licensure-required courses.
-          </p>
-        </div>
+        <EmptyState
+          icon={HiOutlineClipboardDocumentCheck}
+          title="Not Applicable"
+          message="Your course does not require a board exam. This module is only available for alumni from board exam programs such as Nursing, Engineering, and other licensure-required courses."
+        />
       </div>
     );
   }
@@ -265,9 +258,7 @@ export default function AlumniBoardExamPage() {
               <h1 className="text-xl sm:text-2xl font-bold text-white">
                 {course.board_exam_name || "Board Examination"}
               </h1>
-              <p className="text-sm text-white/60 mt-1">
-                {course.name}
-              </p>
+              <p className="text-sm text-white/60 mt-1">{course.name}</p>
             </div>
             <div className="sm:text-right">
               <p className="text-[0.68rem] text-white/40 font-medium mb-1">
@@ -334,9 +325,7 @@ export default function AlumniBoardExamPage() {
           <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-5">
             {/* Status Selection */}
             <div>
-              <label
-                className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
-              >
+              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
                 Exam Result <span className="text-red-400">*</span>
               </label>
               <div>
@@ -414,7 +403,10 @@ export default function AlumniBoardExamPage() {
                 id="board-exam-year"
                 value={formData.exam_year}
                 onChange={(v) => setFormData({ ...formData, exam_year: v })}
-                options={yearOptions.map((y) => ({ value: String(y), label: String(y) }))}
+                options={yearOptions.map((y) => ({
+                  value: String(y),
+                  label: String(y),
+                }))}
                 placeholder="Select exam year"
                 error={!!fieldErrors.exam_year}
                 leftIcon={HiOutlineCalendarDays}
@@ -590,7 +582,10 @@ export default function AlumniBoardExamPage() {
                       <h4 className="text-[0.82rem] font-bold text-slate-800">
                         {rec.exam_name}
                       </h4>
-                      <StatusBadge status={rec.status} label={rec.status_label} />
+                      <StatusBadge
+                        status={rec.status}
+                        label={rec.status_label}
+                      />
                       {rec.is_current && (
                         <span className="inline-flex items-center rounded-full bg-[#c8a84e]/15 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wide text-[#8a6d1f]">
                           Current
@@ -604,8 +599,7 @@ export default function AlumniBoardExamPage() {
                       </span>
                       <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
                         <HiOutlineClock className="w-3.5 h-3.5" />
-                        Submitted:{" "}
-                        {formatDateOnly(rec.created_at)}
+                        Submitted: {formatDateOnly(rec.created_at)}
                       </span>
                       {rec.verified_at && (
                         <span className="inline-flex items-center gap-1 text-[0.7rem] text-emerald-600">
@@ -646,10 +640,10 @@ export default function AlumniBoardExamPage() {
             </h4>
             <p className="text-[0.72rem] text-slate-500 mt-1 leading-relaxed">
               Your board exam results are shared with the Admin for
-              institutional tracking. Uploading proof
-              documents (certificate, rating sheet) is optional but recommended
-              for faster verification. You may submit multiple records if you
-              have taken the exam more than once.
+              institutional tracking. Uploading proof documents (certificate,
+              rating sheet) is optional but recommended for faster verification.
+              You may submit multiple records if you have taken the exam more
+              than once.
             </p>
           </div>
         </div>
@@ -665,4 +659,3 @@ export default function AlumniBoardExamPage() {
     </div>
   );
 }
-

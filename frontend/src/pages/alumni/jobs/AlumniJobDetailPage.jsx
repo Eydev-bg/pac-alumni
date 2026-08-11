@@ -9,6 +9,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import alumniApi from "../../../api/alumniApi";
 import { formatDate, storageUrl } from "../../../utils/formatters";
+import EmptyState from "../../../components/common/EmptyState";
+import SkeletonCard from "../../../components/common/SkeletonCard";
 import {
   HiOutlineArrowLeft,
   HiOutlineMapPin,
@@ -64,8 +66,9 @@ export default function AlumniJobDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto text-slate-500 text-sm">
-        Loading job opening…
+      <div className="max-w-3xl mx-auto space-y-4">
+        <BackLink onClick={() => navigate("/alumni/careers")} />
+        <SkeletonCard variant="job" count={1} />
       </div>
     );
   }
@@ -74,12 +77,11 @@ export default function AlumniJobDetailPage() {
     return (
       <div className="max-w-3xl mx-auto space-y-4">
         <BackLink onClick={() => navigate("/alumni/careers")} />
-        <div className="bg-white rounded-xl border border-slate-200 p-10 text-center">
-          <HiOutlineBriefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm text-slate-500">
-            {error || "Job opening not found."}
-          </p>
-        </div>
+        <EmptyState
+          icon={HiOutlineBriefcase}
+          title="Job opening not found"
+          message={error || "This job opening is no longer available."}
+        />
       </div>
     );
   }

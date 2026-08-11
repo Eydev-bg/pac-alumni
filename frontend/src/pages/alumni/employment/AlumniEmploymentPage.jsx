@@ -8,6 +8,7 @@
 import { useState, useEffect, useCallback } from "react";
 import alumniApi from "../../../api/alumniApi";
 import { formatDateOnly } from "../../../utils/formatters";
+import SkeletonCard from "../../../components/common/SkeletonCard";
 import { Select } from "../../../components/alumni/ui";
 import {
   HiOutlineBriefcase,
@@ -175,10 +176,9 @@ export default function AlumniEmploymentPage() {
   // ─── Loading ────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#1a2e5a] mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Loading employment data…</p>
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <SkeletonCard variant="form" count={1} />
         </div>
       </div>
     );
@@ -298,8 +298,7 @@ export default function AlumniEmploymentPage() {
                 {current_job.start_date && (
                   <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600">
                     <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                    Since{" "}
-                    {formatDateOnly(current_job.start_date)}
+                    Since {formatDateOnly(current_job.start_date)}
                   </span>
                 )}
               </div>
@@ -570,8 +569,13 @@ export default function AlumniEmploymentPage() {
                     <Select
                       id="employment-industry"
                       value={formData.industry}
-                      onChange={(v) => setFormData({ ...formData, industry: v })}
-                      options={industries.map((ind) => ({ value: ind, label: ind }))}
+                      onChange={(v) =>
+                        setFormData({ ...formData, industry: v })
+                      }
+                      options={industries.map((ind) => ({
+                        value: ind,
+                        label: ind,
+                      }))}
                       placeholder="Select industry"
                       error={!!fieldErrors.industry}
                     />
