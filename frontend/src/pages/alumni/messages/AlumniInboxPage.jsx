@@ -22,8 +22,6 @@ import {
   HiOutlineXMark,
 } from "react-icons/hi2";
 
-const NAVY = "#2563eb";
-
 const DESKTOP_QUERY = "(min-width: 1024px)";
 
 export default function AlumniInboxPage() {
@@ -134,23 +132,21 @@ export default function AlumniInboxPage() {
       {/* ━━━━ Header ━━━━ */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-white"
-            style={{ background: NAVY }}
-          >
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white bg-[#2563eb]">
             <HiOutlineChatBubbleLeftRight className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Messages</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+              Messages
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Connect with fellow PAC alumni
             </p>
           </div>
         </div>
         <button
           onClick={() => setShowCompose(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90"
-          style={{ background: NAVY }}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 bg-[#2563eb]"
         >
           <HiOutlinePencilSquare className="w-4 h-4" />
           <span className="hidden sm:inline">New Message</span>
@@ -158,10 +154,10 @@ export default function AlumniInboxPage() {
       </div>
 
       {/* ━━━━ Two-panel layout ━━━━ */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
         <div className="flex h-[calc(100dvh-220px)] min-h-[320px]">
           {/* ── Left: conversation list ── */}
-          <div className="w-full lg:w-[360px] lg:border-r border-slate-200 flex flex-col">
+          <div className="w-full lg:w-[360px] lg:border-r border-slate-200 dark:border-slate-700 flex flex-col">
             <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <SkeletonCard variant="conversation" count={5} />
@@ -173,7 +169,7 @@ export default function AlumniInboxPage() {
                   message="Start a chat with a fellow alumnus."
                 />
               ) : (
-                <ul className="divide-y divide-slate-100">
+                <ul className="divide-y divide-slate-100 dark:divide-slate-700">
                   {conversations.map((c) => {
                     const isActive = c.id === selectedId;
                     const preview = c.last_message
@@ -185,8 +181,8 @@ export default function AlumniInboxPage() {
                           onClick={() => openConversation(c.id)}
                           className={`w-full text-left flex items-center gap-3 px-4 py-3 transition-colors ${
                             isActive
-                              ? "bg-[#2563eb]/[0.06]"
-                              : "hover:bg-slate-50"
+                              ? "bg-[#2563eb]/[0.06] dark:bg-[#2563eb]/[0.12]"
+                              : "hover:bg-slate-50 dark:hover:bg-slate-700"
                           }`}
                         >
                           <span className="relative flex-shrink-0">
@@ -199,7 +195,7 @@ export default function AlumniInboxPage() {
                               c.other_participant?.last_active_at,
                             ) && (
                               <span
-                                className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white"
+                                className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-slate-800"
                                 aria-label="Online"
                                 title="Online"
                               />
@@ -210,8 +206,8 @@ export default function AlumniInboxPage() {
                               <span
                                 className={`text-sm truncate ${
                                   c.unread_count > 0
-                                    ? "font-bold text-slate-900"
-                                    : "font-semibold text-slate-700"
+                                    ? "font-bold text-slate-900 dark:text-white"
+                                    : "font-semibold text-slate-700 dark:text-slate-200"
                                 }`}
                               >
                                 {c.other_participant?.name}
@@ -226,7 +222,7 @@ export default function AlumniInboxPage() {
                               <span
                                 className={`text-xs truncate ${
                                   c.unread_count > 0
-                                    ? "text-slate-700 font-medium"
+                                    ? "text-slate-700 dark:text-slate-200 font-medium"
                                     : "text-slate-400"
                                 }`}
                               >
@@ -234,8 +230,7 @@ export default function AlumniInboxPage() {
                               </span>
                               {c.unread_count > 0 && (
                                 <span
-                                  className="flex-shrink-0 w-2.5 h-2.5 rounded-full"
-                                  style={{ background: "#3b82f6" }}
+                                  className="flex-shrink-0 w-2.5 h-2.5 rounded-full bg-[#3b82f6]"
                                   title={`${c.unread_count} unread`}
                                 />
                               )}
@@ -258,9 +253,9 @@ export default function AlumniInboxPage() {
                 onActivity={() => load(false)}
               />
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50">
-                <HiOutlineChatBubbleLeftRight className="w-12 h-12 text-slate-300" />
-                <p className="mt-3 text-sm font-medium text-slate-600">
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-slate-50 dark:bg-slate-800/50">
+                <HiOutlineChatBubbleLeftRight className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">
                   Select a conversation
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
@@ -329,19 +324,19 @@ function NewMessageModal({ onClose, onStarted }) {
         aria-modal="true"
         aria-labelledby="new-message-modal-title"
         tabIndex={-1}
-        className="relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden focus:outline-none"
+        className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-slate-900/50 max-w-md w-full overflow-hidden focus:outline-none"
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
           <h3
             id="new-message-modal-title"
-            className="text-base font-bold text-slate-900"
+            className="text-base font-bold text-slate-900 dark:text-white"
           >
             New Message
           </h3>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 transition-colors"
+            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 transition-colors"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -356,11 +351,15 @@ function NewMessageModal({ onClose, onStarted }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search alumni by name…"
-              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb]"
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb]"
             />
           </div>
 
-          {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+          {error && (
+            <p className="mt-2 text-xs text-red-600 dark:text-red-300">
+              {error}
+            </p>
+          )}
 
           <div className="mt-3 max-h-72 overflow-y-auto">
             {loading ? (
@@ -378,11 +377,11 @@ function NewMessageModal({ onClose, onStarted }) {
                     <button
                       onClick={() => start(r)}
                       disabled={starting}
-                      className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50 transition-colors text-left disabled:opacity-50"
+                      className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left disabled:opacity-50"
                     >
                       <Avatar src={r.profile_picture} name={r.name} size="sm" />
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-slate-800 truncate">
+                        <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
                           {r.name}
                         </p>
                         {(r.course_code || r.graduation_year) && (

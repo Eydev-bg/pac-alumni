@@ -41,11 +41,11 @@ function Toast({ message, type = "success", onClose }) {
 
   const cfg = {
     success: {
-      bg: "bg-emerald-50 border-emerald-200 text-emerald-800",
+      bg: "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300",
       Icon: HiOutlineCheckCircle,
     },
     error: {
-      bg: "bg-red-50 border-red-200 text-red-800",
+      bg: "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/15 dark:border-red-500/30 dark:text-red-300",
       Icon: HiOutlineExclamationTriangle,
     },
   };
@@ -54,7 +54,7 @@ function Toast({ message, type = "success", onClose }) {
   return (
     <div className="fixed top-20 right-4 z-50 animate-slide-in">
       <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-sm ${bg}`}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg dark:shadow-slate-900/50 max-w-sm ${bg}`}
       >
         <Icon className="w-5 h-5 flex-shrink-0" />
         <p className="text-sm font-medium flex-1">{message}</p>
@@ -177,7 +177,7 @@ export default function AlumniBoardExamPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-8">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -202,13 +202,15 @@ export default function AlumniBoardExamPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
-            <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500" />
+          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/15 flex items-center justify-center mx-auto mb-3">
+            <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 mb-1">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
             Something went wrong
           </h3>
-          <p className="text-sm text-slate-500 mb-4">{error}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            {error}
+          </p>
           <button
             onClick={loadData}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#1a2e5a] rounded-lg hover:bg-[#243a6e] transition-colors"
@@ -275,16 +277,16 @@ export default function AlumniBoardExamPage() {
 
       {/* ━━━━ Passed Congrats Banner ━━━━ */}
       {isPassed && (
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200/60 p-5 sm:p-6">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-2xl border border-emerald-200/60 dark:border-emerald-500/25 p-5 sm:p-6">
           <div className="flex items-start gap-4">
-            <div className="w-11 h-11 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <HiOutlineTrophy className="w-6 h-6 text-emerald-600" />
+            <div className="w-11 h-11 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <HiOutlineTrophy className="w-6 h-6 text-emerald-600 dark:text-emerald-300" />
             </div>
             <div>
-              <h3 className="text-[0.85rem] font-bold text-emerald-800">
+              <h3 className="text-[0.85rem] font-bold text-emerald-800 dark:text-emerald-300">
                 Congratulations, Licensed Professional!
               </h3>
-              <p className="text-[0.75rem] text-emerald-600 mt-1 leading-relaxed">
+              <p className="text-[0.75rem] text-emerald-600 dark:text-emerald-300 mt-1 leading-relaxed">
                 You have passed the {course.board_exam_name || "board exam"}.
                 Your achievement has been recorded in the system. You may still
                 submit additional exam records if applicable.
@@ -295,14 +297,14 @@ export default function AlumniBoardExamPage() {
       )}
 
       {/* ━━━━ Submit New Record ━━━━ */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] flex items-center justify-center">
-              <HiOutlineDocumentArrowUp className="w-[18px] h-[18px] text-[#1a2e5a]" />
+            <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
+              <HiOutlineDocumentArrowUp className="w-[18px] h-[18px] text-[#1a2e5a] dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="text-[0.82rem] font-bold text-slate-800">
+              <h3 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                 Submit Board Exam Result
               </h3>
               <p className="text-[0.7rem] text-slate-400 mt-0.5">
@@ -325,7 +327,7 @@ export default function AlumniBoardExamPage() {
           <form onSubmit={handleSubmit} className="px-5 sm:px-6 py-5 space-y-5">
             {/* Status Selection */}
             <div>
-              <label className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
+              <label className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-2">
                 Exam Result <span className="text-red-400">*</span>
               </label>
               <div>
@@ -334,33 +336,33 @@ export default function AlumniBoardExamPage() {
                   onClick={() => setFormData({ ...formData, status: "passed" })}
                   className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all duration-200 ${
                     formData.status === "passed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500 dark:bg-emerald-500/15"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       formData.status === "passed"
-                        ? "bg-emerald-100"
-                        : "bg-slate-100"
+                        ? "bg-emerald-100 dark:bg-emerald-500/20"
+                        : "bg-slate-100 dark:bg-slate-700"
                     }`}
                   >
                     <HiOutlineCheckCircle
                       className={`w-5 h-5 ${
                         formData.status === "passed"
-                          ? "text-emerald-600"
+                          ? "text-emerald-600 dark:text-emerald-300"
                           : "text-slate-400"
                       }`}
                     />
                   </div>
                   <div className="text-left">
                     <p
-                      className={`text-sm font-bold ${formData.status === "passed" ? "text-emerald-800" : "text-slate-700"}`}
+                      className={`text-sm font-bold ${formData.status === "passed" ? "text-emerald-800 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       Passed
                     </p>
                     <p
-                      className={`text-[0.68rem] ${formData.status === "passed" ? "text-emerald-600" : "text-slate-400"}`}
+                      className={`text-[0.68rem] ${formData.status === "passed" ? "text-emerald-600 dark:text-emerald-300" : "text-slate-400"}`}
                     >
                       I passed the exam
                     </p>
@@ -385,7 +387,7 @@ export default function AlumniBoardExamPage() {
                 </button>
               </div>
               {fieldErrors.status && (
-                <p className="text-[0.68rem] text-red-500 mt-1">
+                <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                   {fieldErrors.status[0]}
                 </p>
               )}
@@ -395,7 +397,7 @@ export default function AlumniBoardExamPage() {
             <div>
               <label
                 htmlFor="board-exam-year"
-                className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
               >
                 Exam Year <span className="text-red-400">*</span>
               </label>
@@ -412,7 +414,7 @@ export default function AlumniBoardExamPage() {
                 leftIcon={HiOutlineCalendarDays}
               />
               {fieldErrors.exam_year && (
-                <p className="text-[0.68rem] text-red-500 mt-1">
+                <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                   {fieldErrors.exam_year[0]}
                 </p>
               )}
@@ -422,7 +424,7 @@ export default function AlumniBoardExamPage() {
             <div>
               <label
                 htmlFor="board-exam-proof"
-                className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
               >
                 Proof Document{" "}
                 <span className="text-slate-400 font-normal">(Optional)</span>
@@ -430,12 +432,12 @@ export default function AlumniBoardExamPage() {
               {!proofFile ? (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-[#1a2e5a]/30 hover:bg-[#1a2e5a]/[0.02] transition-all duration-200 group"
+                  className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-6 text-center cursor-pointer hover:border-[#1a2e5a]/30 hover:bg-[#1a2e5a]/[0.02] dark:hover:bg-[#1a2e5a]/[0.08] transition-all duration-200 group"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-[#1a2e5a]/10 flex items-center justify-center mx-auto mb-2 transition-colors">
-                    <HiOutlineDocumentArrowUp className="w-5 h-5 text-slate-400 group-hover:text-[#1a2e5a]" />
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 group-hover:bg-[#1a2e5a]/10 dark:group-hover:bg-[#1a2e5a]/20 flex items-center justify-center mx-auto mb-2 transition-colors">
+                    <HiOutlineDocumentArrowUp className="w-5 h-5 text-slate-400 group-hover:text-[#1a2e5a] dark:group-hover:text-blue-400" />
                   </div>
-                  <p className="text-[0.78rem] font-medium text-slate-600">
+                  <p className="text-[0.78rem] font-medium text-slate-600 dark:text-slate-300">
                     Click to upload proof
                   </p>
                   <p className="text-[0.68rem] text-slate-400 mt-0.5">
@@ -443,12 +445,12 @@ export default function AlumniBoardExamPage() {
                   </p>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
-                  <div className="w-9 h-9 rounded-lg bg-[#1a2e5a]/10 flex items-center justify-center flex-shrink-0">
-                    <HiOutlinePaperClip className="w-4 h-4 text-[#1a2e5a]" />
+                <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                  <div className="w-9 h-9 rounded-lg bg-[#1a2e5a]/10 dark:bg-[#1a2e5a]/20 flex items-center justify-center flex-shrink-0">
+                    <HiOutlinePaperClip className="w-4 h-4 text-[#1a2e5a] dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[0.78rem] font-medium text-slate-700 truncate">
+                    <p className="text-[0.78rem] font-medium text-slate-700 dark:text-slate-200 truncate">
                       {proofFile.name}
                     </p>
                     <p className="text-[0.65rem] text-slate-400">
@@ -461,7 +463,7 @@ export default function AlumniBoardExamPage() {
                       setProofFile(null);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                    className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
+                    className="w-8 h-8 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/15 flex items-center justify-center transition-colors"
                   >
                     <HiOutlineTrash className="w-4 h-4 text-red-400" />
                   </button>
@@ -477,17 +479,17 @@ export default function AlumniBoardExamPage() {
                 onChange={handleFileSelect}
               />
               {fieldErrors.proof_file && (
-                <p className="text-[0.68rem] text-red-500 mt-1">
+                <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                   {fieldErrors.proof_file[0]}
                 </p>
               )}
             </div>
 
             {/* Notification info */}
-            <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
+            <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-500/25">
               <div className="flex items-start gap-2.5">
-                <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                <p className="text-[0.72rem] text-blue-700 leading-relaxed">
+                <HiOutlineBellAlert className="w-4 h-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <p className="text-[0.72rem] text-blue-700 dark:text-blue-300 leading-relaxed">
                   Upon submission, the{" "}
                   <span className="font-semibold">Admin</span> team will be
                   automatically notified about your board exam result.
@@ -518,7 +520,7 @@ export default function AlumniBoardExamPage() {
                 type="button"
                 onClick={cancelForm}
                 disabled={submitting}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -526,13 +528,13 @@ export default function AlumniBoardExamPage() {
           </form>
         ) : !hasRecords ? (
           <div className="px-5 sm:px-6 py-8 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
-              <HiOutlineClock className="w-7 h-7 text-amber-500" />
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-500/15 flex items-center justify-center mx-auto mb-3">
+              <HiOutlineClock className="w-7 h-7 text-amber-500 dark:text-amber-300" />
             </div>
-            <h4 className="text-sm font-bold text-slate-800 mb-1">
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">
               No Records Yet
             </h4>
-            <p className="text-[0.75rem] text-slate-500 max-w-sm mx-auto">
+            <p className="text-[0.75rem] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
               You haven't submitted any board exam results yet. Click the button
               above to record your {course.board_exam_name || "board exam"}{" "}
               result.
@@ -543,14 +545,14 @@ export default function AlumniBoardExamPage() {
 
       {/* ━━━━ Exam History ━━━━ */}
       {hasRecords && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] flex items-center justify-center">
-                <HiOutlineDocumentText className="w-[18px] h-[18px] text-[#1a2e5a]" />
+              <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
+                <HiOutlineDocumentText className="w-[18px] h-[18px] text-[#1a2e5a] dark:text-blue-400" />
               </div>
               <div>
-                <h3 className="text-[0.82rem] font-bold text-slate-800">
+                <h3 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                   Exam History
                 </h3>
                 <p className="text-[0.7rem] text-slate-400 mt-0.5">
@@ -559,27 +561,29 @@ export default function AlumniBoardExamPage() {
               </div>
             </div>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-700">
             {records.map((rec) => (
               <div
                 key={rec.id}
-                className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 transition-colors"
+                className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors"
               >
                 <div className="flex items-start gap-4">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                      rec.status === "passed" ? "bg-emerald-50" : "bg-slate-50"
+                      rec.status === "passed"
+                        ? "bg-emerald-50 dark:bg-emerald-500/15"
+                        : "bg-slate-50 dark:bg-slate-700"
                     }`}
                   >
                     {rec.status === "passed" ? (
-                      <HiOutlineTrophy className="w-5 h-5 text-emerald-600" />
+                      <HiOutlineTrophy className="w-5 h-5 text-emerald-600 dark:text-emerald-300" />
                     ) : (
-                      <HiOutlineXCircle className="w-5 h-5 text-red-500" />
+                      <HiOutlineXCircle className="w-5 h-5 text-red-500 dark:text-red-400" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="text-[0.82rem] font-bold text-slate-800">
+                      <h4 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                         {rec.exam_name}
                       </h4>
                       <StatusBadge
@@ -587,22 +591,22 @@ export default function AlumniBoardExamPage() {
                         label={rec.status_label}
                       />
                       {rec.is_current && (
-                        <span className="inline-flex items-center rounded-full bg-[#c8a84e]/15 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wide text-[#8a6d1f]">
+                        <span className="inline-flex items-center rounded-full bg-[#c8a84e]/15 dark:bg-[#c8a84e]/20 px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-wide text-[#8a6d1f] dark:text-[#c8a84e]">
                           Current
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-4 mt-1.5 flex-wrap">
-                      <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
+                      <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                         <HiOutlineCalendarDays className="w-3.5 h-3.5" />
                         Exam Year: {rec.exam_year}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
+                      <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                         <HiOutlineClock className="w-3.5 h-3.5" />
                         Submitted: {formatDateOnly(rec.created_at)}
                       </span>
                       {rec.verified_at && (
-                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-emerald-600">
+                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-emerald-600 dark:text-emerald-300">
                           <HiOutlineShieldCheck className="w-3.5 h-3.5" />
                           Verified
                         </span>
@@ -613,7 +617,7 @@ export default function AlumniBoardExamPage() {
                         href={storageUrl(rec.proof_file)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 mt-2 text-[0.72rem] font-medium text-[#1a2e5a] hover:text-[#2a4a8a] transition-colors"
+                        className="inline-flex items-center gap-1.5 mt-2 text-[0.72rem] font-medium text-[#1a2e5a] dark:text-blue-400 hover:text-[#2a4a8a] dark:hover:text-blue-300 transition-colors"
                       >
                         <HiOutlinePaperClip className="w-3.5 h-3.5" />
                         View Proof Document
@@ -629,16 +633,16 @@ export default function AlumniBoardExamPage() {
       )}
 
       {/* ━━━━ Info Note ━━━━ */}
-      <div className="bg-gradient-to-r from-[#1a2e5a]/[0.03] to-[#c8a84e]/[0.04] rounded-2xl border border-slate-200/60 p-5 sm:p-6">
+      <div className="bg-gradient-to-r from-[#1a2e5a]/[0.03] to-[#c8a84e]/[0.04] dark:from-[#1a2e5a]/[0.15] dark:to-[#c8a84e]/[0.08] rounded-2xl border border-slate-200/60 dark:border-slate-700 p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#c8a84e]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-9 h-9 rounded-xl bg-[#c8a84e]/10 dark:bg-[#c8a84e]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
             <HiOutlineAcademicCap className="w-[18px] h-[18px] text-[#c8a84e]" />
           </div>
           <div>
-            <h4 className="text-[0.78rem] font-bold text-slate-800">
+            <h4 className="text-[0.78rem] font-bold text-slate-800 dark:text-slate-100">
               About Board Exam Records
             </h4>
-            <p className="text-[0.72rem] text-slate-500 mt-1 leading-relaxed">
+            <p className="text-[0.72rem] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               Your board exam results are shared with the Admin for
               institutional tracking. Uploading proof documents (certificate,
               rating sheet) is optional but recommended for faster verification.

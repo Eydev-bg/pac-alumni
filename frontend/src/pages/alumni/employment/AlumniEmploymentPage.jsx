@@ -37,11 +37,11 @@ function Toast({ message, type = "success", onClose }) {
 
   const cfg = {
     success: {
-      bg: "bg-emerald-50 border-emerald-200 text-emerald-800",
+      bg: "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300",
       Icon: HiOutlineCheckCircle,
     },
     error: {
-      bg: "bg-red-50 border-red-200 text-red-800",
+      bg: "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/15 dark:border-red-500/30 dark:text-red-300",
       Icon: HiOutlineExclamationTriangle,
     },
   };
@@ -50,7 +50,7 @@ function Toast({ message, type = "success", onClose }) {
   return (
     <div className="fixed top-20 right-4 z-50 animate-slide-in">
       <div
-        className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-sm ${bg}`}
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg dark:shadow-slate-900/50 max-w-sm ${bg}`}
       >
         <Icon className="w-5 h-5 flex-shrink-0" />
         <p className="text-sm font-medium flex-1">{message}</p>
@@ -177,7 +177,7 @@ export default function AlumniEmploymentPage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -188,13 +188,15 @@ export default function AlumniEmploymentPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
-            <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500" />
+          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/15 flex items-center justify-center mx-auto mb-3">
+            <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500 dark:text-red-400" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 mb-1">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
             Something went wrong
           </h3>
-          <p className="text-sm text-slate-500 mb-4">{error}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            {error}
+          </p>
           <button
             onClick={loadData}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#1a2e5a] rounded-lg hover:bg-[#243a6e] transition-colors"
@@ -263,23 +265,23 @@ export default function AlumniEmploymentPage() {
 
       {/* ━━━━ Current Job Card ━━━━ */}
       {isEmployed && current_job && (
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200/60 p-5 sm:p-6">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-2xl border border-emerald-200/60 dark:border-emerald-500/25 p-5 sm:p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-              <HiOutlineBuildingOffice2 className="w-6 h-6 text-emerald-600" />
+            <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <HiOutlineBuildingOffice2 className="w-6 h-6 text-emerald-600 dark:text-emerald-300" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[0.68rem] text-emerald-600 font-semibold uppercase tracking-wider mb-0.5">
+              <p className="text-[0.68rem] text-emerald-600 dark:text-emerald-300 font-semibold uppercase tracking-wider mb-0.5">
                 Current Position
               </p>
-              <h3 className="text-lg font-bold text-emerald-900">
+              <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
                 {current_job.job_title}
               </h3>
-              <p className="text-sm text-emerald-700 font-medium mt-0.5">
+              <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
                 {current_job.company_name}
               </p>
               <div className="flex flex-wrap items-center gap-3 mt-2">
-                <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-md">
                   {(() => {
                     const tc = typeConfig[current_job.employment_type];
                     const TypeIcon = tc?.icon || HiOutlineMapPin;
@@ -291,12 +293,12 @@ export default function AlumniEmploymentPage() {
                     );
                   })()}
                 </span>
-                <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600">
+                <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300">
                   <HiOutlineBriefcase className="w-3.5 h-3.5" />
                   {current_job.industry}
                 </span>
                 {current_job.start_date && (
-                  <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600">
+                  <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300">
                     <HiOutlineCalendarDays className="w-3.5 h-3.5" />
                     Since {formatDateOnly(current_job.start_date)}
                   </span>
@@ -308,14 +310,14 @@ export default function AlumniEmploymentPage() {
       )}
 
       {/* ━━━━ Update Form ━━━━ */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] flex items-center justify-center">
-              <HiOutlinePencilSquare className="w-[18px] h-[18px] text-[#1a2e5a]" />
+            <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
+              <HiOutlinePencilSquare className="w-[18px] h-[18px] text-[#1a2e5a] dark:text-blue-400" />
             </div>
             <div>
-              <h3 className="text-[0.82rem] font-bold text-slate-800">
+              <h3 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                 Update Employment
               </h3>
               <p className="text-[0.7rem] text-slate-400 mt-0.5">
@@ -340,7 +342,7 @@ export default function AlumniEmploymentPage() {
             <div>
               <label
                 id="employment-status-label"
-                className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
+                className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-2"
               >
                 Employment Status <span className="text-red-400">*</span>
               </label>
@@ -356,33 +358,33 @@ export default function AlumniEmploymentPage() {
                   }
                   className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "employed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500 dark:bg-emerald-500/15"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       formData.employment_status === "employed"
-                        ? "bg-emerald-100"
-                        : "bg-slate-100"
+                        ? "bg-emerald-100 dark:bg-emerald-500/20"
+                        : "bg-slate-100 dark:bg-slate-700"
                     }`}
                   >
                     <HiOutlineBriefcase
                       className={`w-5 h-5 ${
                         formData.employment_status === "employed"
-                          ? "text-emerald-600"
+                          ? "text-emerald-600 dark:text-emerald-300"
                           : "text-slate-400"
                       }`}
                     />
                   </div>
                   <div className="text-left">
                     <p
-                      className={`text-sm font-bold ${formData.employment_status === "employed" ? "text-emerald-800" : "text-slate-700"}`}
+                      className={`text-sm font-bold ${formData.employment_status === "employed" ? "text-emerald-800 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       Employed
                     </p>
                     <p
-                      className={`text-[0.68rem] ${formData.employment_status === "employed" ? "text-emerald-600" : "text-slate-400"}`}
+                      className={`text-[0.68rem] ${formData.employment_status === "employed" ? "text-emerald-600 dark:text-emerald-300" : "text-slate-400"}`}
                     >
                       I have a job
                     </p>
@@ -421,33 +423,33 @@ export default function AlumniEmploymentPage() {
                   }
                   className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "unemployed"
-                      ? "border-amber-300 bg-amber-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-amber-300 bg-amber-50 shadow-sm dark:border-amber-500 dark:bg-amber-500/15"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                       formData.employment_status === "unemployed"
-                        ? "bg-amber-100"
-                        : "bg-slate-100"
+                        ? "bg-amber-100 dark:bg-amber-500/20"
+                        : "bg-slate-100 dark:bg-slate-700"
                     }`}
                   >
                     <HiOutlineXCircle
                       className={`w-5 h-5 ${
                         formData.employment_status === "unemployed"
-                          ? "text-amber-600"
+                          ? "text-amber-600 dark:text-amber-300"
                           : "text-slate-400"
                       }`}
                     />
                   </div>
                   <div className="text-left">
                     <p
-                      className={`text-sm font-bold ${formData.employment_status === "unemployed" ? "text-amber-800" : "text-slate-700"}`}
+                      className={`text-sm font-bold ${formData.employment_status === "unemployed" ? "text-amber-800 dark:text-amber-300" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       Unemployed
                     </p>
                     <p
-                      className={`text-[0.68rem] ${formData.employment_status === "unemployed" ? "text-amber-600" : "text-slate-400"}`}
+                      className={`text-[0.68rem] ${formData.employment_status === "unemployed" ? "text-amber-600 dark:text-amber-300" : "text-slate-400"}`}
                     >
                       Currently not working
                     </p>
@@ -472,7 +474,7 @@ export default function AlumniEmploymentPage() {
                 </button>
               </div>
               {fieldErrors.employment_status && (
-                <p className="text-[0.68rem] text-red-500 mt-1">
+                <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                   {fieldErrors.employment_status[0]}
                 </p>
               )}
@@ -486,7 +488,7 @@ export default function AlumniEmploymentPage() {
                   <div>
                     <label
                       htmlFor="employment-company"
-                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                      className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
                     >
                       Company Name <span className="text-red-400">*</span>
                     </label>
@@ -505,15 +507,15 @@ export default function AlumniEmploymentPage() {
                         }
                         placeholder="e.g. Accenture Philippines"
                         maxLength={300}
-                        className={`w-full pl-10 pr-3 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 bg-white outline-none transition-all focus:ring-2 ${
+                        className={`w-full pl-10 pr-3 py-2.5 border rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-white dark:bg-slate-900 outline-none transition-all focus:ring-2 ${
                           fieldErrors.company_name
-                            ? "border-red-300 focus:border-red-400 focus:ring-red-500/15"
-                            : "border-slate-200 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10"
+                            ? "border-red-300 dark:border-red-500/60 focus:border-red-400 focus:ring-red-500/15"
+                            : "border-slate-200 dark:border-slate-600 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                         }`}
                       />
                     </div>
                     {fieldErrors.company_name && (
-                      <p className="text-[0.68rem] text-red-500 mt-1">
+                      <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                         {fieldErrors.company_name[0]}
                       </p>
                     )}
@@ -523,7 +525,7 @@ export default function AlumniEmploymentPage() {
                   <div>
                     <label
                       htmlFor="employment-job-title"
-                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                      className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
                     >
                       Job Title <span className="text-red-400">*</span>
                     </label>
@@ -542,15 +544,15 @@ export default function AlumniEmploymentPage() {
                         }
                         placeholder="e.g. Software Engineer"
                         maxLength={200}
-                        className={`w-full pl-10 pr-3 py-2.5 border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 bg-white outline-none transition-all focus:ring-2 ${
+                        className={`w-full pl-10 pr-3 py-2.5 border rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-white dark:bg-slate-900 outline-none transition-all focus:ring-2 ${
                           fieldErrors.job_title
-                            ? "border-red-300 focus:border-red-400 focus:ring-red-500/15"
-                            : "border-slate-200 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10"
+                            ? "border-red-300 dark:border-red-500/60 focus:border-red-400 focus:ring-red-500/15"
+                            : "border-slate-200 dark:border-slate-600 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                         }`}
                       />
                     </div>
                     {fieldErrors.job_title && (
-                      <p className="text-[0.68rem] text-red-500 mt-1">
+                      <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                         {fieldErrors.job_title[0]}
                       </p>
                     )}
@@ -562,7 +564,7 @@ export default function AlumniEmploymentPage() {
                   <div>
                     <label
                       htmlFor="employment-industry"
-                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                      className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
                     >
                       Industry <span className="text-red-400">*</span>
                     </label>
@@ -580,7 +582,7 @@ export default function AlumniEmploymentPage() {
                       error={!!fieldErrors.industry}
                     />
                     {fieldErrors.industry && (
-                      <p className="text-[0.68rem] text-red-500 mt-1">
+                      <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                         {fieldErrors.industry[0]}
                       </p>
                     )}
@@ -590,7 +592,7 @@ export default function AlumniEmploymentPage() {
                   <div>
                     <label
                       id="employment-type-label"
-                      className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                      className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
                     >
                       Employment Type <span className="text-red-400">*</span>
                     </label>
@@ -611,15 +613,15 @@ export default function AlumniEmploymentPage() {
                             }
                             className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
                               selected
-                                ? "border-[#1a2e5a] bg-[#1a2e5a]/[0.05] shadow-sm"
-                                : "border-slate-200 hover:border-slate-300 bg-white"
+                                ? "border-[#1a2e5a] bg-[#1a2e5a]/[0.05] shadow-sm dark:border-blue-500 dark:bg-blue-500/10"
+                                : "border-slate-200 hover:border-slate-300 bg-white dark:border-slate-700 dark:hover:border-slate-500 dark:bg-slate-800"
                             }`}
                           >
                             <TypeIcon
-                              className={`w-4 h-4 ${selected ? "text-[#1a2e5a]" : "text-slate-400"}`}
+                              className={`w-4 h-4 ${selected ? "text-[#1a2e5a] dark:text-blue-400" : "text-slate-400"}`}
                             />
                             <span
-                              className={`text-[0.65rem] font-semibold ${selected ? "text-[#1a2e5a]" : "text-slate-500"}`}
+                              className={`text-[0.65rem] font-semibold ${selected ? "text-[#1a2e5a] dark:text-blue-400" : "text-slate-500 dark:text-slate-400"}`}
                             >
                               {cfg.label}
                             </span>
@@ -628,7 +630,7 @@ export default function AlumniEmploymentPage() {
                       })}
                     </div>
                     {fieldErrors.employment_type && (
-                      <p className="text-[0.68rem] text-red-500 mt-1">
+                      <p className="text-[0.68rem] text-red-500 dark:text-red-400 mt-1">
                         {fieldErrors.employment_type[0]}
                       </p>
                     )}
@@ -639,7 +641,7 @@ export default function AlumniEmploymentPage() {
                 <div className="max-w-xs">
                   <label
                     htmlFor="employment-start-date"
-                    className="block text-[0.72rem] font-semibold text-slate-600 mb-1.5"
+                    className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5"
                   >
                     Start Date{" "}
                     <span className="text-slate-400 font-normal">
@@ -656,7 +658,7 @@ export default function AlumniEmploymentPage() {
                         setFormData({ ...formData, start_date: e.target.value })
                       }
                       max={new Date().toISOString().split("T")[0]}
-                      className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 bg-white outline-none transition-all focus:ring-2 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10"
+                      className="w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 bg-white dark:bg-slate-900 outline-none transition-all focus:ring-2 focus:border-[#1a2e5a] focus:ring-[#1a2e5a]/10 dark:focus:border-blue-500 dark:focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -665,10 +667,10 @@ export default function AlumniEmploymentPage() {
 
             {/* Notification info */}
             {formData.employment_status && (
-              <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
+              <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-500/25">
                 <div className="flex items-start gap-2.5">
-                  <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[0.72rem] text-blue-700 leading-relaxed">
+                  <HiOutlineBellAlert className="w-4 h-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-[0.72rem] text-blue-700 dark:text-blue-300 leading-relaxed">
                     The <span className="font-semibold">Admin</span> team will
                     be automatically notified about this employment update.
                   </p>
@@ -707,7 +709,7 @@ export default function AlumniEmploymentPage() {
                 type="button"
                 onClick={cancelForm}
                 disabled={submitting}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-60"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -715,13 +717,13 @@ export default function AlumniEmploymentPage() {
           </form>
         ) : !hasRecords ? (
           <div className="px-5 sm:px-6 py-8 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
               <HiOutlineBriefcase className="w-7 h-7 text-slate-400" />
             </div>
-            <h4 className="text-sm font-bold text-slate-800 mb-1">
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-1">
               No Employment Records
             </h4>
-            <p className="text-[0.75rem] text-slate-500 max-w-sm mx-auto">
+            <p className="text-[0.75rem] text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
               You haven't added any employment information yet. Click "Update
               Status" above to record your current work status.
             </p>
@@ -731,14 +733,14 @@ export default function AlumniEmploymentPage() {
 
       {/* ━━━━ Employment History ━━━━ */}
       {hasRecords && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="px-5 sm:px-6 py-4 border-b border-slate-100">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+          <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] flex items-center justify-center">
-                <HiOutlineClock className="w-[18px] h-[18px] text-[#1a2e5a]" />
+              <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
+                <HiOutlineClock className="w-[18px] h-[18px] text-[#1a2e5a] dark:text-blue-400" />
               </div>
               <div>
-                <h3 className="text-[0.82rem] font-bold text-slate-800">
+                <h3 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                   Employment History
                 </h3>
                 <p className="text-[0.7rem] text-slate-400 mt-0.5">
@@ -747,50 +749,52 @@ export default function AlumniEmploymentPage() {
               </div>
             </div>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-700">
             {records.map((rec) => {
               const tc = typeConfig[rec.employment_type] || typeConfig.local;
               const TypeIcon = tc.icon;
               return (
                 <div
                   key={rec.id}
-                  className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 transition-colors"
+                  className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors"
                 >
                   <div className="flex items-start gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        rec.is_current ? "bg-emerald-50" : "bg-slate-100"
+                        rec.is_current
+                          ? "bg-emerald-50 dark:bg-emerald-500/15"
+                          : "bg-slate-100 dark:bg-slate-700"
                       }`}
                     >
                       <HiOutlineBuildingOffice2
-                        className={`w-5 h-5 ${rec.is_current ? "text-emerald-600" : "text-slate-400"}`}
+                        className={`w-5 h-5 ${rec.is_current ? "text-emerald-600 dark:text-emerald-300" : "text-slate-400"}`}
                       />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-[0.82rem] font-bold text-slate-800">
+                        <h4 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                           {rec.job_title}
                         </h4>
                         {rec.is_current && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.62rem] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[0.62rem] font-semibold bg-emerald-50 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
                             CURRENT
                           </span>
                         )}
                       </div>
-                      <p className="text-[0.78rem] text-slate-600 font-medium mt-0.5">
+                      <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium mt-0.5">
                         {rec.company_name}
                       </p>
                       <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
+                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                           <TypeIcon className="w-3.5 h-3.5" />
                           {rec.employment_type_label}
                         </span>
-                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
+                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                           <HiOutlineBriefcase className="w-3.5 h-3.5" />
                           {rec.industry}
                         </span>
                         {rec.start_date && (
-                          <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500">
+                          <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                             <HiOutlineCalendarDays className="w-3.5 h-3.5" />
                             {formatDateOnly(rec.start_date)}
                             {rec.end_date ? (
@@ -815,16 +819,16 @@ export default function AlumniEmploymentPage() {
       )}
 
       {/* ━━━━ Info Note ━━━━ */}
-      <div className="bg-gradient-to-r from-[#1a2e5a]/[0.03] to-[#c8a84e]/[0.04] rounded-2xl border border-slate-200/60 p-5 sm:p-6">
+      <div className="bg-gradient-to-r from-[#1a2e5a]/[0.03] to-[#c8a84e]/[0.04] dark:from-[#1a2e5a]/[0.15] dark:to-[#c8a84e]/[0.08] rounded-2xl border border-slate-200/60 dark:border-slate-700 p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#c8a84e]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <div className="w-9 h-9 rounded-xl bg-[#c8a84e]/10 dark:bg-[#c8a84e]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
             <HiOutlineBriefcase className="w-[18px] h-[18px] text-[#c8a84e]" />
           </div>
           <div>
-            <h4 className="text-[0.78rem] font-bold text-slate-800">
+            <h4 className="text-[0.78rem] font-bold text-slate-800 dark:text-slate-100">
               About Employment Records
             </h4>
-            <p className="text-[0.72rem] text-slate-500 mt-1 leading-relaxed">
+            <p className="text-[0.72rem] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
               Keep your employment information up to date. When you add a new
               job, your previous position is automatically marked as ended. Your
               employment data is used for institutional reports and helps PAC

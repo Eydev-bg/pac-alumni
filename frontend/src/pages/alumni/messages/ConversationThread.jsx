@@ -275,13 +275,13 @@ export default function ConversationThread({
   const allMessages = [...messages, ...pending];
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-white">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-slate-800">
       {/* ── Header ── */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white">
+      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
         {onBack && (
           <button
             onClick={onBack}
-            className="p-1.5 -ml-1.5 rounded-full text-slate-500 hover:bg-slate-100 transition-colors"
+            className="p-1.5 -ml-1.5 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Back"
           >
             <HiOutlineArrowLeft className="w-5 h-5" />
@@ -296,28 +296,28 @@ export default function ConversationThread({
             title={
               other?.name ? `View ${other.name}'s profile` : "View profile"
             }
-            className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl px-1 -mx-1 py-0.5 hover:bg-slate-50 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            className="flex items-center gap-3 min-w-0 flex-1 text-left rounded-xl px-1 -mx-1 py-0.5 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40"
           >
             <span className="relative flex-shrink-0">
               <Avatar src={other.profile_picture} name={other.name} size="sm" />
               {isOnline && (
                 <span
-                  className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white"
+                  className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-white dark:ring-slate-800"
                   aria-label="Online"
                   title="Online"
                 />
               )}
             </span>
             <div className="min-w-0">
-              <h2 className="text-sm font-semibold text-slate-900 truncate">
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                 {other.name}
               </h2>
               {isTyping ? (
-                <p className="text-[0.7rem] text-blue-600 font-medium truncate flex items-center gap-1">
+                <p className="text-[0.7rem] text-blue-600 dark:text-blue-400 font-medium truncate flex items-center gap-1">
                   <span className="inline-flex gap-0.5" aria-hidden="true">
-                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.2s]" />
-                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce [animation-delay:-0.1s]" />
-                    <span className="w-1 h-1 rounded-full bg-blue-600 animate-bounce" />
+                    <span className="w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 animate-bounce [animation-delay:-0.2s]" />
+                    <span className="w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 animate-bounce [animation-delay:-0.1s]" />
+                    <span className="w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 animate-bounce" />
                   </span>
                   {other.name?.split(" ")[0] || "They"} is responding…
                 </p>
@@ -354,7 +354,7 @@ export default function ConversationThread({
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50 dark:bg-slate-900">
         {loading ? (
           <p className="text-center text-sm text-slate-400 mt-6">
             Loading messages…
@@ -411,7 +411,7 @@ export default function ConversationThread({
                     className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                       own
                         ? "bg-blue-600 text-white rounded-br-md"
-                        : "bg-white text-slate-700 border border-slate-200 rounded-bl-md"
+                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
                     } ${m._status === "sending" ? "opacity-70" : ""}`}
                   >
                     {m.content}
@@ -424,7 +424,9 @@ export default function ConversationThread({
                     {own && m._status === "sending" ? (
                       "Sending…"
                     ) : own && m._status === "failed" ? (
-                      <span className="text-red-500">Failed to send</span>
+                      <span className="text-red-500 dark:text-red-400">
+                        Failed to send
+                      </span>
                     ) : own && isLastOverall ? (
                       (readLabel(m) ?? "Sent")
                     ) : (
@@ -440,9 +442,11 @@ export default function ConversationThread({
       </div>
 
       {/* ── Input bar ── */}
-      <div className="border-t border-slate-200 bg-white px-3 py-3">
+      <div className="border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-3">
         {error && (
-          <p className="px-1 pb-2 text-[0.72rem] text-red-600">{error}</p>
+          <p className="px-1 pb-2 text-[0.72rem] text-red-600 dark:text-red-300">
+            {error}
+          </p>
         )}
         <form onSubmit={handleSend} className="flex items-end gap-2">
           <textarea
@@ -456,7 +460,7 @@ export default function ConversationThread({
             }}
             rows={1}
             placeholder="Type a message…"
-            className="flex-1 resize-none rounded-2xl border border-slate-300 px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb] max-h-32"
+            className="flex-1 resize-none rounded-2xl border border-slate-300 dark:border-slate-600 dark:bg-slate-900 px-4 py-2.5 text-sm text-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-[#2563eb]/30 focus:border-[#2563eb] max-h-32"
           />
           <button
             type="submit"
@@ -467,7 +471,7 @@ export default function ConversationThread({
             <HiOutlinePaperAirplane className="w-5 h-5" />
           </button>
         </form>
-        <p className="px-1 pt-1 text-right text-[0.62rem] text-slate-300">
+        <p className="px-1 pt-1 text-right text-[0.62rem] text-slate-300 dark:text-slate-600">
           {content.length}/{MAX_LEN}
         </p>
       </div>
