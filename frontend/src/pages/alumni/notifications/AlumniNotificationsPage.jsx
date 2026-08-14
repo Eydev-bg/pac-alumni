@@ -119,21 +119,23 @@ export default function AlumniNotificationsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Notifications</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+            Notifications
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Updates and alerts from PAC Alumni
           </p>
         </div>
         <button
           onClick={handleMarkAllRead}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
         >
           <HiOutlineCheckCircle className="w-4 h-4" /> Mark All Read
         </button>
       </div>
 
       {/* Mobile-only All / Unread tabs */}
-      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 mb-4 px-1">
+      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 dark:border-slate-700 mb-4 px-1">
         {[
           { key: "all", label: "All" },
           { key: "unread", label: "Unread" },
@@ -143,7 +145,7 @@ export default function AlumniNotificationsPage() {
             onClick={() => setTab(t.key)}
             className={`relative -mb-px flex items-center gap-1.5 pb-2.5 text-sm font-semibold transition-colors ${
               tab === t.key
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
                 : "text-slate-400 border-b-2 border-transparent"
             }`}
           >
@@ -158,7 +160,7 @@ export default function AlumniNotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {loading ? (
           <SkeletonCard variant="notification" count={5} />
         ) : visible.length === 0 ? (
@@ -169,14 +171,16 @@ export default function AlumniNotificationsPage() {
             message="You're all caught up!"
           />
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-700">
             {visible.map((n) => {
               const style = notificationStyle(n);
               return (
                 <div
                   key={n.id}
                   className={`p-4 flex items-start gap-3 transition-colors cursor-pointer ${
-                    !n.is_read ? "bg-blue-50/60 hover:bg-blue-50" : "hover:bg-slate-50"
+                    !n.is_read
+                      ? "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-500/10 dark:hover:bg-blue-500/20"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-700"
                   }`}
                   onClick={() => handleOpen(n)}
                 >
@@ -185,13 +189,13 @@ export default function AlumniNotificationsPage() {
                     <p
                       className={`text-sm ${
                         !n.is_read
-                          ? "font-semibold text-slate-800"
-                          : "text-slate-500"
+                          ? "font-semibold text-slate-800 dark:text-slate-100"
+                          : "text-slate-500 dark:text-slate-400"
                       }`}
                     >
                       {n.title}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                       {n.message}
                     </p>
                     <p className="text-xs text-slate-400 mt-1">

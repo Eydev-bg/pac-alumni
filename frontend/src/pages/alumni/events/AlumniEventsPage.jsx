@@ -148,23 +148,23 @@ export default function AlumniEventsPage() {
       <div className="flex items-center gap-3">
         <IconChip icon={HiOutlineCalendarDays} color="blue" size="lg" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
             Events
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Upcoming events and gatherings for alumni.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[0.78rem] text-red-700">
+        <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-[0.78rem] text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
 
       {/* Mobile-only Upcoming / Past tabs */}
-      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 px-1">
+      <div className="lg:hidden flex items-center gap-6 border-b border-slate-200 dark:border-slate-700 px-1">
         {[
           { key: "upcoming", label: "Upcoming" },
           { key: "past", label: "Past" },
@@ -174,7 +174,7 @@ export default function AlumniEventsPage() {
             onClick={() => setTab(t.key)}
             className={`relative -mb-px pb-2.5 text-sm font-semibold transition-colors ${
               tab === t.key
-                ? "text-blue-600 border-b-2 border-blue-600"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
                 : "text-slate-400 border-b-2 border-transparent"
             }`}
           >
@@ -229,11 +229,13 @@ function DateBadge({ iso, size = "md" }) {
   const { mon, day, time } = dateParts(iso);
   const dayCls = size === "lg" ? "text-2xl" : "text-xl";
   return (
-    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-blue-50 rounded-xl py-3">
-      <span className="text-[0.65rem] uppercase font-bold text-blue-600">
+    <div className="flex-shrink-0 w-16 flex flex-col items-center justify-center text-center bg-blue-50 dark:bg-blue-500/15 rounded-xl py-3">
+      <span className="text-[0.65rem] uppercase font-bold text-blue-600 dark:text-blue-300">
         {mon}
       </span>
-      <span className={`${dayCls} font-bold text-slate-800 leading-tight`}>
+      <span
+        className={`${dayCls} font-bold text-slate-800 dark:text-slate-100 leading-tight`}
+      >
         {day}
       </span>
       <span className="text-[0.65rem] text-slate-400">{time}</span>
@@ -243,7 +245,7 @@ function DateBadge({ iso, size = "md" }) {
 
 function PinnedBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
       <HiOutlineBookmark className="w-3 h-3" /> Pinned
     </span>
   );
@@ -251,7 +253,7 @@ function PinnedBadge() {
 
 function PastBadge() {
   return (
-    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
       Past event
     </span>
   );
@@ -268,9 +270,9 @@ function RsvpControl({ event: a, onRsvp }) {
         const Icon = s.value === "going" ? HiOutlineHandThumbUp : HiOutlineStar;
         const cls = activeState
           ? s.value === "going"
-            ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-            : "bg-blue-50 border-blue-200 text-blue-700"
-          : "bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200";
+            ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-500/15 dark:border-emerald-500/30 dark:text-emerald-300"
+            : "bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-500/15 dark:border-blue-500/30 dark:text-blue-300"
+          : "bg-slate-100 border-slate-200 text-slate-500 hover:bg-slate-200 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-600";
         return (
           <Fragment key={s.value}>
             <button
@@ -282,7 +284,7 @@ function RsvpControl({ event: a, onRsvp }) {
               {s.label}
             </button>
             {s.value === "going" && (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
                 ({a.going_count ?? 0} going)
               </span>
             )}
@@ -298,10 +300,10 @@ function EventCard({ event: a, onOpen, onRsvp }) {
   return (
     <div
       className={cn(
-        "bg-white rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md",
+        "bg-white dark:bg-slate-800 rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md",
         a.is_pinned
-          ? "border-amber-300 ring-1 ring-amber-100"
-          : "border-slate-200",
+          ? "border-amber-300 ring-1 ring-amber-100 dark:border-amber-500/50 dark:ring-amber-500/20"
+          : "border-slate-200 dark:border-slate-700",
         past && "opacity-75",
       )}
     >
@@ -315,23 +317,23 @@ function EventCard({ event: a, onOpen, onRsvp }) {
             <div className="flex items-center gap-2 flex-wrap">
               {a.is_pinned && <PinnedBadge />}
               {past && <PastBadge />}
-              <h3 className="text-sm font-bold text-slate-800 truncate">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                 {a.title}
               </h3>
             </div>
 
             {a.location && (
-              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-600">
-                <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 <span className="truncate">{a.location}</span>
               </div>
             )}
 
-            <p className="mt-1.5 text-xs text-slate-500 line-clamp-2 event-snippet">
+            <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 event-snippet">
               {stripHtml(a.content)}
             </p>
 
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-500">
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
               {a.posted_by && (
                 <span className="flex items-center gap-1">
                   <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
@@ -348,7 +350,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
 
           {/* RSVP controls — hidden for events that have already ended. */}
           {!past && (
-            <div className="mt-3 pt-3 border-t border-slate-100">
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700">
               <RsvpControl event={a} onRsvp={onRsvp} />
             </div>
           )}
@@ -375,12 +377,12 @@ function EventModal({ event: a, onClose, onRsvp }) {
           aria-modal="true"
           aria-labelledby="event-modal-title"
           tabIndex={-1}
-          className="relative bg-white border border-slate-200 rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none overflow-hidden"
+          className="relative bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl dark:shadow-slate-900/50 max-w-2xl w-full focus:outline-none overflow-hidden"
         >
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -403,13 +405,13 @@ function EventModal({ event: a, onClose, onRsvp }) {
                 </div>
                 <h2
                   id="event-modal-title"
-                  className="text-xl font-bold text-slate-900"
+                  className="text-xl font-bold text-slate-900 dark:text-white"
                 >
                   {a.title}
                 </h2>
                 {a.location && (
-                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600">
-                    <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                    <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                     {a.location}
                   </div>
                 )}
@@ -437,7 +439,7 @@ function EventModal({ event: a, onClose, onRsvp }) {
             )}
 
             <div
-              className="event-content mt-4 text-sm text-slate-700 leading-relaxed break-words"
+              className="event-content mt-4 text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(a.content),
               }}
@@ -456,7 +458,10 @@ function EventModal({ event: a, onClose, onRsvp }) {
         .event-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
         .event-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
         .event-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}
-        .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
+        .event-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .dark .event-content h1,.dark .event-content h2,.dark .event-content h3{color:#f1f5f9}
+        .dark .event-content a{color:#60a5fa}
+        .dark .event-content blockquote{color:#cbd5e1}`}</style>
     </div>
   );
 }

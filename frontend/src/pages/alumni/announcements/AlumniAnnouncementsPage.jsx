@@ -89,10 +89,10 @@ export default function AlumniAnnouncementsPage() {
       <div className="flex items-center gap-3">
         <IconChip icon={HiOutlineMegaphone} color="blue" size="lg" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
             Announcements
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             {unread > 0
               ? `You have ${unread} unread announcement${unread > 1 ? "s" : ""}.`
               : "You're all caught up."}
@@ -101,7 +101,7 @@ export default function AlumniAnnouncementsPage() {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[0.78rem] text-red-700">
+        <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-[0.78rem] text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
@@ -142,8 +142,10 @@ function AnnouncementCard({ announcement: a, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className={`w-full text-left block bg-white rounded-xl border p-5 transition-all hover:shadow-sm ${
-        a.is_read ? "border-slate-200" : "border-blue-300 ring-1 ring-blue-100"
+      className={`w-full text-left block bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm ${
+        a.is_read
+          ? "border-slate-200 dark:border-slate-700"
+          : "border-blue-300 ring-1 ring-blue-100 dark:border-blue-500/50 dark:ring-blue-500/20"
       }`}
     >
       <div className="flex items-start gap-3">
@@ -156,21 +158,21 @@ function AnnouncementCard({ announcement: a, onOpen }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {a.is_pinned && (
-              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
                 <HiOutlineBookmark className="w-3 h-3" /> Pinned
               </span>
             )}
             <h3
               className={`text-sm truncate ${
                 a.is_read
-                  ? "font-semibold text-slate-700"
-                  : "font-bold text-slate-900"
+                  ? "font-semibold text-slate-700 dark:text-slate-200"
+                  : "font-bold text-slate-900 dark:text-white"
               }`}
             >
               {a.title}
             </h3>
           </div>
-          <p className="mt-1 text-xs text-slate-500 line-clamp-2 announcement-snippet">
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 announcement-snippet">
             {stripHtml(a.content)}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-400">
@@ -208,12 +210,12 @@ function AnnouncementModal({ announcement: a, onClose }) {
           aria-modal="true"
           aria-labelledby="announcement-modal-title"
           tabIndex={-1}
-          className="relative bg-white rounded-2xl shadow-xl max-w-2xl w-full focus:outline-none overflow-hidden"
+          className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-slate-900/50 max-w-2xl w-full focus:outline-none overflow-hidden"
         >
           <button
             onClick={onClose}
             aria-label="Close"
-            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-colors z-10"
           >
             <HiOutlineXMark className="w-5 h-5" />
           </button>
@@ -229,14 +231,14 @@ function AnnouncementModal({ announcement: a, onClose }) {
           <div className="p-6 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-2">
               {a.is_pinned && (
-                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
                   <HiOutlineBookmark className="w-3 h-3" /> Pinned
                 </span>
               )}
             </div>
             <h2
               id="announcement-modal-title"
-              className="text-xl font-bold text-slate-900"
+              className="text-xl font-bold text-slate-900 dark:text-white"
             >
               {a.title}
             </h2>
@@ -255,7 +257,7 @@ function AnnouncementModal({ announcement: a, onClose }) {
             </div>
 
             <div
-              className="announcement-content mt-4 text-sm text-slate-700 leading-relaxed break-words"
+              className="announcement-content mt-4 text-sm text-slate-700 dark:text-slate-200 leading-relaxed break-words"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(a.content),
               }}
@@ -274,7 +276,9 @@ function AnnouncementModal({ announcement: a, onClose }) {
         .announcement-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
         .announcement-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
         .announcement-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#475569;margin:.5rem 0}
-        .announcement-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}`}</style>
+        .announcement-snippet{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .dark .announcement-content a{color:#60a5fa}
+        .dark .announcement-content blockquote{color:#cbd5e1}`}</style>
     </div>
   );
 }
