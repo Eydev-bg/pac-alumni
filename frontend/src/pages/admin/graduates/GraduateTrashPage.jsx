@@ -18,6 +18,7 @@ import {
   HiOutlineTrash,
   HiOutlineArrowUturnLeft,
   HiOutlineUserCircle,
+  HiOutlineLockClosed,
 } from "react-icons/hi2";
 
 // Action kinds for the shared confirm dialog.
@@ -114,6 +115,12 @@ export default function GraduateTrashPage() {
             <p className="text-xs text-slate-500 truncate">
               {g.alumni_id_number || "No Alumni ID"}
             </p>
+            {g.has_alumni_account && (
+              <span className="mt-1 inline-flex items-center gap-1 text-[10px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                <HiOutlineLockClosed className="w-3 h-3" />
+                Linked account
+              </span>
+            )}
           </div>
         </div>
       ),
@@ -157,10 +164,18 @@ export default function GraduateTrashPage() {
           >
             Restore
           </Button>
+          {/* Force delete cascades to the alumni profile, employment and
+              board exam records — the API rejects it, so don't offer it. */}
           <Button
             variant="danger"
             size="sm"
             icon={HiOutlineTrash}
+            disabled={g.has_alumni_account}
+            title={
+              g.has_alumni_account
+                ? "Cannot permanently delete a graduate with a linked alumni account."
+                : undefined
+            }
             onClick={() => setConfirm({ type: ACTION.FORCE, graduate: g })}
           >
             Delete

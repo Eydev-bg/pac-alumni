@@ -20,6 +20,7 @@ import {
   HiOutlineIdentification,
   HiOutlineAcademicCap,
   HiOutlineBriefcase,
+  HiOutlineArrowTopRightOnSquare,
 } from "react-icons/hi2";
 
 export default function GraduateDetailPage() {
@@ -279,17 +280,43 @@ export default function GraduateDetailPage() {
                     {boardRecords.map((r) => (
                       <div
                         key={r.id}
-                        className="flex items-center justify-between p-3 bg-white/[0.04] border border-white/[0.06] rounded-xl"
+                        className="p-3 bg-white/[0.04] border border-white/[0.06] rounded-xl"
                       >
-                        <div>
-                          <p className="text-sm font-medium text-slate-200">
-                            {r.exam_name}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            Year: {r.exam_year}
-                          </p>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-slate-200">
+                              {r.exam_name}
+                            </p>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                              Year: {r.exam_year}
+                            </p>
+                          </div>
+                          <StatusBadge status={r.status} label={r.status} />
                         </div>
-                        <StatusBadge status={r.status} label={r.status} />
+                        {/* proof_file arrives from the API already resolved to
+                            a servable URL (signed for cloud disks). */}
+                        <div className="mt-2.5 pt-2.5 border-t border-white/[0.06]">
+                          {r.proof_file ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                window.open(
+                                  r.proof_file,
+                                  "_blank",
+                                  "noopener,noreferrer",
+                                )
+                              }
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-gold-500 border border-gold-500/30 rounded-lg hover:bg-gold-500/10 hover:border-gold-500/50 transition-colors"
+                            >
+                              <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
+                              View Proof
+                            </button>
+                          ) : (
+                            <p className="text-[11px] text-slate-600">
+                              No proof uploaded
+                            </p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

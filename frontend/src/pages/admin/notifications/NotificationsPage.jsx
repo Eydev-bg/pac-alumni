@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import Pagination from "../../../components/common/Pagination";
 import { useToast } from "../../../hooks/useToast";
@@ -10,10 +11,15 @@ import { useAdminUnread } from "../../../context/AdminUnreadContext";
 import { formatDate } from "../../../utils/formatters";
 import { PAGINATION } from "../../../config/constants";
 import Card from "../../../ui/Card";
-import { HiOutlineBell, HiOutlineCheckCircle } from "react-icons/hi2";
+import {
+  HiOutlineBell,
+  HiOutlineCheckCircle,
+  HiOutlineChevronRight,
+} from "react-icons/hi2";
 
 export default function NotificationsPage() {
   const toast = useToast();
+  const navigate = useNavigate();
   // Shared with the Header bell badge — decrementing here updates the
   // badge instantly instead of waiting for the next 60s poll.
   const adminUnread = useAdminUnread();
@@ -56,14 +62,43 @@ export default function NotificationsPage() {
     }
   };
 
+  const markRead = async (id) => {
+    await adminApi.markNotificationRead(id);
+    adminUnread?.decrementNotifications();
+  };
+
   const handleMarkRead = async (id) => {
     try {
-      await adminApi.markNotificationRead(id);
+      await markRead(id);
       fetch();
-      adminUnread?.decrementNotifications();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to mark as read.");
     }
+  };
+
+  // board_exam_update / employment_update notifications carry the graduate_id
+  // of the alumni who made the change, so the row can deep-link to their
+  // record — GraduateDetailPage shows their employment and board exam history.
+  const graduateIdOf = (n) => n.data?.graduate_id ?? null;
+
+  const handleRowClick = async (n) => {
+    const graduateId = graduateIdOf(n);
+
+    if (!graduateId) {
+      if (!n.is_read) handleMarkRead(n.id);
+      return;
+    }
+
+    // Mark read before leaving — no refetch, this list is about to unmount.
+    // A failed mark shouldn't block the navigation the admin asked for.
+    if (!n.is_read) {
+      try {
+        await markRead(n.id);
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to mark as read.");
+      }
+    }
+    navigate(`/admin/graduates/${graduateId}`);
   };
 
   return (
@@ -112,7 +147,7 @@ export default function NotificationsPage() {
                       ? "bg-gold-500/[0.05] hover:bg-gold-500/[0.08]"
                       : "hover:bg-white/[0.03]"
                   }`}
-                  onClick={() => !n.is_read && handleMarkRead(n.id)}
+                  onClick={() => handleRowClick(n)}
                 >
                   <div
                     className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
@@ -136,6 +171,13 @@ export default function NotificationsPage() {
                       {formatDate(n.created_at)}
                     </p>
                   </div>
+                  {/* Only rows that deep-link to a profile get the affordance. */}
+                  {graduateIdOf(n) && (
+                    <HiOutlineChevronRight
+                      className="w-4 h-4 text-slate-600 flex-shrink-0 self-center"
+                      title="View graduate record"
+                    />
+                  )}
                 </div>
               ))}
             </div>
