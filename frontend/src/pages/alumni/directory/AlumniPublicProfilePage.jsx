@@ -80,7 +80,7 @@ export default function AlumniPublicProfilePage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto">
-        <div className="mt-6 bg-white rounded-2xl border border-slate-200 p-8">
+        <div className="mt-6 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -130,7 +130,7 @@ export default function AlumniPublicProfilePage() {
                 setLightboxSrc(storageUrl(personal.profile_picture))
               }
               title="Click to view full size"
-              className="w-24 h-24 rounded-2xl object-cover border border-slate-200 flex-shrink-0 cursor-pointer"
+              className="w-24 h-24 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0 cursor-pointer"
             />
           ) : (
             <Avatar
@@ -141,7 +141,7 @@ export default function AlumniPublicProfilePage() {
           )}
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
               {personal.full_name}
             </h1>
             <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
@@ -158,8 +158,8 @@ export default function AlumniPublicProfilePage() {
               )}
             </div>
             {location?.current_location && (
-              <p className="mt-2 flex items-center justify-center sm:justify-start gap-1.5 text-sm text-slate-500">
-                <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <p className="mt-2 flex items-center justify-center sm:justify-start gap-1.5 text-sm text-slate-500 dark:text-slate-400">
+                <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 {location.current_location}
               </p>
             )}
@@ -275,7 +275,7 @@ function BackLink() {
   return (
     <Link
       to="/alumni/directory"
-      className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
     >
       <HiOutlineArrowLeft className="w-4 h-4" />
       Back to Directory
@@ -286,15 +286,17 @@ function BackLink() {
 // ─── Read-only info row (mirrors the My Profile InfoRow) ────
 function InfoRow({ icon: Icon, label, value }) {
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-slate-100 last:border-0 sm:[&:nth-last-child(2)]:border-0">
-      <div className="w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center flex-shrink-0">
+    <div className="flex items-start gap-3 py-3 border-b border-slate-100 dark:border-slate-700 last:border-0 sm:[&:nth-last-child(2)]:border-0">
+      <div className="w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-slate-400" />
       </div>
       <div className="min-w-0">
         <p className="text-[0.7rem] font-medium text-slate-400 uppercase tracking-wide">
           {label}
         </p>
-        <p className="text-sm text-slate-800 break-words">{value}</p>
+        <p className="text-sm text-slate-800 dark:text-slate-100 break-words">
+          {value}
+        </p>
       </div>
     </div>
   );

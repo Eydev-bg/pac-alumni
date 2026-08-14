@@ -46,10 +46,20 @@ export default function Pagination({ meta, onPageChange }) {
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
-      <p className="text-sm text-slate-500">
-        Showing <span className="font-medium text-slate-700">{from}</span> to{" "}
-        <span className="font-medium text-slate-700">{to}</span> of{" "}
-        <span className="font-medium text-slate-700">{total}</span> results
+      <p className="text-sm text-slate-500 dark:text-slate-400">
+        Showing{" "}
+        <span className="font-medium text-slate-700 dark:text-slate-200">
+          {from}
+        </span>{" "}
+        to{" "}
+        <span className="font-medium text-slate-700 dark:text-slate-200">
+          {to}
+        </span>{" "}
+        of{" "}
+        <span className="font-medium text-slate-700 dark:text-slate-200">
+          {total}
+        </span>{" "}
+        results
       </p>
 
       <nav className="flex items-center gap-1">
@@ -61,8 +71,8 @@ export default function Pagination({ meta, onPageChange }) {
             btnBase,
             "px-2",
             current_page === 1
-              ? "text-slate-300 cursor-not-allowed"
-              : "text-slate-600 hover:bg-slate-100",
+              ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+              : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700",
           )}
         >
           <HiOutlineChevronLeft className="w-4 h-4" />
@@ -82,7 +92,7 @@ export default function Pagination({ meta, onPageChange }) {
                 btnBase,
                 page === current_page
                   ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-600 hover:bg-slate-100",
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700",
               )}
             >
               {page}
@@ -98,8 +108,8 @@ export default function Pagination({ meta, onPageChange }) {
             btnBase,
             "px-2",
             current_page === last_page
-              ? "text-slate-300 cursor-not-allowed"
-              : "text-slate-600 hover:bg-slate-100",
+              ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+              : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700",
           )}
         >
           <HiOutlineChevronRight className="w-4 h-4" />

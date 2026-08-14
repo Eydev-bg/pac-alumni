@@ -7,7 +7,7 @@
 
 // Single grey pulse bar. Sizes are passed as Tailwind classes.
 function Bar({ className = "" }) {
-  return <div className={`rounded bg-slate-200 ${className}`} />;
+  return <div className={`rounded bg-slate-200 dark:bg-slate-700 ${className}`} />;
 }
 
 // ── Card-style variants (self-contained white cards) ──
@@ -15,7 +15,7 @@ function Bar({ className = "" }) {
 // Announcements: title + 2-line snippet + meta row (rounded-xl p-5 card).
 function AnnouncementSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 animate-pulse">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 animate-pulse">
       <Bar className="h-4 w-2/5" />
       <div className="mt-3 space-y-2">
         <Bar className="h-3 w-full" />
@@ -32,9 +32,9 @@ function AnnouncementSkeleton() {
 // Career Center: company-logo square + title/company/meta (rounded-xl p-5).
 function JobSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-5 animate-pulse">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 animate-pulse">
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-slate-200 flex-shrink-0" />
+        <div className="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <Bar className="h-4 w-1/2" />
           <Bar className="mt-2 h-3.5 w-1/3" />
@@ -52,9 +52,9 @@ function JobSkeleton() {
 // Events: date badge column + title/meta/snippet (rounded-2xl p-6 card).
 function EventSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm animate-pulse">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm animate-pulse">
       <div className="flex items-start gap-4">
-        <div className="w-16 h-[4.5rem] rounded-xl bg-slate-200 flex-shrink-0" />
+        <div className="w-16 h-[4.5rem] rounded-xl bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <Bar className="h-4 w-1/2" />
           <Bar className="mt-2 h-3 w-1/3" />
@@ -74,7 +74,7 @@ function EventSkeleton() {
 function NotificationSkeleton() {
   return (
     <div className="p-4 flex items-start gap-3 animate-pulse">
-      <div className="w-2 h-2 rounded-full bg-slate-200 mt-2 flex-shrink-0" />
+      <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 mt-2 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <Bar className="h-3.5 w-1/3" />
         <Bar className="mt-2 h-3 w-3/4" />
@@ -88,7 +88,7 @@ function NotificationSkeleton() {
 function ConversationSkeleton() {
   return (
     <div className="px-4 py-3 flex items-center gap-3 animate-pulse">
-      <div className="w-11 h-11 rounded-full bg-slate-200 flex-shrink-0" />
+      <div className="w-11 h-11 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <Bar className="h-3.5 w-1/2" />
@@ -138,7 +138,9 @@ export default function SkeletonCard({ variant = "announcement", count = 4 }) {
     <div
       role="status"
       aria-label="Loading"
-      className={bare ? "divide-y divide-slate-100" : "space-y-3"}
+      className={
+        bare ? "divide-y divide-slate-100 dark:divide-slate-700" : "space-y-3"
+      }
     >
       {Array.from({ length: count }, (_, i) => (
         <Row key={i} />

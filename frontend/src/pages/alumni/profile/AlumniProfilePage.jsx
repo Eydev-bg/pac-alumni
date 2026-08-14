@@ -207,7 +207,7 @@ export default function AlumniProfilePage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -218,13 +218,15 @@ export default function AlumniProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center max-w-md">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3">
+          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center mx-auto mb-3">
             <HiOutlineExclamationTriangle className="w-6 h-6 text-red-500" />
           </div>
-          <h3 className="text-lg font-bold text-slate-800 mb-1">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-1">
             Something went wrong
           </h3>
-          <p className="text-sm text-slate-500 mb-4">{error}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            {error}
+          </p>
           <button onClick={loadProfile} className={btnPrimary}>
             <HiOutlineArrowPath className="w-4 h-4" />
             Try Again
@@ -256,7 +258,7 @@ export default function AlumniProfilePage() {
                   setLightboxSrc(storageUrl(personal.profile_picture))
                 }
                 title="Click to view full size"
-                className="w-24 h-24 rounded-full object-cover border border-slate-200 cursor-pointer"
+                className="w-24 h-24 rounded-full object-cover border border-slate-200 dark:border-slate-700 cursor-pointer"
               />
             ) : (
               <Avatar
@@ -305,7 +307,7 @@ export default function AlumniProfilePage() {
             />
 
             <div
-              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-md border-2 border-white cursor-pointer hover:scale-110 transition-transform"
+              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-md border-2 border-white dark:border-slate-800 cursor-pointer hover:scale-110 transition-transform"
               onClick={() => fileInputRef.current?.click()}
             >
               <HiOutlineCamera className="w-3.5 h-3.5 text-white" />
@@ -314,10 +316,10 @@ export default function AlumniProfilePage() {
 
           {/* Name + badges */}
           <div className="flex-1 text-center sm:text-left min-w-0">
-            <h1 className="text-xl font-bold text-slate-800 truncate">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 truncate">
               {personal.full_name}
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5 truncate">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
               {personal.email}
             </p>
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
@@ -339,8 +341,8 @@ export default function AlumniProfilePage() {
 
         {/* Inline remove-picture confirmation (replaces the browser confirm). */}
         {showRemoveConfirm && (
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-            <p className="flex-1 text-sm font-medium text-red-700 text-center sm:text-left">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 px-4 py-3">
+            <p className="flex-1 text-sm font-medium text-red-700 dark:text-red-300 text-center sm:text-left">
               Remove your profile picture?
             </p>
             <div className="flex items-center justify-center gap-2">
@@ -381,7 +383,7 @@ export default function AlumniProfilePage() {
             !isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[0.72rem] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[0.72rem] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 hover:bg-blue-100 dark:hover:bg-blue-500/25 rounded-lg transition-colors"
               >
                 <HiOutlinePencilSquare className="w-3.5 h-3.5" />
                 Edit
@@ -450,13 +452,15 @@ export default function AlumniProfilePage() {
               </p>
             </div>
 
-            <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3 border border-slate-100 dark:border-slate-700">
               <div className="flex items-start gap-2.5">
                 <HiOutlineShieldCheck className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-[0.72rem] font-medium text-slate-600">
+                  <p className="text-[0.72rem] font-medium text-slate-600 dark:text-slate-300">
                     Email:{" "}
-                    <span className="text-slate-800">{personal.email}</span>
+                    <span className="text-slate-800 dark:text-slate-100">
+                      {personal.email}
+                    </span>
                   </p>
                   <p className="text-[0.65rem] text-slate-400 mt-0.5">
                     Email cannot be changed. Contact admin for email updates.

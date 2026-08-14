@@ -16,13 +16,17 @@ export default function EmptyState({ icon: Icon, title, message, action, bare = 
   const content = (
     <>
       {Icon && (
-        <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-3">
-          <Icon className="w-6 h-6 text-slate-300" />
+        <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center mx-auto mb-3">
+          <Icon className="w-6 h-6 text-slate-300 dark:text-slate-500" />
         </div>
       )}
-      <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+        {title}
+      </h3>
       {message && (
-        <p className="mt-1 text-sm text-slate-500 max-w-sm mx-auto">{message}</p>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+          {message}
+        </p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </>
@@ -32,7 +36,7 @@ export default function EmptyState({ icon: Icon, title, message, action, bare = 
     return <div className="py-12 px-6 text-center">{content}</div>;
   }
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-10 text-center">
       {content}
     </div>
   );

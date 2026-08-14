@@ -155,10 +155,10 @@ export default function AlumniDirectoryPage() {
       <div className="flex items-center gap-3">
         <IconChip icon={HiOutlineUserGroup} color="blue" size="lg" />
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
             Alumni Directory
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Browse and connect with fellow PAC alumni.
           </p>
         </div>
@@ -172,7 +172,7 @@ export default function AlumniDirectoryPage() {
           type="button"
           onClick={() => setShowFilters((v) => !v)}
           aria-expanded={showFilters}
-          className="sm:hidden relative inline-flex items-center gap-1.5 px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-600"
+          className="sm:hidden relative inline-flex items-center gap-1.5 px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-300"
         >
           <HiOutlineAdjustmentsHorizontal className="w-5 h-5" />
           Filters
@@ -238,7 +238,7 @@ export default function AlumniDirectoryPage() {
           <button
             type="button"
             onClick={clearFilters}
-            className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700"
+            className="mt-2.5 inline-flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
           >
             <HiOutlineXMark className="w-3.5 h-3.5" />
             Clear filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
@@ -247,7 +247,7 @@ export default function AlumniDirectoryPage() {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-[0.78rem] text-red-700">
+        <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-[0.78rem] text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
@@ -268,7 +268,7 @@ export default function AlumniDirectoryPage() {
             search || activeFilterCount > 0 ? (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 text-xs font-semibold text-blue-700 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/15 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-500/25 transition-colors"
               >
                 Clear filters
               </button>
@@ -341,7 +341,7 @@ function DirectoryCard({ alumni, onViewPicture }) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-slate-800 truncate">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
             {alumni.full_name}
           </h3>
           <div className="mt-1 flex flex-wrap items-center gap-1.5">
@@ -355,13 +355,13 @@ function DirectoryCard({ alumni, onViewPicture }) {
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 text-[0.8rem] text-slate-600">
+      <div className="mt-4 space-y-2 text-[0.8rem] text-slate-600 dark:text-slate-300">
         <div className="flex items-center gap-2">
-          <HiOutlineBriefcase className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <HiOutlineBriefcase className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <span className="truncate">{positionLine}</span>
         </div>
         <div className="flex items-center gap-2">
-          <HiOutlineMapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+          <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <span className="truncate">{alumni.current_location || "—"}</span>
         </div>
         {alumni.employment_label && (
@@ -390,23 +390,23 @@ function DirectoryGridSkeleton() {
       {Array.from({ length: 6 }, (_, i) => (
         <div
           key={i}
-          className="bg-white rounded-xl border border-slate-200 p-5 animate-pulse"
+          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 animate-pulse"
         >
           <div className="flex items-start gap-3">
-            <div className="w-14 h-14 rounded-full bg-slate-200 flex-shrink-0" />
+            <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="h-4 w-2/3 rounded bg-slate-200" />
+              <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />
               <div className="mt-2 flex gap-1.5">
-                <div className="h-4 w-12 rounded-full bg-slate-200" />
-                <div className="h-4 w-16 rounded-full bg-slate-200" />
+                <div className="h-4 w-12 rounded-full bg-slate-200 dark:bg-slate-700" />
+                <div className="h-4 w-16 rounded-full bg-slate-200 dark:bg-slate-700" />
               </div>
             </div>
           </div>
           <div className="mt-4 space-y-2">
-            <div className="h-3 w-3/4 rounded bg-slate-200" />
-            <div className="h-3 w-1/2 rounded bg-slate-200" />
+            <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
+            <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
           </div>
-          <div className="mt-4 h-8 w-full rounded-xl bg-slate-200" />
+          <div className="mt-4 h-8 w-full rounded-xl bg-slate-200 dark:bg-slate-700" />
         </div>
       ))}
       <span className="sr-only">Loading…</span>

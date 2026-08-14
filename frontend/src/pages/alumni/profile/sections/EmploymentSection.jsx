@@ -155,20 +155,20 @@ export default function EmploymentSection({ onSaved }) {
         <>
           {/* Current position highlight */}
           {isEmployed && currentJob && (
-            <div className="bg-emerald-50 rounded-xl border border-emerald-200/60 p-4 mb-4">
+            <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200/60 dark:border-emerald-500/20 p-4 mb-4">
               <div className="flex items-start gap-3">
                 <IconChip icon={HiOutlineBuildingOffice2} color="green" />
                 <div className="min-w-0">
-                  <p className="text-[0.65rem] text-emerald-600 font-semibold uppercase tracking-wider">
+                  <p className="text-[0.65rem] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
                     Current Position
                   </p>
-                  <h4 className="text-sm font-bold text-emerald-900">
+                  <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
                     {currentJob.job_title}
                   </h4>
-                  <p className="text-xs text-emerald-700 font-medium">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
                     {currentJob.company_name}
                   </p>
-                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[0.7rem] text-emerald-600">
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[0.7rem] text-emerald-600 dark:text-emerald-400">
                     <span className="inline-flex items-center gap-1">
                       <HiOutlineBriefcase className="w-3.5 h-3.5" />
                       {currentJob.industry}
@@ -209,7 +209,7 @@ export default function EmploymentSection({ onSaved }) {
               <div>
                 <label
                   id="emp-status-label"
-                  className="block text-[0.72rem] font-semibold text-slate-600 mb-2"
+                  className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-2"
                 >
                   Employment Status <span className="text-red-400">*</span>
                 </label>
@@ -367,15 +367,15 @@ export default function EmploymentSection({ onSaved }) {
                               }
                               className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
                                 selected
-                                  ? "border-blue-500 bg-blue-50 shadow-sm"
-                                  : "border-slate-200 hover:border-slate-300 bg-white"
+                                  ? "border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-500/15"
+                                  : "border-slate-200 hover:border-slate-300 bg-white dark:border-slate-600 dark:hover:border-slate-500 dark:bg-slate-900"
                               }`}
                             >
                               <TypeIcon
-                                className={`w-4 h-4 ${selected ? "text-blue-600" : "text-slate-400"}`}
+                                className={`w-4 h-4 ${selected ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`}
                               />
                               <span
-                                className={`text-[0.65rem] font-semibold ${selected ? "text-blue-700" : "text-slate-500"}`}
+                                className={`text-[0.65rem] font-semibold ${selected ? "text-blue-700 dark:text-blue-300" : "text-slate-500 dark:text-slate-400"}`}
                               >
                                 {cfg.label}
                               </span>
@@ -419,10 +419,10 @@ export default function EmploymentSection({ onSaved }) {
               )}
 
               {formData.employment_status && (
-                <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
+                <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-500/20">
                   <div className="flex items-start gap-2.5">
                     <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                    <p className="text-[0.72rem] text-blue-700 leading-relaxed">
+                    <p className="text-[0.72rem] text-blue-700 dark:text-blue-300 leading-relaxed">
                       The <span className="font-semibold">Admin</span> team will
                       be automatically notified about this employment update.
                     </p>
@@ -470,11 +470,11 @@ export default function EmploymentSection({ onSaved }) {
 
           {/* History */}
           {hasRecords && (
-            <div className="mt-5 border-t border-slate-100 pt-4">
-              <p className="text-[0.72rem] font-semibold text-slate-500 mb-2">
+            <div className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-4">
+              <p className="text-[0.72rem] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                 Employment History ({records.length})
               </p>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
                 {records.map((rec) => {
                   const tc =
                     typeConfig[rec.employment_type] || typeConfig.local;
@@ -488,17 +488,17 @@ export default function EmploymentSection({ onSaved }) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h5 className="text-[0.82rem] font-bold text-slate-800">
+                          <h5 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                             {rec.job_title}
                           </h5>
                           {rec.is_current && (
                             <Badge color="green">Current</Badge>
                           )}
                         </div>
-                        <p className="text-[0.78rem] text-slate-600 font-medium">
+                        <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium">
                           {rec.company_name}
                         </p>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-[0.7rem] text-slate-500">
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
                           <span className="inline-flex items-center gap-1">
                             <TypeIcon className="w-3.5 h-3.5" />
                             {rec.employment_type_label}

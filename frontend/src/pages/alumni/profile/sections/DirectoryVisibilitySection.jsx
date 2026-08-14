@@ -56,10 +56,10 @@ export default function DirectoryVisibilitySection({ initial }) {
         <div className="flex items-start gap-3 min-w-0">
           <IconChip icon={HiOutlineUserGroup} color="blue" size="md" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800">
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
               Show my profile in the Alumni Directory
             </p>
-            <p className="mt-0.5 text-[0.78rem] text-slate-500 leading-relaxed">
+            <p className="mt-0.5 text-[0.78rem] text-slate-500 dark:text-slate-400 leading-relaxed">
               When off, other alumni won't find you in the directory or see your
               profile.
             </p>
@@ -74,7 +74,7 @@ export default function DirectoryVisibilitySection({ initial }) {
           onClick={handleToggle}
           disabled={saving}
           className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-60 ${
-            visible ? "bg-blue-600" : "bg-slate-300"
+            visible ? "bg-blue-600" : "bg-slate-300 dark:bg-slate-600"
           }`}
         >
           <span

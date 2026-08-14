@@ -160,14 +160,14 @@ export default function BoardExamSection({ onSaved }) {
           )}
 
           {isPassed && (
-            <div className="bg-emerald-50 rounded-xl border border-emerald-200/60 p-4 mb-4">
+            <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200/60 dark:border-emerald-500/20 p-4 mb-4">
               <div className="flex items-start gap-3">
                 <IconChip icon={HiOutlineTrophy} color="green" />
                 <div>
-                  <h4 className="text-[0.85rem] font-bold text-emerald-800">
+                  <h4 className="text-[0.85rem] font-bold text-emerald-800 dark:text-emerald-300">
                     Congratulations, Licensed Professional!
                   </h4>
-                  <p className="text-[0.75rem] text-emerald-600 mt-0.5 leading-relaxed">
+                  <p className="text-[0.75rem] text-emerald-600 dark:text-emerald-400 mt-0.5 leading-relaxed">
                     You have passed the{" "}
                     {course?.board_exam_name || "board exam"}. Your achievement
                     is recorded. You may still submit additional records if
@@ -201,7 +201,7 @@ export default function BoardExamSection({ onSaved }) {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Result — the alumni can only submit "passed". */}
               <div>
-                <label className="block text-[0.72rem] font-semibold text-slate-600 mb-2">
+                <label className="block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-2">
                   Exam Result <span className="text-red-400">*</span>
                 </label>
                 <button
@@ -209,18 +209,18 @@ export default function BoardExamSection({ onSaved }) {
                   onClick={() => setFormData({ ...formData, status: "passed" })}
                   className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all ${
                     formData.status === "passed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500/50 dark:bg-emerald-500/10"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
                   <span
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.status === "passed" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400"}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${formData.status === "passed" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400" : "bg-slate-100 text-slate-400 dark:bg-slate-700"}`}
                   >
                     <HiOutlineCheckCircle className="w-5 h-5" />
                   </span>
                   <span className="text-left">
                     <span
-                      className={`block text-sm font-bold ${formData.status === "passed" ? "text-emerald-800" : "text-slate-700"}`}
+                      className={`block text-sm font-bold ${formData.status === "passed" ? "text-emerald-800 dark:text-emerald-300" : "text-slate-700 dark:text-slate-200"}`}
                     >
                       Passed
                     </span>
@@ -269,12 +269,12 @@ export default function BoardExamSection({ onSaved }) {
                 {!proofFile ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400/50 hover:bg-blue-50/40 transition-all group"
+                    className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400/50 dark:hover:border-blue-400/30 hover:bg-blue-50/40 dark:hover:bg-blue-500/10 transition-all group"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-blue-100 flex items-center justify-center mx-auto mb-2 transition-colors">
-                      <HiOutlineDocumentArrowUp className="w-5 h-5 text-slate-400 group-hover:text-blue-600" />
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-500/20 flex items-center justify-center mx-auto mb-2 transition-colors">
+                      <HiOutlineDocumentArrowUp className="w-5 h-5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                     </div>
-                    <p className="text-[0.78rem] font-medium text-slate-600">
+                    <p className="text-[0.78rem] font-medium text-slate-600 dark:text-slate-300">
                       Click to upload proof
                     </p>
                     <p className="text-[0.68rem] text-slate-400 mt-0.5">
@@ -282,14 +282,14 @@ export default function BoardExamSection({ onSaved }) {
                     </p>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
+                  <div className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800">
                     <IconChip
                       icon={HiOutlinePaperClip}
                       color="blue"
                       size="sm"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[0.78rem] font-medium text-slate-700 truncate">
+                      <p className="text-[0.78rem] font-medium text-slate-700 dark:text-slate-200 truncate">
                         {proofFile.name}
                       </p>
                       <p className="text-[0.65rem] text-slate-400">
@@ -303,7 +303,7 @@ export default function BoardExamSection({ onSaved }) {
                         if (fileInputRef.current)
                           fileInputRef.current.value = "";
                       }}
-                      className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
+                      className="w-8 h-8 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center justify-center transition-colors"
                     >
                       <HiOutlineTrash className="w-4 h-4 text-red-400" />
                     </button>
@@ -325,10 +325,10 @@ export default function BoardExamSection({ onSaved }) {
                 )}
               </div>
 
-              <div className="bg-blue-50 rounded-xl px-4 py-3 border border-blue-100">
+              <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-500/20">
                 <div className="flex items-start gap-2.5">
                   <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[0.72rem] text-blue-700 leading-relaxed">
+                  <p className="text-[0.72rem] text-blue-700 dark:text-blue-300 leading-relaxed">
                     Upon submission, the{" "}
                     <span className="font-semibold">Admin</span> team will be
                     automatically notified about your board exam result.
@@ -370,11 +370,11 @@ export default function BoardExamSection({ onSaved }) {
 
           {/* History */}
           {hasRecords && (
-            <div className="mt-5 border-t border-slate-100 pt-4">
-              <p className="text-[0.72rem] font-semibold text-slate-500 mb-2">
+            <div className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-4">
+              <p className="text-[0.72rem] font-semibold text-slate-500 dark:text-slate-400 mb-2">
                 Exam History ({records.length})
               </p>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 dark:divide-slate-700">
                 {records.map((rec) => (
                   <div key={rec.id} className="py-3 flex items-start gap-3">
                     <IconChip
@@ -388,7 +388,7 @@ export default function BoardExamSection({ onSaved }) {
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h5 className="text-[0.82rem] font-bold text-slate-800">
+                        <h5 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
                           {rec.exam_name}
                         </h5>
                         <StatusBadge
@@ -399,7 +399,7 @@ export default function BoardExamSection({ onSaved }) {
                           <Badge color="purple">Current</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 mt-1 flex-wrap text-[0.7rem] text-slate-500">
+                      <div className="flex items-center gap-4 mt-1 flex-wrap text-[0.7rem] text-slate-500 dark:text-slate-400">
                         <span className="inline-flex items-center gap-1">
                           <HiOutlineCalendarDays className="w-3.5 h-3.5" />
                           Exam Year: {rec.exam_year}
@@ -409,7 +409,7 @@ export default function BoardExamSection({ onSaved }) {
                           Submitted: {formatDateOnly(rec.created_at)}
                         </span>
                         {rec.verified_at && (
-                          <span className="inline-flex items-center gap-1 text-emerald-600">
+                          <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                             <HiOutlineShieldCheck className="w-3.5 h-3.5" />
                             Verified
                           </span>
@@ -420,7 +420,7 @@ export default function BoardExamSection({ onSaved }) {
                           href={storageUrl(rec.proof_file)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 mt-1.5 text-[0.72rem] font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                          className="inline-flex items-center gap-1.5 mt-1.5 text-[0.72rem] font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                         >
                           <HiOutlinePaperClip className="w-3.5 h-3.5" />
                           View Proof Document
