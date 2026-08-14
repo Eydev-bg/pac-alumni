@@ -170,7 +170,9 @@ export default function JobPostingFormPage() {
   const buildPayload = () => {
     const fd = new FormData();
     fd.append("company_name", form.company_name);
-    if (form.company_email) fd.append("company_email", form.company_email);
+    // Always sent (even when blank) so the backend's required_without pair
+    // sees both values, and so clearing either field actually persists.
+    fd.append("company_email", form.company_email.trim());
     fd.append("job_position", form.job_position);
     fd.append("location", form.location);
     fd.append("employment_type", form.employment_type);
@@ -212,15 +214,26 @@ export default function JobPostingFormPage() {
       setFieldErrors({ description: ["Job description is required."] });
       return;
     }
-    if (!form.application_link.trim()) {
-      setFieldErrors({ application_link: ["An application link is required."] });
+    // Application link is optional, but alumni need at least one way to apply.
+    if (!form.application_link.trim() && !form.company_email.trim()) {
+      setFieldErrors({
+        application_link: [
+          "Provide an application link, or a company email so alumni can apply by email.",
+        ],
+        company_email: [
+          "A company email is required when no application link is provided.",
+        ],
+      });
+      setError("Please correct the highlighted fields.");
       return;
     }
-    try {
-      new URL(normalizeLink(form.application_link));
-    } catch {
-      setFieldErrors({ application_link: ["The application link must be a valid URL."] });
-      return;
+    if (form.application_link.trim()) {
+      try {
+        new URL(normalizeLink(form.application_link));
+      } catch {
+        setFieldErrors({ application_link: ["The application link must be a valid URL."] });
+        return;
+      }
     }
     if (form.application_deadline && form.application_deadline < todayLocal()) {
       setFieldErrors({
@@ -313,7 +326,7 @@ export default function JobPostingFormPage() {
                   {errFor("company_name")}
                 </div>
                 <div>
-                  <label className={labelCls}>Company Email (optional)</label>
+                  <label className={labelCls}>Company Email</label>
                   <input
                     type="email"
                     value={form.company_email}
@@ -321,6 +334,10 @@ export default function JobPostingFormPage() {
                     placeholder="e.g. hr@acme.com"
                     className={inputCls}
                   />
+                  <p className="mt-1.5 text-[0.72rem] text-slate-500">
+                    Required if no Application Link is provided — alumni apply
+                    by emailing this address instead.
+                  </p>
                   {errFor("company_email")}
                 </div>
               </div>
@@ -504,9 +521,7 @@ export default function JobPostingFormPage() {
             <SectionLabel icon={HiOutlineLink}>Application</SectionLabel>
             <Card>
               <div>
-                <label className={labelCls}>
-                  Application Link <span className="text-red-400">*</span>
-                </label>
+                <label className={labelCls}>Application Link (optional)</label>
                 <input
                   type="url"
                   value={form.application_link}
@@ -515,9 +530,9 @@ export default function JobPostingFormPage() {
                   className={inputCls}
                 />
                 <p className="mt-1.5 text-[0.72rem] text-slate-500">
-                  Where alumni are sent when they click Apply — a company
-                  careers page, Google Form, LinkedIn, JobStreet, Indeed, a
-                  mailto: address, or any URL.
+                  Where alumni are sent when they click Apply. If left empty,
+                  alumni will be directed to email the company instead — make
+                  sure Company Email is filled in.
                 </p>
                 {errFor("application_link")}
               </div>

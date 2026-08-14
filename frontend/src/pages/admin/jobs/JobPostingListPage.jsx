@@ -4,7 +4,11 @@ import adminApi from "../../../api/adminApi";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
 import { useToast } from "../../../hooks/useToast";
 import { formatDate, storageUrl } from "../../../utils/formatters";
-import { JOB_STATUSES, STATUS_BADGE_COLORS } from "../../../config/jobOptions";
+import {
+  JOB_STATUSES,
+  JOB_SOURCES,
+  STATUS_BADGE_COLORS,
+} from "../../../config/jobOptions";
 import { PAGINATION } from "../../../config/constants";
 import Button from "../../../ui/Button";
 import SearchInput from "../../../ui/SearchInput";
@@ -26,6 +30,30 @@ const STATUS_FILTERS = [
   { value: "", label: "All" },
   ...JOB_STATUSES.map((s) => ({ value: s.value, label: s.label })),
 ];
+
+const SOURCE_FILTERS = [
+  { value: "", label: "All Sources" },
+  ...JOB_SOURCES.map((s) => ({ value: s.value, label: `${s.label}-posted` })),
+];
+
+// Who authored the posting — alumni-posted jobs also name the poster.
+function SourceBadge({ source, posterName }) {
+  const isAlumni = source === "alumni";
+  return (
+    <span
+      title={isAlumni && posterName ? `Posted by ${posterName}` : "Posted by an admin"}
+      className={`inline-flex max-w-[160px] items-center rounded-full px-2 py-0.5 text-[0.68rem] font-medium ${
+        isAlumni
+          ? "bg-blue-500/15 text-blue-300"
+          : "bg-gold-500/15 text-gold-400"
+      }`}
+    >
+      <span className="truncate">
+        {isAlumni ? `Alumni: ${posterName || "Unknown"}` : "Admin"}
+      </span>
+    </span>
+  );
+}
 
 function StatusTab({ label, active, onClick }) {
   return (
@@ -85,6 +113,7 @@ export default function JobPostingListPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
   const [page, setPage] = useState(1);
 
   const [actionId, setActionId] = useState(null);
@@ -99,6 +128,7 @@ export default function JobPostingListPage() {
         per_page: PAGINATION.DEFAULT_PER_PAGE,
         ...(search && { search }),
         ...(statusFilter !== "" && { status: statusFilter }),
+        ...(sourceFilter !== "" && { source: sourceFilter }),
       });
       setItems(res.data.data);
       setMeta(res.data.meta);
@@ -107,7 +137,7 @@ export default function JobPostingListPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, statusFilter, toast]);
+  }, [page, search, statusFilter, sourceFilter, toast]);
 
   useEffect(() => {
     fetchItems();
@@ -115,7 +145,7 @@ export default function JobPostingListPage() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, sourceFilter]);
 
   // Optimistic-ish action helper — runs the API call, then refreshes the row.
   const runAction = async (id, fn) => {
@@ -187,6 +217,14 @@ export default function JobPostingListPage() {
           <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
           <span className="truncate">{a.location}</span>
         </span>
+      ),
+    },
+    {
+      key: "source",
+      header: "Source",
+      cellClassName: "whitespace-nowrap",
+      render: (a) => (
+        <SourceBadge source={a.source} posterName={a.posted_by_alumni_name} />
       ),
     },
     {
@@ -304,12 +342,28 @@ export default function JobPostingListPage() {
           ))}
         </div>
 
-        {/* Search */}
+        {/* Search + source filter */}
         <Card padding={false} className="p-4 mb-4">
-          <SearchInput
-            onDebouncedChange={setSearch}
-            placeholder="Search by company, position, or location..."
-          />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1">
+              <SearchInput
+                onDebouncedChange={setSearch}
+                placeholder="Search by company, position, or location..."
+              />
+            </div>
+            <select
+              aria-label="Filter by source"
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="w-full sm:w-48 px-3 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors"
+            >
+              {SOURCE_FILTERS.map((s) => (
+                <option key={s.value} value={s.value} className="bg-navy-800">
+                  {s.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </Card>
 
         {/* Table */}
@@ -325,7 +379,7 @@ export default function JobPostingListPage() {
             icon: HiOutlineBriefcase,
             title: "No job postings found",
             description:
-              search || statusFilter !== ""
+              search || statusFilter !== "" || sourceFilter !== ""
                 ? "Try adjusting your search or filters."
                 : "Create your first job posting to share opportunities with alumni.",
           }}

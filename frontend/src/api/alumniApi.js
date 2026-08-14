@@ -160,6 +160,38 @@ const alumniApi = {
     return api.get(`/alumni/job-postings/${id}`);
   },
 
+  // ─── Alumni-authored postings (Career Center "My Posts") ───
+  getMyJobPosts(params = {}) {
+    return api.get('/alumni/careers/my-posts', { params });
+  },
+
+  // Unlike getJobPosting(), this also returns the alumni's own expired /
+  // past-deadline posts — the edit form needs to load those.
+  getMyJobPost(id) {
+    return api.get(`/alumni/careers/my-posts/${id}`);
+  },
+
+  // Accepts FormData (same fields as the admin form minus status/is_pinned,
+  // which the backend forces to active/false).
+  createMyJobPost(formData) {
+    return api.post('/alumni/careers/my-posts', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  // POST + method spoofing so the optional logo file is parsed correctly
+  // (PHP does not parse multipart PUT bodies).
+  updateMyJobPost(id, formData) {
+    formData.append('_method', 'PUT');
+    return api.post(`/alumni/careers/my-posts/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  deleteMyJobPost(id) {
+    return api.delete(`/alumni/careers/my-posts/${id}`);
+  },
+
   // ─── Notifications (Phase 3) ───────────────────────────
   getNotifications(params = {}) {
     return api.get('/alumni/notifications', { params });

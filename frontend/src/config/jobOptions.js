@@ -18,6 +18,12 @@ export const JOB_STATUSES = [
   { value: "expired", label: "Expired" },
 ];
 
+// Who authored a posting. Must match App\Enums\JobSource exactly.
+export const JOB_SOURCES = [
+  { value: "admin", label: "Admin" },
+  { value: "alumni", label: "Alumni" },
+];
+
 // Badge classes per status for the admin (dark) theme.
 export const STATUS_BADGE_COLORS = {
   draft: "bg-slate-500/15 text-slate-300",

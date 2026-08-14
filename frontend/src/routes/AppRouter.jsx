@@ -105,6 +105,9 @@ const AlumniCareerCenterPage = lazy(
 const AlumniJobDetailPage = lazy(
   () => import("../pages/alumni/jobs/AlumniJobDetailPage"),
 );
+const AlumniJobPostFormPage = lazy(
+  () => import("../pages/alumni/jobs/AlumniJobPostFormPage"),
+);
 const AlumniEventsPage = lazy(
   () => import("../pages/alumni/events/AlumniEventsPage"),
 );
@@ -213,7 +216,13 @@ export default function AppRouter() {
               />
               <Route path="events" element={<AlumniEventsPage />} />
               <Route path="careers" element={<AlumniCareerCenterPage />} />
+              {/* Static "new" is ranked above the ":id" detail route. */}
+              <Route path="careers/new" element={<AlumniJobPostFormPage />} />
               <Route path="careers/:id" element={<AlumniJobDetailPage />} />
+              <Route
+                path="careers/:id/edit"
+                element={<AlumniJobPostFormPage />}
+              />
               <Route path="directory" element={<AlumniDirectoryPage />} />
               <Route
                 path="directory/:uuid"

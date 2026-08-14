@@ -22,6 +22,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineGift,
   HiOutlineClipboardDocumentList,
+  HiOutlineUserCircle,
 } from "react-icons/hi2";
 
 // Ensure the link has a scheme before opening (bare domains → https://).
@@ -63,6 +64,21 @@ export default function AlumniJobDetailPage() {
       "noopener,noreferrer",
     );
   };
+
+  // "[course], [batch_year]" suffix for alumni-posted jobs.
+  const posterCredentials = [
+    job?.posted_by_alumni_course,
+    job?.posted_by_alumni_batch_year,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  // Fallback when the company has no careers page: a pre-addressed mailto.
+  const mailtoHref = job?.company_email
+    ? `mailto:${job.company_email}?subject=${encodeURIComponent(
+        `Application for ${job.job_position} - ${job.company_name}`,
+      )}`
+    : "";
 
   if (loading) {
     return (
@@ -111,6 +127,16 @@ export default function AlumniJobDetailPage() {
             </h1>
             <p className="text-sm text-slate-600 mt-0.5">{job.company_name}</p>
 
+            {/* Alumni-posted jobs carry poster attribution; admin-posted
+                jobs are the default and show nothing extra. */}
+            {job.source === "alumni" && job.posted_by_alumni_name && (
+              <p className="mt-1.5 inline-flex items-center gap-1 text-[0.75rem] text-slate-500">
+                <HiOutlineUserCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                Posted by {job.posted_by_alumni_name}
+                {posterCredentials && ` · ${posterCredentials}`}
+              </p>
+            )}
+
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.8rem] text-slate-500">
               <span className="flex items-center gap-1">
                 <HiOutlineMapPin className="w-4 h-4 text-blue-600" />
@@ -147,21 +173,43 @@ export default function AlumniJobDetailPage() {
           </div>
         </div>
 
-        {/* Apply — external redirect only, never an internal POST. */}
-        {job.application_link && (
-          <div className="mt-5 pt-5 border-t border-slate-100">
-            <button
-              onClick={handleApply}
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
-            >
-              Apply Now
-              <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
-            </button>
-            <p className="mt-2 text-[0.72rem] text-slate-400">
-              You'll be redirected to an external site to apply.
+        {/* Apply — external redirect or mailto only, never an internal POST.
+            The application link is optional, so fall back to the company
+            email, then to a plain instruction if neither was provided. */}
+        <div className="mt-5 pt-5 border-t border-slate-100">
+          {job.application_link ? (
+            <>
+              <button
+                onClick={handleApply}
+                className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                Apply Now
+                <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
+              </button>
+              <p className="mt-2 text-[0.72rem] text-slate-400">
+                You'll be redirected to an external site to apply.
+              </p>
+            </>
+          ) : job.company_email ? (
+            <>
+              <a
+                href={mailtoHref}
+                className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+              >
+                Apply via Email
+                <HiOutlineEnvelope className="w-4 h-4" />
+              </a>
+              <p className="mt-2 text-[0.72rem] text-slate-400">
+                This will open your email app to send your application.
+              </p>
+            </>
+          ) : (
+            <p className="text-[0.8rem] text-slate-500">
+              Contact the company directly for application details — see the
+              job description above.
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* ━━━━ Description ━━━━ */}
