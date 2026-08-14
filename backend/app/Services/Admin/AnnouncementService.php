@@ -12,6 +12,9 @@ use Illuminate\Http\UploadedFile;
 
 class AnnouncementService
 {
+    /** Extensions a banner image may be stored under (matches the `mimes:` rule). */
+    private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
     /**
      * Paginated list of all announcements for admin management.
      */
@@ -163,7 +166,10 @@ class AnnouncementService
      */
     private function storeFile(UploadedFile $file, string $folder, string $uuid): string
     {
-        $filename = $folder . '/' . $uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
+        // Extension comes from the sniffed content type, not the uploaded
+        // filename — see StorageService::safeExtension().
+        $extension = StorageService::safeExtension($file, self::IMAGE_EXTENSIONS);
+        $filename = $folder . '/' . $uuid . '_' . time() . '.' . $extension;
 
         return StorageService::store($file, $filename);
     }

@@ -19,6 +19,9 @@ use Illuminate\Support\Facades\DB;
 
 class AlumniService
 {
+    /** Extensions a profile picture may be stored under (matches the `mimes:` rule). */
+    private const PROFILE_PICTURE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
+
     /**
      * Get dashboard summary for the authenticated alumni.
      */
@@ -219,8 +222,11 @@ class AlumniService
             // Delete old picture if exists
             $this->deleteProfilePictureFile($user);
 
-            // Generate unique filename
-            $filename = 'profile_pictures/' . $user->uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
+            // Generate unique filename. The extension comes from the sniffed
+            // content type, not the uploaded filename — see
+            // StorageService::safeExtension().
+            $extension = StorageService::safeExtension($file, self::PROFILE_PICTURE_EXTENSIONS);
+            $filename = 'profile_pictures/' . $user->uuid . '_' . time() . '.' . $extension;
 
             // Store the file on the configured disk (local 'public' or cloud)
             $path = StorageService::store($file, $filename);

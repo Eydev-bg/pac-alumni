@@ -27,6 +27,9 @@ use Illuminate\Support\Facades\DB;
 
 class BoardExamService
 {
+    /** Extensions a proof file may be stored under (matches the `mimes:` rule). */
+    private const PROOF_EXTENSIONS = ['jpg', 'jpeg', 'png', 'pdf'];
+
     public function __construct(
         protected DashboardCacheService $dashboardCache,
         protected GraduateTracerService $tracerService,
@@ -113,7 +116,10 @@ class BoardExamService
             // ─── Handle proof file upload ────────────────────
             $proofPath = null;
             if ($proofFile) {
-                $filename = 'board_exam_proofs/' . $user->uuid . '_' . time() . '.' . $proofFile->getClientOriginalExtension();
+                // Extension comes from the sniffed content type, not the
+                // uploaded filename — see StorageService::safeExtension().
+                $extension = StorageService::safeExtension($proofFile, self::PROOF_EXTENSIONS);
+                $filename = 'board_exam_proofs/' . $user->uuid . '_' . time() . '.' . $extension;
                 // Store on the configured disk; persist the RAW path (URL is
                 // resolved at read time by the BoardExamRecord accessor).
                 $proofPath = StorageService::store($proofFile, $filename);
