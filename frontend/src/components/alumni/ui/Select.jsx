@@ -132,12 +132,14 @@ export default function Select({
         onClick={() => (open ? closeMenu() : openMenu())}
         onKeyDown={onTriggerKeyDown}
         className={cn(
-          "w-full appearance-none pr-8 py-2.5 bg-white border rounded-xl text-sm text-left",
+          "w-full appearance-none pr-8 py-2.5 bg-white dark:bg-slate-900 border rounded-xl text-sm text-left",
           "focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400",
           "transition-colors motion-reduce:transition-none flex items-center gap-2",
           LeftIcon ? "pl-10" : "pl-3",
           "disabled:opacity-60 disabled:cursor-not-allowed",
-          value ? "border-blue-300 text-slate-800 font-medium" : "border-slate-200 text-slate-500",
+          value
+            ? "border-blue-300 text-slate-800 dark:text-slate-100 font-medium"
+            : "border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400",
           error && "border-red-300 focus:border-red-400 focus:ring-red-500/15",
         )}
       >
@@ -163,7 +165,7 @@ export default function Select({
         <ul
           role="listbox"
           id={listboxId}
-          className="absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-20 max-h-64 overflow-y-auto"
+          className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-20 max-h-64 overflow-y-auto"
         >
           {options.length === 0 && (
             <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
@@ -181,15 +183,15 @@ export default function Select({
                     "w-full text-left px-3 py-2 text-sm flex items-start justify-between gap-2",
                     "whitespace-normal break-words min-h-[2.25rem]",
                     isSelected
-                      ? "bg-blue-50 text-blue-700 font-medium"
+                      ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium"
                       : isHighlighted
-                        ? "bg-slate-50 text-slate-700"
-                        : "text-slate-700 hover:bg-slate-50",
+                        ? "bg-slate-50 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                        : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700",
                   )}
                 >
                   <span>{option.label}</span>
                   {isSelected && (
-                    <HiOutlineCheck className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
+                    <HiOutlineCheck className="w-4 h-4 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
                   )}
                 </button>
               </li>

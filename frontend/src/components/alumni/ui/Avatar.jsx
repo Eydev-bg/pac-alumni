@@ -39,7 +39,7 @@ export default function Avatar({ src, name, size = "md", className, ...rest }) {
     <span
       aria-label={name || "Avatar"}
       className={cn(
-        "inline-flex items-center justify-center rounded-full flex-shrink-0 bg-slate-100 text-slate-400",
+        "inline-flex items-center justify-center rounded-full flex-shrink-0 bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-400",
         dim,
         className,
       )}

@@ -25,7 +25,9 @@ export default function SectionHeader({
       {...rest}
     >
       {typeof title === "string" ? (
-        <h3 className="text-base font-semibold text-slate-800">{title}</h3>
+        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+          {title}
+        </h3>
       ) : (
         title
       )}
@@ -35,7 +37,7 @@ export default function SectionHeader({
           actionTo && (
             <Link
               to={actionTo}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               {actionLabel}
             </Link>

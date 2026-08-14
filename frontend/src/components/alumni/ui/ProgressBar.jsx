@@ -13,7 +13,11 @@ export default function ProgressBar({ value = 0, size = "md", className, ...rest
   const height = size === "sm" ? "h-1.5" : "h-2";
   return (
     <div
-      className={cn("w-full rounded-full bg-slate-100 overflow-hidden", height, className)}
+      className={cn(
+        "w-full rounded-full bg-slate-100 dark:bg-slate-700 overflow-hidden",
+        height,
+        className,
+      )}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}

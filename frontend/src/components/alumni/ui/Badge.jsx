@@ -8,12 +8,15 @@ import { cn } from "../../../utils/formatters";
  *   size:  'sm' | 'md' (default 'sm')
  */
 const COLORS = {
-  blue: "bg-blue-50 text-blue-700",
-  green: "bg-emerald-50 text-emerald-700",
-  purple: "bg-purple-50 text-purple-700",
-  orange: "bg-orange-50 text-orange-700",
-  red: "bg-red-50 text-red-700",
-  slate: "bg-slate-100 text-slate-600",
+  blue: "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300",
+  green:
+    "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  purple:
+    "bg-purple-50 text-purple-700 dark:bg-purple-500/15 dark:text-purple-300",
+  orange:
+    "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300",
+  red: "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300",
+  slate: "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300",
 };
 
 const SIZES = {
