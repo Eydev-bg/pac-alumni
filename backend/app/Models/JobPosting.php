@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use App\Enums\JobEmploymentType;
+use App\Enums\JobSource;
 use App\Enums\JobStatus;
 use App\Models\Concerns\ResolvesStorageUrl;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,6 +22,8 @@ class JobPosting extends Model
 
     protected $fillable = [
         'posted_by',
+        'source',
+        'posted_by_alumni',
         'company_name',
         'company_logo',
         'job_position',
@@ -44,6 +47,7 @@ class JobPosting extends Model
             'application_deadline' => 'date',
             'published_at'         => 'datetime',
             'status'               => JobStatus::class,
+            'source'               => JobSource::class,
             'employment_type'      => JobEmploymentType::class,
             'is_pinned'            => 'boolean',
         ];
@@ -64,6 +68,15 @@ class JobPosting extends Model
     public function postedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    /**
+     * The alumni who authored this posting — null for admin-posted jobs.
+     * Separate from postedBy so admin-side attribution stays untouched.
+     */
+    public function postedByAlumni(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'posted_by_alumni');
     }
 
     // ─── Query Scopes ────────────────────────────────────────
@@ -88,13 +101,42 @@ class JobPosting extends Model
     /**
      * Restrict to postings alumni may see: active, and either without a
      * deadline or with a deadline that has not yet passed.
+     *
+     * Alumni-posted jobs with no deadline additionally auto-expire 60 days
+     * after publication — nobody prunes them otherwise, and an alumni who
+     * filled the role is unlikely to come back and delete the post.
+     * Admin-posted jobs keep the original open-until-filled behaviour.
      */
     public function scopeVisibleToAlumni($query)
     {
-        return $query->active()
-            ->where(function ($q) {
-                $q->whereNull('application_deadline')
-                    ->orWhereDate('application_deadline', '>=', today());
+        $alumniCutoff = now()->subDays(JobSource::ALUMNI_AUTO_EXPIRE_DAYS);
+
+        return $query
+            // status = active
+            ->active()
+            // AND (deadline IS NULL OR deadline >= today)
+            //
+            // Compared directly rather than via whereDate(): application_deadline
+            // is a DATE column, so wrapping it in DATE() would make the
+            // application_deadline index unusable for no benefit.
+            ->where(function ($byDeadline) {
+                $byDeadline->whereNull('application_deadline')
+                    ->orWhere('application_deadline', '>=', today()->toDateString());
+            })
+            // AND (source = admin OR (source = alumni AND (deadline IS NOT NULL
+            //                                              OR published_at >= cutoff)))
+            ->where(function ($bySource) use ($alumniCutoff) {
+                $bySource
+                    ->where('source', '!=', JobSource::ALUMNI->value)
+                    ->orWhere(function ($alumniPosted) use ($alumniCutoff) {
+                        $alumniPosted->where('source', JobSource::ALUMNI->value)
+                            ->where(function ($stillFresh) use ($alumniCutoff) {
+                                // An explicit deadline overrides the 60-day
+                                // rule; without one the post ages out.
+                                $stillFresh->whereNotNull('application_deadline')
+                                    ->orWhere('published_at', '>=', $alumniCutoff);
+                            });
+                    });
             });
     }
 }

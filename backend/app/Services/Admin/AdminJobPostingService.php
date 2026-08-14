@@ -13,14 +13,22 @@ use Illuminate\Http\UploadedFile;
 
 class AdminJobPostingService
 {
+    /** Extensions a company logo may be stored under (matches the `mimes:` rule). */
+    private const LOGO_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
     /**
      * Paginated list of all job postings for admin management.
      */
     public function list(array $filters = []): LengthAwarePaginator
     {
         return JobPosting::query()
-            ->with('postedBy:id,uuid,first_name,middle_name,last_name,suffix')
+            ->with([
+                'postedBy:id,uuid,first_name,middle_name,last_name,suffix',
+                'postedByAlumni:id,uuid,first_name,middle_name,last_name,suffix',
+            ])
             ->when($filters['status'] ?? null, fn($q, $status) => $q->where('status', $status))
+            // Optional 'admin' | 'alumni' filter for the source dropdown.
+            ->when($filters['source'] ?? null, fn($q, $source) => $q->where('source', $source))
             ->when($filters['search'] ?? null, fn($q, $search) => $q->search($search))
             ->orderByDesc('is_pinned')
             ->latest()
@@ -32,8 +40,10 @@ class AdminJobPostingService
      */
     public function find(int $id): JobPosting
     {
-        $job = JobPosting::with('postedBy:id,uuid,first_name,middle_name,last_name,suffix')
-            ->find($id);
+        $job = JobPosting::with([
+            'postedBy:id,uuid,first_name,middle_name,last_name,suffix',
+            'postedByAlumni:id,uuid,first_name,middle_name,last_name,suffix',
+        ])->find($id);
 
         if (!$job) {
             throw \App\Exceptions\DomainException::notFound('Job posting not found.');
@@ -61,7 +71,8 @@ class AdminJobPostingService
             'benefits'             => isset($data['benefits']) ? trim(strip_tags($data['benefits'])) : null,
             'description'          => clean($data['description']),
             'requirements'         => isset($data['requirements']) ? trim(strip_tags($data['requirements'])) : null,
-            'application_link'     => $data['application_link'],
+            // Optional — when absent, alumni are pointed at company_email instead.
+            'application_link'     => $data['application_link'] ?? null,
             'company_email'        => $data['company_email'] ?? null,
             'application_deadline' => $data['application_deadline'] ?? null,
             'status'               => $data['status'],
@@ -158,7 +169,10 @@ class AdminJobPostingService
      */
     private function storeFile(UploadedFile $file, string $folder, string $uuid): string
     {
-        $filename = $folder . '/' . $uuid . '_' . time() . '.' . $file->getClientOriginalExtension();
+        // Extension comes from the sniffed content type, not the uploaded
+        // filename — see StorageService::safeExtension().
+        $extension = StorageService::safeExtension($file, self::LOGO_EXTENSIONS);
+        $filename = $folder . '/' . $uuid . '_' . time() . '.' . $extension;
 
         return StorageService::store($file, $filename);
     }

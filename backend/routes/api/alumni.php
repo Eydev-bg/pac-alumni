@@ -81,11 +81,28 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
         ->whereNumber('id')->name('alumni.events.rsvp.cancel');
 
     // ─── Job Postings (Phase 3) ───────────────────────────
-    // Read-only: the Apply button redirects to an external link.
+    // Browsing is read-only: the Apply button redirects to an external link
+    // or opens a mailto — nothing is submitted back into this system.
     Route::get('/job-postings', [AlumniJobPostingController::class, 'index'])
         ->name('alumni.job-postings.index');
     Route::get('/job-postings/{id}', [AlumniJobPostingController::class, 'show'])
         ->whereNumber('id')->name('alumni.job-postings.show');
+
+    // Alumni-authored postings. Live immediately (accounts are verified
+    // against the master graduate list at registration); ownership is
+    // enforced service-side, capped at 3 active posts per alumni.
+    Route::prefix('careers/my-posts')->group(function () {
+        Route::get('/', [AlumniJobPostingController::class, 'myPosts'])
+            ->name('alumni.careers.my-posts.index');
+        Route::post('/', [AlumniJobPostingController::class, 'store'])
+            ->name('alumni.careers.my-posts.store');
+        Route::get('/{id}', [AlumniJobPostingController::class, 'showMyPost'])
+            ->whereNumber('id')->name('alumni.careers.my-posts.show');
+        Route::match(['put', 'patch'], '/{id}', [AlumniJobPostingController::class, 'update'])
+            ->whereNumber('id')->name('alumni.careers.my-posts.update');
+        Route::delete('/{id}', [AlumniJobPostingController::class, 'destroy'])
+            ->whereNumber('id')->name('alumni.careers.my-posts.destroy');
+    });
 
     // ─── Notifications (Phase 3) ──────────────────────────
     Route::get('/notifications', [AlumniNotificationController::class, 'index'])

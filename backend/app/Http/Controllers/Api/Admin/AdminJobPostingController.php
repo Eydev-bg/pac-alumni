@@ -25,7 +25,7 @@ class AdminJobPostingController extends Controller
     public function index(Request $request): JsonResponse
     {
         $jobs = $this->jobPostingService->list(
-            $request->only(['status', 'search', 'per_page'])
+            $request->only(['status', 'source', 'search', 'per_page'])
         );
 
         return $this->paginated(

@@ -76,6 +76,38 @@ class StorageService
     }
 
     /**
+     * Resolve the extension to save an upload under, derived from the file's
+     * SNIFFED content type — never from the client-supplied filename.
+     *
+     * SECURITY: getClientOriginalExtension() returns whatever the uploader put
+     * after the last dot. A real JPEG named "logo.php" passes `mimes:jpeg`
+     * validation (that rule inspects content) yet would be persisted as
+     * ".php" — a polyglot sitting in a web-served upload directory. Deriving
+     * the extension from guessExtension() closes that gap.
+     *
+     * @param array<int,string> $allowed Extensions to accept (lowercase). A
+     *                                   sniffed type outside the list falls
+     *                                   back to an inert extension.
+     */
+    public static function safeExtension(
+        \Illuminate\Http\UploadedFile $file,
+        array $allowed = [],
+        string $fallback = 'bin',
+    ): string {
+        $extension = strtolower((string) $file->guessExtension());
+
+        if ($extension === '') {
+            return $fallback;
+        }
+
+        if ($allowed !== [] && !in_array($extension, $allowed, true)) {
+            return $fallback;
+        }
+
+        return $extension;
+    }
+
+    /**
      * Extract the storage path from either a raw path or a /storage/... URL.
      */
     public static function extractPath(string $pathOrUrl): ?string

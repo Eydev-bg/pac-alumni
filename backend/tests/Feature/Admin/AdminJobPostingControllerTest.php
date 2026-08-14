@@ -87,6 +87,68 @@ class AdminJobPostingControllerTest extends TestCase
             ]);
     }
 
+    public function test_store_allows_company_email_instead_of_application_link(): void
+    {
+        $this->actingAsAdmin();
+
+        $payload = $this->validPayload([
+            'application_link' => null,
+            'company_email' => 'hr@acme.test',
+        ]);
+
+        $this->postJson('/api/admin/job-postings', $payload)
+            ->assertCreated()
+            ->assertJsonPath('data.application_link', null)
+            ->assertJsonPath('data.company_email', 'hr@acme.test');
+
+        $this->assertDatabaseHas('job_postings', [
+            'company_name' => 'Acme Corp',
+            'application_link' => null,
+            'company_email' => 'hr@acme.test',
+        ]);
+    }
+
+    public function test_store_rejects_missing_application_link_and_company_email(): void
+    {
+        $this->actingAsAdmin();
+
+        $this->postJson('/api/admin/job-postings', $this->validPayload(['application_link' => null]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['application_link', 'company_email']);
+    }
+
+    public function test_update_rejects_clearing_both_application_link_and_company_email(): void
+    {
+        $job = JobPostingFactory::new()->create();
+        $this->actingAsAdmin();
+
+        $this->putJson("/api/admin/job-postings/{$job->id}", [
+            'application_link' => null,
+            'company_email' => null,
+        ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['application_link', 'company_email']);
+    }
+
+    public function test_update_can_clear_application_link_when_company_email_is_present(): void
+    {
+        $job = JobPostingFactory::new()->create();
+        $this->actingAsAdmin();
+
+        $this->putJson("/api/admin/job-postings/{$job->id}", [
+            'application_link' => null,
+            'company_email' => 'careers@acme.test',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.application_link', null);
+
+        $this->assertDatabaseHas('job_postings', [
+            'id' => $job->id,
+            'application_link' => null,
+            'company_email' => 'careers@acme.test',
+        ]);
+    }
+
     public function test_show_returns_job_posting(): void
     {
         $job = JobPostingFactory::new()->create();
