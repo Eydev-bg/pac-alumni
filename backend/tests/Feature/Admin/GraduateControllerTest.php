@@ -127,6 +127,26 @@ class GraduateControllerTest extends TestCase
         $this->assertDatabaseMissing('graduates', ['id' => $graduate->id]);
     }
 
+    public function test_force_delete_blocked_when_alumni_account_is_linked(): void
+    {
+        // Every FK onto graduates cascades, so force-deleting a registered
+        // alumni would silently take their profile, employment and board exam
+        // records with it. Only unclaimed master-list entries may be purged.
+        $alumni = User::factory()->create();
+        $graduate = Graduate::factory()->withUser($alumni)->create();
+        $graduate->delete();
+        $this->actingAsAdmin();
+
+        $this->deleteJson("/api/admin/graduates/{$graduate->id}/force")
+            ->assertStatus(422)
+            ->assertJsonPath(
+                'message',
+                'Cannot permanently delete a graduate with a linked alumni account.',
+            );
+
+        $this->assertSoftDeleted('graduates', ['id' => $graduate->id]);
+    }
+
     public function test_graduation_years_returns_list(): void
     {
         Graduate::factory()->create(['graduation_year' => 2021]);

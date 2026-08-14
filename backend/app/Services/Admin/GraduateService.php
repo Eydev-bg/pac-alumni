@@ -104,7 +104,7 @@ class GraduateService
     {
         // If graduate has a linked user account, prevent deletion
         if ($graduate->user_id) {
-            throw \App\Exceptions\DomainException::unprocessable('Cannot delete graduate with a linked alumni account. Deactivate the account first.');
+            throw \App\Exceptions\DomainException::unprocessable('Cannot delete graduate with a linked alumni account.');
         }
 
         // Snapshot identifying details before the row is gone.
@@ -146,6 +146,14 @@ class GraduateService
      */
     public function forceDelete(Graduate $graduate): void
     {
+        // Every FK onto graduates cascades on delete, so a force delete here
+        // would also wipe the linked alumni profile, employment records, board
+        // exam records and activity logs. Only clean master-list entries
+        // (graduates who never registered) may be removed for good.
+        if ($graduate->user_id) {
+            throw \App\Exceptions\DomainException::unprocessable('Cannot permanently delete a graduate with a linked alumni account.');
+        }
+
         // Snapshot identifying details before the row is gone for good.
         $snapshot = [
             'alumni_id_number' => $graduate->alumni_id_number,
