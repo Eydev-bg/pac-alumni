@@ -20,16 +20,16 @@ export default function AlumniJobPostFormPage() {
     <div className="max-w-3xl mx-auto space-y-5">
       <button
         onClick={backToMyPosts}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
       >
         <HiOutlineArrowLeft className="w-4 h-4" /> Back to Career Center
       </button>
 
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
           {isEdit ? "Edit Job Posting" : "Post a Job"}
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           {isEdit
             ? "Update the details of your job posting."
             : "Share an opening with your fellow PAC alumni. Your post goes live right away."}

@@ -107,47 +107,49 @@ export default function AlumniJobDetailPage() {
       <BackLink onClick={() => navigate("/alumni/careers")} />
 
       {/* ━━━━ Header card ━━━━ */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           {job.company_logo ? (
             <img
               src={storageUrl(job.company_logo)}
               alt={job.company_name}
-              className="w-16 h-16 rounded-xl object-cover border border-slate-200 flex-shrink-0"
+              className="w-16 h-16 rounded-xl object-cover border border-slate-200 dark:border-slate-700 flex-shrink-0"
             />
           ) : (
-            <span className="w-16 h-16 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+            <span className="w-16 h-16 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center flex-shrink-0">
               <HiOutlineBuildingOffice2 className="w-7 h-7 text-slate-400" />
             </span>
           )}
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-slate-800">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
               {job.job_position}
             </h1>
-            <p className="text-sm text-slate-600 mt-0.5">{job.company_name}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300 mt-0.5">
+              {job.company_name}
+            </p>
 
             {/* Alumni-posted jobs carry poster attribution; admin-posted
                 jobs are the default and show nothing extra. */}
             {job.source === "alumni" && job.posted_by_alumni_name && (
-              <p className="mt-1.5 inline-flex items-center gap-1 text-[0.75rem] text-slate-500">
-                <HiOutlineUserCircle className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <p className="mt-1.5 inline-flex items-center gap-1 text-[0.75rem] text-slate-500 dark:text-slate-400">
+                <HiOutlineUserCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                 Posted by {job.posted_by_alumni_name}
                 {posterCredentials && ` · ${posterCredentials}`}
               </p>
             )}
 
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.8rem] text-slate-500">
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.8rem] text-slate-500 dark:text-slate-400">
               <span className="flex items-center gap-1">
-                <HiOutlineMapPin className="w-4 h-4 text-blue-600" />
+                <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 {job.location}
               </span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium text-xs">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium text-xs">
                 {job.employment_type_label}
               </span>
               {job.salary && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineBanknotes className="w-4 h-4 text-emerald-600" />
+                  <HiOutlineBanknotes className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   {job.salary}
                 </span>
               )}
@@ -160,11 +162,11 @@ export default function AlumniJobDetailPage() {
             </div>
 
             {job.company_email && (
-              <p className="mt-2 text-[0.8rem] text-slate-500 flex items-center gap-1">
+              <p className="mt-2 text-[0.8rem] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <HiOutlineEnvelope className="w-4 h-4" />
                 <a
                   href={`mailto:${job.company_email}`}
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   {job.company_email}
                 </a>
@@ -176,7 +178,7 @@ export default function AlumniJobDetailPage() {
         {/* Apply — external redirect or mailto only, never an internal POST.
             The application link is optional, so fall back to the company
             email, then to a plain instruction if neither was provided. */}
-        <div className="mt-5 pt-5 border-t border-slate-100">
+        <div className="mt-5 pt-5 border-t border-slate-100 dark:border-slate-700">
           {job.application_link ? (
             <>
               <button
@@ -204,7 +206,7 @@ export default function AlumniJobDetailPage() {
               </p>
             </>
           ) : (
-            <p className="text-[0.8rem] text-slate-500">
+            <p className="text-[0.8rem] text-slate-500 dark:text-slate-400">
               Contact the company directly for application details — see the
               job description above.
             </p>
@@ -215,7 +217,7 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Description ━━━━ */}
       <Section icon={HiOutlineBriefcase} title="Job Description">
         <div
-          className="job-content text-sm text-slate-600 leading-relaxed break-words"
+          className="job-content text-sm text-slate-600 dark:text-slate-300 leading-relaxed break-words"
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(job.description),
           }}
@@ -225,7 +227,7 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Requirements ━━━━ */}
       {job.requirements && (
         <Section icon={HiOutlineClipboardDocumentList} title="Requirements">
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line break-words">
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words">
             {job.requirements}
           </p>
         </Section>
@@ -234,7 +236,7 @@ export default function AlumniJobDetailPage() {
       {/* ━━━━ Benefits ━━━━ */}
       {job.benefits && (
         <Section icon={HiOutlineGift} title="Benefits">
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line break-words">
+          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line break-words">
             {job.benefits}
           </p>
         </Section>
@@ -249,7 +251,10 @@ export default function AlumniJobDetailPage() {
         .job-content ul{list-style:disc;padding-left:1.25rem;margin:.5rem 0}
         .job-content ol{list-style:decimal;padding-left:1.25rem;margin:.5rem 0}
         .job-content a{color:#2563eb;text-decoration:underline;overflow-wrap:break-word}
-        .job-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}`}</style>
+        .job-content blockquote{border-left:3px solid #2563eb;padding-left:.75rem;color:#64748b;margin:.5rem 0}
+        .dark .job-content h1,.dark .job-content h2,.dark .job-content h3{color:#f1f5f9}
+        .dark .job-content a{color:#60a5fa}
+        .dark .job-content blockquote{color:#cbd5e1}`}</style>
     </div>
   );
 }
@@ -258,7 +263,7 @@ function BackLink({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors"
+      className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
     >
       <HiOutlineArrowLeft className="w-4 h-4" /> Back to Career Center
     </button>
@@ -267,10 +272,10 @@ function BackLink({ onClick }) {
 
 function Section({ icon: Icon, title, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 min-w-0">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 min-w-0">
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-blue-600" />
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+        <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
           {title}
         </h2>
       </div>

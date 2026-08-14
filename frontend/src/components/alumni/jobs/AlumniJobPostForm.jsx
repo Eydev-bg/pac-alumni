@@ -57,10 +57,10 @@ const emptyForm = {
 };
 
 const labelCls =
-  "block text-[0.72rem] font-semibold text-slate-600 mb-1.5 uppercase tracking-wider";
+  "block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider";
 const inputCls =
-  "w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors";
-const helpCls = "mt-1.5 text-[0.72rem] text-slate-500";
+  "w-full px-3 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-700 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-colors";
+const helpCls = "mt-1.5 text-[0.72rem] text-slate-500 dark:text-slate-400";
 
 // Convert a backend ISO date/datetime to the 'YYYY-MM-DD' value that a
 // <input type="date"> expects.
@@ -87,10 +87,10 @@ function normalizeLink(link) {
 
 function SectionCard({ icon: Icon, title, children }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-4 h-4 text-blue-600" />
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+        <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
           {title}
         </h2>
       </div>
@@ -282,14 +282,18 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
 
   const errFor = (n) =>
     fieldErrors[n] && (
-      <p className="mt-1 text-[0.72rem] text-red-600">{fieldErrors[n][0]}</p>
+      <p className="mt-1 text-[0.72rem] text-red-600 dark:text-red-300">
+        {fieldErrors[n][0]}
+      </p>
     );
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3" />
-        <p className="text-sm text-slate-500">Loading job posting...</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Loading job posting...
+        </p>
       </div>
     );
   }
@@ -300,7 +304,7 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
   return (
     <>
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-[0.8rem] text-red-700">
+        <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl text-[0.8rem] text-red-700 dark:text-red-300">
           {error}
         </div>
       )}
@@ -346,7 +350,7 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
                 <img
                   src={previewSrc}
                   alt="Logo preview"
-                  className="h-24 w-24 rounded-xl border border-slate-200 object-cover"
+                  className="h-24 w-24 rounded-xl border border-slate-200 dark:border-slate-600 object-cover"
                 />
                 {logoPreview && (
                   <button
@@ -360,9 +364,9 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
                 )}
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-blue-400 transition-colors">
+              <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors">
                 <HiOutlinePhoto className="w-8 h-8 text-slate-400" />
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 dark:text-slate-400">
                   Click to upload (JPG, PNG, WEBP — max 4MB)
                 </span>
                 <input
@@ -374,7 +378,7 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
               </label>
             )}
             {previewSrc && (
-              <label className="inline-block mt-2 text-xs font-semibold text-blue-600 cursor-pointer hover:text-blue-700">
+              <label className="inline-block mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 cursor-pointer hover:text-blue-700 dark:hover:text-blue-300">
                 Change logo
                 <input
                   type="file"
@@ -468,7 +472,7 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
             <label className={labelCls}>
               Description <span className="text-red-500">*</span>
             </label>
-            <div className="job-editor rounded-xl overflow-hidden bg-white border border-slate-200">
+            <div className="job-editor rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600">
               <ReactQuill
                 theme="snow"
                 value={form.description}
@@ -536,7 +540,7 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 disabled:opacity-50 transition-colors"
+            className="px-5 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-colors"
           >
             Cancel
           </button>
@@ -559,7 +563,18 @@ export default function AlumniJobPostForm({ jobId, onSuccess, onCancel }) {
       <style>{`.job-editor .ql-container { min-height: 200px; font-size: 14px; }
         .job-editor .ql-editor { min-height: 200px; }
         .job-editor .ql-toolbar { border: none; border-bottom: 1px solid #e2e8f0; }
-        .job-editor .ql-container.ql-snow { border: none; }`}</style>
+        .job-editor .ql-container.ql-snow { border: none; }
+        .dark .job-editor .ql-toolbar { border-bottom-color: #475569; }
+        .dark .job-editor .ql-editor { color: #f1f5f9; }
+        .dark .job-editor .ql-editor.ql-blank::before { color: #64748b; }
+        .dark .job-editor .ql-snow .ql-stroke { stroke: #cbd5e1; }
+        .dark .job-editor .ql-snow .ql-fill,
+        .dark .job-editor .ql-snow .ql-stroke.ql-fill { fill: #cbd5e1; }
+        .dark .job-editor .ql-snow .ql-picker { color: #cbd5e1; }
+        .dark .job-editor .ql-snow .ql-picker-options { background-color: #1e293b; border-color: #475569; }
+        .dark .job-editor .ql-snow .ql-picker.ql-expanded .ql-picker-label { border-color: #475569; }
+        .dark .job-editor .ql-snow a { color: #60a5fa; }
+        .dark .job-editor .ql-editor blockquote { border-left-color: #60a5fa; color: #cbd5e1; }`}</style>
     </>
   );
 }
