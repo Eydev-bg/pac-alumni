@@ -45,12 +45,16 @@ export default function ConfirmDialog({
       closeOnBackdrop={!loading}
     >
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center">
-          <HiOutlineExclamationTriangle className="w-5 h-5 text-red-400" />
+        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-red-50 flex items-center justify-center dark:bg-red-500/15">
+          <HiOutlineExclamationTriangle className="w-5 h-5 text-red-500 dark:text-red-400" />
         </div>
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white">{title}</h3>
-          <p className="mt-2 text-sm text-slate-400">{message}</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+            {title}
+          </h3>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+            {message}
+          </p>
         </div>
       </div>
 

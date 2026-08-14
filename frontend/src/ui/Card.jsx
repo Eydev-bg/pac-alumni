@@ -1,12 +1,12 @@
 import { cn } from "../utils/formatters";
 
 /**
- * Card — shared glass panel used across admin pages.
+ * Card — shared panel used across admin pages.
  *
- * Encapsulates the repeated
- *   `bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06]`
- * surface so panels reference one component instead of duplicating the
- * class string. Colors reference theme tokens, not literals.
+ * Encapsulates the repeated card surface so panels reference one component
+ * instead of duplicating the class string. Light mode is a white SaaS card;
+ * dark mode is the navy glass panel. Colors reference theme tokens, not
+ * literals.
  *
  * Props:
  *   padding: boolean — apply the default p-6 (default true)
@@ -22,7 +22,7 @@ export default function Card({
   return (
     <Component
       className={cn(
-        "bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] dark:bg-slate-800 dark:border-slate-700",
+        "bg-white rounded-2xl border border-slate-200/80 shadow-sm dark:bg-navy-800/40 dark:backdrop-blur-sm dark:border-white/[0.06] dark:shadow-none",
         padding && "p-6",
         className,
       )}

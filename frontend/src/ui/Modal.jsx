@@ -13,7 +13,8 @@ import { cn } from "../utils/formatters";
  *   - focus trap (queried live, so dynamically-added focusables are included)
  *     + focus restoration to the previously-focused element on close
  *   - enter/leave fade+scale transitions with unmount-after-exit
- *   - a dark navy panel matching the admin shell (the shared default)
+ *   - a panel matching the admin shell — white in light mode, navy in dark
+ *     (the shared default)
  *   - a scrollable body with a fixed header + optional fixed footer
  *   - proper ARIA (role="dialog", aria-modal, aria-labelledby/describedby)
  *   - an optional loading overlay that blocks close while a submit is in flight
@@ -29,7 +30,7 @@ import { cn } from "../utils/formatters";
  *   loading:         when true, shows a spinner overlay and blocks all closes
  *   initialFocusRef: optional ref to focus on open (else first focusable)
  *   describedBy:     optional id for aria-describedby (defaults to the body id)
- *   panelClassName:  escape hatch to override the default dark panel styling
+ *   panelClassName:  escape hatch to override the default panel styling
  */
 const SIZES = {
   sm: "max-w-md",
@@ -209,19 +210,23 @@ export default function Modal({
             motion,
             visible ? "opacity-100 scale-100" : "opacity-0 scale-95",
             SIZES[size] || SIZES.md,
-            panelClassName || "bg-navy-850 border border-white/10 text-slate-200",
+            panelClassName ||
+              "bg-white border border-slate-200 text-slate-800 shadow-xl dark:bg-navy-850 dark:border-white/10 dark:text-slate-200 dark:shadow-none",
           )}
         >
           {title && (
-            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/[0.08] flex-shrink-0">
-              <h3 id={titleId} className="text-lg font-bold text-white">
+            <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-slate-200 dark:border-white/[0.08] flex-shrink-0">
+              <h3
+                id={titleId}
+                className="text-lg font-bold text-slate-900 dark:text-white"
+              >
                 {title}
               </h3>
               <button
                 type="button"
                 onClick={() => requestClose("closeButton")}
                 aria-label="Close"
-                className="text-slate-400 hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-white/20 rounded"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none focus:ring-2 focus:ring-white/20 rounded"
               >
                 <HiOutlineXMark className="w-5 h-5" />
               </button>
@@ -236,17 +241,17 @@ export default function Modal({
           </div>
 
           {footer && (
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/[0.08] flex-shrink-0">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-200 dark:border-white/[0.08] flex-shrink-0">
               {footer}
             </div>
           )}
 
           {loading && (
             <div
-              className="absolute inset-0 rounded-2xl bg-navy-950/50 backdrop-blur-[1px] flex items-center justify-center"
+              className="absolute inset-0 rounded-2xl bg-white/60 backdrop-blur-[1px] flex items-center justify-center dark:bg-navy-950/50"
               aria-hidden="true"
             >
-              <span className="w-8 h-8 rounded-full border-2 border-gold-500 border-b-transparent animate-spin" />
+              <span className="w-8 h-8 rounded-full border-2 border-blue-500 border-b-transparent animate-spin dark:border-gold-500 dark:border-b-transparent" />
             </div>
           )}
         </div>

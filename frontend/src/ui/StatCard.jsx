@@ -56,7 +56,7 @@ function StatCard({
   return (
     <div
       className={cn(
-        "bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-5 hover:bg-navy-800/55 transition-all duration-300 border-l-[3px]",
+        "bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 hover:bg-slate-50 transition-all duration-300 border-l-[3px] dark:bg-navy-800/40 dark:backdrop-blur-sm dark:border-white/[0.06] dark:shadow-none dark:hover:bg-navy-800/55",
         style.accent,
       )}
     >
@@ -87,7 +87,7 @@ function StatCard({
           </span>
         )}
       </div>
-      <p className="text-[28px] font-extrabold text-white tracking-tight leading-none">
+      <p className="text-[28px] font-extrabold text-slate-800 tracking-tight leading-none dark:text-white">
         {value}
       </p>
       {subtitle && <p className="text-[11px] text-slate-400 mt-1">{subtitle}</p>}

@@ -22,7 +22,7 @@ const VARIANTS = {
     "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 focus:ring-slate-400 dark:bg-slate-700 dark:text-slate-100 dark:border-slate-600 dark:hover:bg-slate-600",
   danger: "bg-red-600 text-white hover:bg-red-700 shadow-sm focus:ring-red-500",
   ghost:
-    "bg-transparent text-slate-300 hover:bg-white/[0.06] focus:ring-white/20",
+    "bg-transparent text-slate-600 hover:bg-slate-100 focus:ring-slate-400/20 dark:text-slate-300 dark:hover:bg-white/[0.06] dark:focus:ring-white/20",
 };
 
 const SIZES = {

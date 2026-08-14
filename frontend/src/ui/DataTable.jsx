@@ -44,13 +44,15 @@ export default function DataTable({
     <Card padding={false} className="overflow-hidden">
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3 dark:border-gold-500" />
           <p className="text-sm text-slate-500">{loadingLabel}</p>
         </div>
       ) : data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
-          {EmptyIcon && <EmptyIcon className="w-12 h-12 text-slate-600 mb-4" />}
-          <h3 className="text-sm font-semibold text-slate-300 mb-1">
+          {EmptyIcon && (
+            <EmptyIcon className="w-12 h-12 text-slate-300 mb-4 dark:text-slate-600" />
+          )}
+          <h3 className="text-sm font-semibold text-slate-700 mb-1 dark:text-slate-300">
             {emptyTitle}
           </h3>
           {emptyDescription && (
@@ -61,12 +63,12 @@ export default function DataTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06]">
+              <tr className="border-b border-slate-200 dark:border-white/[0.06]">
                 {columns.map((col) => (
                   <th
                     key={col.key}
                     className={cn(
-                      "py-3.5 px-4 font-semibold text-gold-500 text-[11px] uppercase tracking-wider",
+                      "py-3.5 px-4 font-semibold text-slate-500 text-[11px] uppercase tracking-wider dark:text-gold-500",
                       ALIGN[col.align] || ALIGN.left,
                       col.headerClassName,
                     )}
@@ -76,11 +78,11 @@ export default function DataTable({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04] text-slate-700 dark:text-slate-300">
               {data.map((row) => (
                 <tr
                   key={row[keyField]}
-                  className="hover:bg-white/[0.03] transition-colors"
+                  className="hover:bg-slate-50 transition-colors dark:hover:bg-white/[0.03]"
                 >
                   {columns.map((col) => (
                     <td

@@ -4,8 +4,11 @@ import { cn } from "../utils/formatters";
  * Input — shared text-field primitive with label / hint / error.
  *
  * Standardizes the two field styles used across admin pages:
- *   - tone="light" (default): white form fields used inside modals
- *   - tone="dark":           navy filter fields used on list-page bars
+ *   - tone="light" (default): form fields used inside modals
+ *   - tone="dark":           filter fields used on list-page bars
+ *
+ * Both tones are light-base with `dark:` overrides — the tone names describe
+ * the field's role (modal form vs. filter bar), not the active theme.
  *
  * Laravel validation errors arrive as `string[]`; pass the field's array (or
  * a string) to `error` and the first message is shown. Colors reference
@@ -19,10 +22,10 @@ const TONES = {
     label: "text-slate-700 dark:text-slate-300",
   },
   dark: {
-    base: "bg-white/[0.06] border rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors",
-    idle: "border-white/[0.08]",
-    error: "border-red-400/50",
-    label: "text-slate-300",
+    base: "border rounded-xl text-sm transition-colors focus:outline-none focus:ring-2 text-slate-800 placeholder:text-slate-400 bg-slate-50 focus:ring-blue-500/40 focus:bg-white dark:bg-white/[0.06] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-gold-500/40 dark:focus:border-gold-500/30 dark:focus:bg-transparent",
+    idle: "border-slate-300 dark:border-white/[0.08]",
+    error: "border-red-300 dark:border-red-400/50",
+    label: "text-slate-700 dark:text-slate-300",
   },
 };
 

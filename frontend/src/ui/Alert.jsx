@@ -10,15 +10,9 @@ import { cn } from "../utils/formatters";
  * Alert — inline, page-level message surface.
  *
  * Used where a persistent in-page banner is more appropriate than a transient
- * toast (e.g. a list page that failed to load). Tuned for the dark admin
- * surfaces; colors use semantic Tailwind roles.
- *
- * DARK MODE: the translucent tints (e.g. `bg-red-500/10` + `text-red-300`)
- * already read correctly on a dark surface, so no `dark:` overrides are added.
- * A light-mode base is intentionally NOT introduced here because the admin side
- * (which shares this component) renders it on its always-navy surface — adding
- * a light base would regress that. The alumni settings tabs surface field
- * errors inline + via toasts, so they don't depend on Alert.
+ * toast (e.g. a list page that failed to load). Colors use semantic Tailwind
+ * roles: solid 50/200/800 tints on light surfaces, translucent tints on the
+ * dark navy surfaces.
  *
  * Props:
  *   variant: 'error' | 'warning' | 'info' | 'success'  (default 'error')
@@ -28,23 +22,23 @@ import { cn } from "../utils/formatters";
 const VARIANTS = {
   error: {
     icon: HiOutlineXCircle,
-    wrap: "bg-red-500/10 border-red-500/20 text-red-300",
-    iconColor: "text-red-400",
+    wrap: "bg-red-50 border-red-200 text-red-800 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-300",
+    iconColor: "text-red-500 dark:text-red-400",
   },
   warning: {
     icon: HiOutlineExclamationTriangle,
-    wrap: "bg-amber-500/10 border-amber-500/20 text-amber-300",
-    iconColor: "text-amber-400",
+    wrap: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-300",
+    iconColor: "text-amber-500 dark:text-amber-400",
   },
   info: {
     icon: HiOutlineInformationCircle,
-    wrap: "bg-blue-500/10 border-blue-500/20 text-blue-300",
-    iconColor: "text-blue-400",
+    wrap: "bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-500/10 dark:border-blue-500/20 dark:text-blue-300",
+    iconColor: "text-blue-500 dark:text-blue-400",
   },
   success: {
     icon: HiOutlineCheckCircle,
-    wrap: "bg-emerald-500/10 border-emerald-500/20 text-emerald-300",
-    iconColor: "text-emerald-400",
+    wrap: "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-300",
+    iconColor: "text-emerald-500 dark:text-emerald-400",
   },
 };
 
