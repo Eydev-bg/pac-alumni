@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useLocation } from "react-router-dom";
 import settingsApi from "../api/settingsApi";
 
 export const ThemeContext = createContext(null);
@@ -32,27 +31,13 @@ function resolve(theme) {
 }
 
 /**
- * Dark mode is scoped to the /alumni subtree — admin is a light-only design and
- * must never inherit dark: variants. Read window.location.pathname directly so
- * the guard is correct at call time (React Router updates history synchronously
- * before the location-dependent effect re-runs).
- */
-function onAlumniRoute() {
-  return (
-    typeof window !== "undefined" &&
-    /^\/alumni(\/|$)/.test(window.location.pathname)
-  );
-}
-
-/**
  * Toggle the `dark` class on <html> — the single hook Tailwind's dark: keys on.
- * Only applies on /alumni routes; anywhere else the class is force-removed so
- * admin pages stay light even if a dark preference is stored.
+ * Applied globally: every route opts into dark mode through its own `dark:`
+ * variants.
  */
 function applyResolved(resolved) {
   if (typeof document === "undefined") return;
-  const dark = resolved === "dark" && onAlumniRoute();
-  document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.classList.toggle("dark", resolved === "dark");
 }
 
 function readStored() {
@@ -66,6 +51,9 @@ function readStored() {
 /**
  * ThemeProvider — owns the light/dark/system theme for the whole app.
  *
+ * Route-agnostic: the `dark` class is toggled globally. Both admin and alumni
+ * pages define their own light/dark styling via Tailwind's `dark:` variants.
+ *
  * Mounted OUTSIDE AuthProvider so the theme applies on the login page too,
  * before any user is known. The local value (localStorage) is authoritative
  * for the session; the server sync is a best-effort, debounced write that
@@ -75,12 +63,9 @@ export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(readStored);
   const [resolvedTheme, setResolvedTheme] = useState(() => resolve(readStored()));
   const syncTimer = useRef(null);
-  const location = useLocation();
 
   // Apply the resolved theme whenever the preference changes, and — while on
   // 'system' — keep it in sync with the OS as the user flips their setting.
-  // Also re-runs on navigation (location.pathname dep): applyResolved is
-  // path-scoped, so leaving /alumni removes the `dark` class from admin pages.
   useEffect(() => {
     const reapply = () => {
       const next = resolve(theme);
@@ -95,7 +80,7 @@ export function ThemeProvider({ children }) {
     const mq = window.matchMedia(MEDIA_QUERY);
     mq.addEventListener("change", reapply);
     return () => mq.removeEventListener("change", reapply);
-  }, [theme, location.pathname]);
+  }, [theme]);
 
   // Clear any pending debounced sync on unmount.
   useEffect(() => {
@@ -127,9 +112,28 @@ export function ThemeProvider({ children }) {
     }, SYNC_DELAY_MS);
   }, []);
 
+  /**
+   * Apply a preference that came FROM the backend (login / getMe). Same as
+   * setTheme minus the debounced server sync — echoing the value straight back
+   * would be a pointless write.
+   */
+  const hydrateTheme = useCallback((value) => {
+    if (!value) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch {
+      // Private mode — in-memory state still applies below.
+    }
+    const next = resolve(value);
+    applyResolved(next);
+    setResolvedTheme(next);
+    setThemeState(value);
+    // No debounced backend sync — this value just came FROM the backend.
+  }, []);
+
   const value = useMemo(
-    () => ({ theme, setTheme, resolvedTheme }),
-    [theme, setTheme, resolvedTheme],
+    () => ({ theme, setTheme, resolvedTheme, hydrateTheme }),
+    [theme, setTheme, resolvedTheme, hydrateTheme],
   );
 
   return (

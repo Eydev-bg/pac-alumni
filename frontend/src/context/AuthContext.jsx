@@ -8,6 +8,7 @@ import {
 import authApi from "../api/authApi";
 import { initEcho, disconnectEcho } from "../config/echo";
 import { tokenStorage } from "../utils/storage";
+import { useTheme } from "../hooks/useTheme";
 
 export const AuthContext = createContext(null);
 
@@ -23,6 +24,8 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => tokenStorage.getToken());
   const [loading, setLoading] = useState(true);
+  // Valid: AuthProvider renders inside ThemeProvider.
+  const { hydrateTheme } = useTheme();
 
   /**
    * On mount: check if we have a stored token and validate it.
@@ -40,6 +43,8 @@ export function AuthProvider({ children }) {
         const response = await authApi.getMe();
         setUser(response.data.data);
         tokenStorage.setUser(response.data.data);
+        // Hydrate theme from user's backend preference (if available).
+        hydrateTheme(response.data.data.theme_preference);
         initEcho();
       } catch {
         // Token invalid or expired — clear everything
@@ -52,23 +57,31 @@ export function AuthProvider({ children }) {
     };
 
     initAuth();
+    // hydrateTheme is a stable useCallback — adding it would re-run auth init
+    // on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
    * Login: call API, store token + user.
    */
-  const login = useCallback(async (email, password) => {
-    const response = await authApi.login(email, password);
-    const { token: newToken, user: userData } = response.data.data;
+  const login = useCallback(
+    async (email, password) => {
+      const response = await authApi.login(email, password);
+      const { token: newToken, user: userData } = response.data.data;
 
-    tokenStorage.setToken(newToken);
-    tokenStorage.setUser(userData);
-    setToken(newToken);
-    setUser(userData);
-    initEcho();
+      tokenStorage.setToken(newToken);
+      tokenStorage.setUser(userData);
+      setToken(newToken);
+      setUser(userData);
+      initEcho();
+      // Hydrate theme from the freshly-authenticated user's preference.
+      hydrateTheme(userData.theme_preference);
 
-    return userData;
-  }, []);
+      return userData;
+    },
+    [hydrateTheme],
+  );
 
   /**
    * Logout: invalidate token on server, clear local state.

@@ -6,10 +6,10 @@ import AppRouter from "./routes/AppRouter";
 
 export default function App() {
   return (
-    // BrowserRouter wraps everything so ThemeProvider can read the current path
-    // (via useLocation) and scope the `dark` class to /alumni routes only.
-    // ThemeProvider still sits OUTSIDE AuthProvider so the theme applies on the
-    // login page too, before any user is known.
+    // BrowserRouter wraps everything so child providers have access to routing.
+    // ThemeProvider sits OUTSIDE AuthProvider so the theme applies on the login
+    // page too, before any user is known. AuthProvider hydrates the theme from
+    // the backend on login/refresh.
     <BrowserRouter>
       <ThemeProvider>
         <ToastProvider>

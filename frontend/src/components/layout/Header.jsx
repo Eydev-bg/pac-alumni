@@ -17,7 +17,10 @@ import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineMagnifyingGlass,
   HiOutlineXMark,
+  HiOutlineSun,
+  HiOutlineMoon,
 } from "react-icons/hi2";
+import { useTheme } from "../../hooks/useTheme";
 
 /**
  * Header — top bar with menu toggle, user info, and logout.
@@ -31,6 +34,7 @@ export default function Header({
   sidebarOpen,
 }) {
   const { user, logout } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const navigate = useNavigate();
   // Shared alumni unread source (null in layouts without UnreadProvider,
   // e.g. the admin layout).
@@ -298,6 +302,13 @@ export default function Header({
     } else if (n.data?.event_id) {
       navigate("/alumni/events");
     }
+  };
+
+  // Flip between light and dark from whatever is currently resolved (so it
+  // works the same whether the stored preference is explicit or 'system').
+  const cycleTheme = () => {
+    const next = resolvedTheme === "light" ? "dark" : "light";
+    setTheme(next);
   };
 
   const handleLogout = async () => {
@@ -694,6 +705,21 @@ export default function Header({
                   {user?.email}
                 </p>
               </div>
+              <button
+                onClick={cycleTheme}
+                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
+                  dark
+                    ? "text-slate-300 hover:bg-white/[0.06]"
+                    : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+                }`}
+              >
+                {resolvedTheme === "dark" ? (
+                  <HiOutlineSun className="w-4 h-4" />
+                ) : (
+                  <HiOutlineMoon className="w-4 h-4" />
+                )}
+                {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
+              </button>
               <button
                 onClick={handleLogout}
                 className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${

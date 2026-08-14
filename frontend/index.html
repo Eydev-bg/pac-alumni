@@ -9,13 +9,10 @@
       Anti-flash theme boot: runs blocking, before any module script, so the
       `dark` class is on <html> before React (and paint). Without this,
       dark-mode users see a white flash on every load. Mirrors ThemeContext.
-      Scoped to the /alumni subtree — admin is light-only, so dark: variants
-      must never reach it.
     -->
     <script>
       (function () {
         try {
-          if (!/^\/alumni(\/|$)/.test(location.pathname)) return;
           var t = localStorage.getItem('pac_theme') || 'system';
           var dark = t === 'dark' || (t === 'system' &&
             window.matchMedia('(prefers-color-scheme: dark)').matches);
