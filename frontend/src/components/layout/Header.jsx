@@ -434,61 +434,50 @@ export default function Header({
             )}
           </button>
         )}
-        {/* Notification bell — admin only (routes to admin-scoped pages) */}
+        {/* Admin icon bar — bell, verification and theme each navigate/act
+            directly; no dropdowns. */}
         {user?.role === "admin" && (
-          <div className="relative" ref={bellRef}>
+          <>
+            {/* Notification bell — navigates directly */}
             <button
-              ref={bellButtonRef}
               aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
-              aria-expanded={bellOpen}
-              aria-haspopup="true"
-              className="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
-              onClick={() => setBellOpen(!bellOpen)}
+              className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+              onClick={() => navigate("/admin/notifications")}
             >
               <HiOutlineBell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
+                <span className="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-navy-950">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </button>
 
-            {/* Bell dropdown */}
-            {bellOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-navy-800 dark:border-white/[0.08] dark:shadow-2xl"
-              >
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    navigate("/admin/notifications");
-                    setBellOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
-                >
-                  <HiOutlineBell className="w-4 h-4 flex-shrink-0" />
-                  <span>Notifications</span>
-                  {unreadCount > 0 && (
-                    <span className="ml-auto min-w-[1.125rem] h-[1.125rem] px-1 bg-red-500 text-white text-[0.625rem] leading-none font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </button>
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    navigate("/admin/verification/logs");
-                    setBellOpen(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
-                >
-                  <HiOutlineClipboardDocumentCheck className="w-4 h-4 flex-shrink-0" />
-                  <span>Verification</span>
-                </button>
-              </div>
-            )}
-          </div>
+            {/* Verification — standalone icon */}
+            <button
+              aria-label="Verification logs"
+              className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+              onClick={() => navigate("/admin/verification/logs")}
+            >
+              <HiOutlineClipboardDocumentCheck className="w-5 h-5" />
+            </button>
+
+            {/* Theme toggle — standalone icon */}
+            <button
+              aria-label={
+                resolvedTheme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+              className={`relative p-2 rounded-lg transition-colors ${iconBtnClass}`}
+              onClick={cycleTheme}
+            >
+              {resolvedTheme === "dark" ? (
+                <HiOutlineSun className="w-5 h-5" />
+              ) : (
+                <HiOutlineMoon className="w-5 h-5" />
+              )}
+            </button>
+          </>
         )}
 
         {/* Notification bell — alumni (light theme, recent list + deep links) */}
@@ -666,19 +655,6 @@ export default function Header({
                   {user?.email}
                 </p>
               </div>
-              {isAdmin && (
-                <button
-                  onClick={cycleTheme}
-                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
-                >
-                  {resolvedTheme === "dark" ? (
-                    <HiOutlineSun className="w-4 h-4" />
-                  ) : (
-                    <HiOutlineMoon className="w-4 h-4" />
-                  )}
-                  {resolvedTheme === "dark" ? "Light mode" : "Dark mode"}
-                </button>
-              )}
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
