@@ -63,6 +63,10 @@ export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(readStored);
   const [resolvedTheme, setResolvedTheme] = useState(() => resolve(readStored()));
   const syncTimer = useRef(null);
+  // Flipped off permanently for the session on a 403 — admin accounts hit an
+  // alumni-only endpoint, so retrying every toggle just spams the console.
+  // A shared endpoint later stops returning 403 and sync resumes on its own.
+  const syncSupported = useRef(true);
 
   // Apply the resolved theme whenever the preference changes, and — while on
   // 'system' — keep it in sync with the OS as the user flips their setting.
@@ -105,7 +109,13 @@ export function ThemeProvider({ children }) {
     //    the local preference remains authoritative for this session.
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(() => {
+      if (!syncSupported.current) return;
       settingsApi.updateAppearance(value).catch((err) => {
+        if (err.response?.status === 403) {
+          // Endpoint isn't available to this account — stop trying, silently.
+          syncSupported.current = false;
+          return;
+        }
         // eslint-disable-next-line no-console
         console.warn("Theme sync failed; keeping local preference.", err);
       });
