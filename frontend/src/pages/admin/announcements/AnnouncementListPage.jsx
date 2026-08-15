@@ -36,8 +36,8 @@ function StatusTab({ label, active, onClick }) {
       onClick={onClick}
       className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
         active
-          ? "bg-gradient-to-r from-gold-500 to-gold-700 text-white shadow-lg shadow-gold-500/20"
-          : "bg-white/[0.06] text-slate-400 border border-white/[0.08] hover:bg-white/[0.1]"
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20 dark:from-gold-500 dark:to-gold-700 dark:shadow-gold-500/20"
+          : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 dark:bg-white/[0.06] dark:text-slate-400 dark:border-white/[0.08] dark:hover:bg-white/[0.1]"
       }`}
     >
       {label}
@@ -53,10 +53,10 @@ function IconButton({ title, onClick, disabled, active, danger, children }) {
       disabled={disabled}
       className={`p-2 rounded-lg transition-colors disabled:opacity-40 ${
         active
-          ? "text-gold-500 bg-gold-500/10"
+          ? "text-blue-600 bg-blue-500/10 dark:text-gold-500 dark:bg-gold-500/10"
           : danger
-            ? "text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-            : "text-slate-400 hover:text-gold-500 hover:bg-white/[0.06]"
+            ? "text-slate-500 hover:text-red-400 hover:bg-red-500/10 dark:text-slate-400"
+            : "text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-gold-500 dark:hover:bg-white/[0.06]"
       }`}
     >
       {children}
@@ -165,11 +165,13 @@ export default function AnnouncementListPage() {
         <div className="flex items-center gap-2">
           {a.is_pinned && (
             <HiOutlineBookmark
-              className="w-4 h-4 text-gold-500 flex-shrink-0"
+              className="w-4 h-4 text-blue-600 dark:text-gold-500 flex-shrink-0"
               title="Pinned"
             />
           )}
-          <span className="font-medium text-slate-200">{a.title}</span>
+          <span className="font-medium text-slate-700 dark:text-slate-200">
+            {a.title}
+          </span>
         </div>
       ),
     },
@@ -177,7 +179,7 @@ export default function AnnouncementListPage() {
       key: "audience",
       header: "Audience",
       render: (a) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-400">
+        <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
           <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500" />
           {targetLabel(a)}
         </span>
@@ -200,7 +202,7 @@ export default function AnnouncementListPage() {
     {
       key: "reads_count",
       header: "Reads",
-      cellClassName: "text-slate-300",
+      cellClassName: "text-slate-600 dark:text-slate-300",
       render: (a) => a.reads_count ?? 0,
     },
     {
@@ -245,7 +247,7 @@ export default function AnnouncementListPage() {
             <Link
               to={`/admin/announcements/${a.id}/edit`}
               title="Edit"
-              className="p-2 rounded-lg text-slate-400 hover:text-gold-500 hover:bg-white/[0.06] transition-colors"
+              className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-gold-500 dark:hover:bg-white/[0.06] transition-colors"
             >
               <HiOutlinePencilSquare className="w-4 h-4" />
             </Link>
@@ -269,8 +271,10 @@ export default function AnnouncementListPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Announcements</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Announcements
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Create and broadcast targeted announcements to alumni
             </p>
           </div>

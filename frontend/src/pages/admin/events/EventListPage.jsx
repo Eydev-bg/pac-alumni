@@ -62,8 +62,8 @@ function StatusTab({ label, active, onClick }) {
       onClick={onClick}
       className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
         active
-          ? "bg-gradient-to-r from-gold-500 to-gold-700 text-white shadow-lg shadow-gold-500/20"
-          : "bg-white/[0.06] text-slate-400 border border-white/[0.08] hover:bg-white/[0.1]"
+          ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20 dark:from-gold-500 dark:to-gold-700 dark:shadow-gold-500/20"
+          : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 dark:bg-white/[0.06] dark:text-slate-400 dark:border-white/[0.08] dark:hover:bg-white/[0.1]"
       }`}
     >
       {label}
@@ -79,10 +79,10 @@ function IconButton({ title, onClick, disabled, active, danger, children }) {
       disabled={disabled}
       className={`p-2 rounded-lg transition-colors disabled:opacity-40 ${
         active
-          ? "text-gold-500 bg-gold-500/10"
+          ? "text-blue-600 bg-blue-500/10 dark:text-gold-500 dark:bg-gold-500/10"
           : danger
-            ? "text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-            : "text-slate-400 hover:text-gold-500 hover:bg-white/[0.06]"
+            ? "text-slate-500 hover:text-red-400 hover:bg-red-500/10 dark:text-slate-400"
+            : "text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-gold-500 dark:hover:bg-white/[0.06]"
       }`}
     >
       {children}
@@ -188,11 +188,11 @@ export default function EventListPage() {
         <div className="flex items-center gap-2">
           {a.is_pinned && (
             <HiOutlineBookmark
-              className="w-4 h-4 text-gold-500 flex-shrink-0"
+              className="w-4 h-4 text-blue-600 dark:text-gold-500 flex-shrink-0"
               title="Pinned"
             />
           )}
-          <span className="font-medium text-slate-200 max-w-[200px] truncate whitespace-nowrap">
+          <span className="font-medium text-slate-700 dark:text-slate-200 max-w-[200px] truncate whitespace-nowrap">
             {a.title}
           </span>
         </div>
@@ -203,7 +203,7 @@ export default function EventListPage() {
       header: "Audience",
       cellClassName: "whitespace-nowrap",
       render: (a) => (
-        <span className="inline-flex items-center gap-1 text-xs text-slate-400 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
           <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
           {targetLabel(a)}
         </span>
@@ -228,10 +228,10 @@ export default function EventListPage() {
         }
         return (
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="font-bold text-sm text-gold-500 bg-white/[0.06] rounded-md px-1.5 py-0.5 min-w-[28px] text-center">
+            <span className="font-bold text-sm text-blue-600 bg-slate-100 dark:text-gold-500 dark:bg-white/[0.06] rounded-md px-1.5 py-0.5 min-w-[28px] text-center">
               {s.day}
             </span>
-            <span className="text-xs text-slate-400 whitespace-nowrap">
+            <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
               {secondary}
             </span>
           </div>
@@ -243,7 +243,7 @@ export default function EventListPage() {
       header: "Location",
       cellClassName: "whitespace-nowrap",
       render: (a) => (
-        <span className="inline-flex items-center gap-1.5 max-w-[180px] text-sm text-slate-300 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 max-w-[180px] text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
           <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
           <span className="truncate">{a.location}</span>
         </span>
@@ -327,7 +327,7 @@ export default function EventListPage() {
             <Link
               to={`/admin/events/${a.id}/edit`}
               title="Edit"
-              className="p-2 rounded-lg text-slate-400 hover:text-gold-500 hover:bg-white/[0.06] transition-colors"
+              className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-gold-500 dark:hover:bg-white/[0.06] transition-colors"
             >
               <HiOutlinePencilSquare className="w-4 h-4" />
             </Link>
@@ -351,8 +351,10 @@ export default function EventListPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Events</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Events
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Create and manage alumni events with RSVP tracking
             </p>
           </div>

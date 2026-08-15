@@ -54,9 +54,9 @@ const emptyForm = {
 };
 
 const labelCls =
-  "block text-[0.72rem] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider";
+  "block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider";
 const inputCls =
-  "w-full px-3 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors";
+  "w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/30 transition-colors dark:bg-white/[0.06] dark:border-white/[0.08] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-gold-500/40 dark:focus:border-gold-500/30";
 
 // Convert a backend ISO datetime to the 'YYYY-MM-DDTHH:mm' local value that a
 // <input type="datetime-local"> expects (adjusts UTC → local wall-clock time).
@@ -71,8 +71,8 @@ function isoToLocalInput(iso) {
 function SectionLabel({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2 mb-2">
-      <Icon className="w-4 h-4 text-gold-500" />
-      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+      <Icon className="w-4 h-4 text-blue-600 dark:text-gold-500" />
+      <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
         {children}
       </h2>
     </div>
@@ -91,11 +91,11 @@ function TargetValueSelect({
   if (type === "department") {
     return (
       <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-navy-800">
+        <option value="" className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
           Select department…
         </option>
         {departments.map((d) => (
-          <option key={d.id} value={String(d.id)} className="bg-navy-800">
+          <option key={d.id} value={String(d.id)} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
             {d.name}
           </option>
         ))}
@@ -106,11 +106,11 @@ function TargetValueSelect({
   if (type === "course") {
     return (
       <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-navy-800">
+        <option value="" className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
           Select course…
         </option>
         {courses.map((c) => (
-          <option key={c.id} value={String(c.id)} className="bg-navy-800">
+          <option key={c.id} value={String(c.id)} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
             {c.name}
           </option>
         ))}
@@ -121,11 +121,11 @@ function TargetValueSelect({
   if (type === "batch") {
     return (
       <select value={value} onChange={onChange} className={className}>
-        <option value="" className="bg-navy-800">
+        <option value="" className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
           Select graduation year…
         </option>
         {years.map((y) => (
-          <option key={y} value={String(y)} className="bg-navy-800">
+          <option key={y} value={String(y)} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
             {y}
           </option>
         ))}
@@ -304,7 +304,7 @@ export default function EventFormPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading event...</p>
       </div>
     );
@@ -318,16 +318,16 @@ export default function EventFormPage() {
       <div className="max-w-[900px] mx-auto">
         <button
           onClick={() => navigate("/admin/events")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 dark:hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Events
         </button>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
             {isEdit ? "Edit Event" : "New Event"}
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {isEdit
               ? "Update the event details and audience."
               : "Compose an event and choose who should see it."}
@@ -365,7 +365,7 @@ export default function EventFormPage() {
                   <img
                     src={previewSrc}
                     alt="Banner preview"
-                    className="max-h-44 rounded-xl border border-white/[0.08] object-cover"
+                    className="max-h-44 rounded-xl border border-slate-200 dark:border-white/[0.08] object-cover"
                   />
                   {imagePreview && (
                     <button
@@ -379,9 +379,9 @@ export default function EventFormPage() {
                   )}
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-gold-500/40 transition-colors">
+                <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-slate-300 dark:border-white/[0.12] rounded-xl cursor-pointer hover:border-blue-500/40 dark:hover:border-gold-500/40 transition-colors">
                   <HiOutlinePhoto className="w-8 h-8 text-slate-500" />
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     Click to upload (JPG, PNG, WEBP — max 4MB)
                   </span>
                   <input
@@ -393,7 +393,7 @@ export default function EventFormPage() {
                 </label>
               )}
               {previewSrc && (
-                <label className="inline-block mt-2 text-xs font-semibold text-gold-500 cursor-pointer hover:text-gold-300">
+                <label className="inline-block mt-2 text-xs font-semibold text-blue-600 cursor-pointer hover:text-blue-400 dark:text-gold-500 dark:hover:text-gold-300">
                   Change image
                   <input
                     type="file"
@@ -420,7 +420,7 @@ export default function EventFormPage() {
                     className={inputCls}
                   >
                     {TARGET_TYPES.map((t) => (
-                      <option key={t.value} value={t.value} className="bg-navy-800">
+                      <option key={t.value} value={t.value} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
                         {t.label}
                       </option>
                     ))}
@@ -529,7 +529,7 @@ export default function EventFormPage() {
                   }
                   className="w-4 h-4 rounded accent-gold-500"
                 />
-                <span className="text-sm text-slate-300">
+                <span className="text-sm text-slate-600 dark:text-slate-300">
                   Pin this event (shows at the top of the alumni feed)
                 </span>
               </label>
@@ -549,7 +549,7 @@ export default function EventFormPage() {
               type="button"
               onClick={() => submit(false)}
               disabled={saving}
-              className="px-5 py-2.5 text-sm font-semibold text-slate-200 bg-white/[0.08] border border-white/[0.1] rounded-xl hover:bg-white/[0.14] transition-colors disabled:opacity-60"
+              className="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200 transition-colors disabled:opacity-60 dark:text-slate-200 dark:bg-white/[0.08] dark:border-white/[0.1] dark:hover:bg-white/[0.14]"
             >
               {saving ? "Saving..." : "Save as Draft"}
             </button>

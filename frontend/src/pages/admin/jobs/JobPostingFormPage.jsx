@@ -61,9 +61,9 @@ const emptyForm = {
 };
 
 const labelCls =
-  "block text-[0.72rem] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider";
+  "block text-[0.72rem] font-semibold text-slate-600 dark:text-slate-300 mb-1.5 uppercase tracking-wider";
 const inputCls =
-  "w-full px-3 py-2.5 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors";
+  "w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/30 transition-colors dark:bg-white/[0.06] dark:border-white/[0.08] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-gold-500/40 dark:focus:border-gold-500/30";
 
 // Convert a backend ISO date/datetime to the 'YYYY-MM-DD' value that a
 // <input type="date"> expects.
@@ -92,8 +92,8 @@ function normalizeLink(link) {
 function SectionLabel({ icon: Icon, children }) {
   return (
     <div className="flex items-center gap-2 mb-2">
-      <Icon className="w-4 h-4 text-gold-500" />
-      <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider">
+      <Icon className="w-4 h-4 text-blue-600 dark:text-gold-500" />
+      <h2 className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
         {children}
       </h2>
     </div>
@@ -271,7 +271,7 @@ export default function JobPostingFormPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading job posting...</p>
       </div>
     );
@@ -285,16 +285,16 @@ export default function JobPostingFormPage() {
       <div className="max-w-[900px] mx-auto">
         <button
           onClick={() => navigate("/admin/jobs")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 dark:hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Job Postings
         </button>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
             {isEdit ? "Edit Job Posting" : "New Job Posting"}
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             {isEdit
               ? "Update the job posting details."
               : "Post a job opportunity on behalf of a partner company."}
@@ -350,7 +350,7 @@ export default function JobPostingFormPage() {
                     <img
                       src={previewSrc}
                       alt="Logo preview"
-                      className="h-24 w-24 rounded-xl border border-white/[0.08] object-cover"
+                      className="h-24 w-24 rounded-xl border border-slate-200 dark:border-white/[0.08] object-cover"
                     />
                     {logoPreview && (
                       <button
@@ -364,9 +364,9 @@ export default function JobPostingFormPage() {
                     )}
                   </div>
                 ) : (
-                  <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/[0.12] rounded-xl cursor-pointer hover:border-gold-500/40 transition-colors">
+                  <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-slate-300 dark:border-white/[0.12] rounded-xl cursor-pointer hover:border-blue-500/40 dark:hover:border-gold-500/40 transition-colors">
                     <HiOutlinePhoto className="w-8 h-8 text-slate-500" />
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       Click to upload (JPG, PNG, WEBP — max 4MB)
                     </span>
                     <input
@@ -378,7 +378,7 @@ export default function JobPostingFormPage() {
                   </label>
                 )}
                 {previewSrc && (
-                  <label className="inline-block mt-2 text-xs font-semibold text-gold-500 cursor-pointer hover:text-gold-300">
+                  <label className="inline-block mt-2 text-xs font-semibold text-blue-600 cursor-pointer hover:text-blue-400 dark:text-gold-500 dark:hover:text-gold-300">
                     Change logo
                     <input
                       type="file"
@@ -435,7 +435,7 @@ export default function JobPostingFormPage() {
                     className={inputCls}
                   >
                     {EMPLOYMENT_TYPES.map((t) => (
-                      <option key={t.value} value={t.value} className="bg-navy-800">
+                      <option key={t.value} value={t.value} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
                         {t.label}
                       </option>
                     ))}
@@ -554,7 +554,7 @@ export default function JobPostingFormPage() {
                     className={inputCls}
                   >
                     {JOB_STATUSES.map((s) => (
-                      <option key={s.value} value={s.value} className="bg-navy-800">
+                      <option key={s.value} value={s.value} className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300">
                         {s.label}
                       </option>
                     ))}
@@ -577,7 +577,7 @@ export default function JobPostingFormPage() {
                   }
                   className="w-4 h-4 rounded accent-gold-500"
                 />
-                <span className="text-sm text-slate-300">
+                <span className="text-sm text-slate-600 dark:text-slate-300">
                   Pin this posting (shows at the top of the alumni career center)
                 </span>
               </label>
