@@ -16,8 +16,8 @@ import {
 } from "react-icons/hi2";
 
 const selectClass =
-  "px-3 py-2.5 bg-navy-800 border border-white/[0.1] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-gold-500/40 appearance-none cursor-pointer min-w-[200px]";
-const optionClass = "bg-navy-800 text-slate-300";
+  "px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40 appearance-none cursor-pointer min-w-[200px] dark:bg-navy-800 dark:border-white/[0.1] dark:text-slate-300 dark:focus:ring-gold-500/40";
+const optionClass = "bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300";
 
 // ─── Empty State Component ───────────────────────────────
 function EmptyState({ icon: Icon, title, subtitle }) {
@@ -26,7 +26,9 @@ function EmptyState({ icon: Icon, title, subtitle }) {
       <div className="w-16 h-16 rounded-2xl bg-gold-500/10 flex items-center justify-center mb-4">
         <Icon className="w-8 h-8 text-gold-500/60" />
       </div>
-      <p className="text-[15px] font-semibold text-slate-300">{title}</p>
+      <p className="text-[15px] font-semibold text-slate-600 dark:text-slate-300">
+        {title}
+      </p>
       <p className="text-[12px] text-slate-500 mt-1.5 max-w-sm text-center">
         {subtitle}
       </p>
@@ -123,7 +125,6 @@ export default function GraduateTracerTab() {
             setSelectedCourse(null);
           }}
           className={selectClass}
-          style={{ colorScheme: "dark" }}
         >
           <option value="" className={optionClass}>
             Select Department
@@ -140,7 +141,6 @@ export default function GraduateTracerTab() {
           value={courseFilter}
           onChange={(e) => setCourseFilter(e.target.value)}
           className={`${selectClass} ${!deptFilter ? "opacity-50 cursor-not-allowed" : ""}`}
-          style={{ colorScheme: "dark" }}
           disabled={!deptFilter}
         >
           <option value="" className={optionClass}>
@@ -162,7 +162,7 @@ export default function GraduateTracerTab() {
               setChartData(null);
               setSelectedCourse(null);
             }}
-            className="text-xs text-slate-500 hover:text-gold-500 underline transition-colors"
+            className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-gold-500 underline transition-colors"
           >
             Clear filters
           </button>
@@ -172,7 +172,7 @@ export default function GraduateTracerTab() {
       {/* ═══ CONTENT ═══ */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
           <p className="text-sm text-slate-500">Loading analytics...</p>
         </div>
       ) : !deptFilter ? (
@@ -191,7 +191,7 @@ export default function GraduateTracerTab() {
         <div className="space-y-6">
           {/* Course badge */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-gold-500/15 text-gold-500 text-[12px] font-semibold rounded-full border border-gold-500/20">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 text-blue-600 border border-blue-500/20 dark:bg-gold-500/15 dark:text-gold-500 dark:border-gold-500/20 text-[12px] font-semibold rounded-full">
               <HiOutlineAcademicCap className="w-3.5 h-3.5" />
               {selectedCourse?.name}
               {selectedCourse?.is_board_program && (

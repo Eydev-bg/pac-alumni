@@ -116,8 +116,10 @@ export default function AnalyticsDashboardPage() {
         {/* Header */}
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-white">Analytics Dashboard</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Analytics Dashboard
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Graduate tracer analytics and institutional data
             </p>
           </div>
@@ -126,7 +128,7 @@ export default function AnalyticsDashboardPage() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen((o) => !o)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gold-500 bg-gold-500/10 border border-gold-500/20 rounded-xl hover:bg-gold-500/20 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-500/10 border border-blue-500/20 rounded-xl hover:bg-blue-500/20 transition-colors dark:text-gold-500 dark:bg-gold-500/10 dark:border-gold-500/20 dark:hover:bg-gold-500/20"
             >
               <HiOutlineArrowDownTray className="w-4 h-4" />
               Export Report
@@ -138,12 +140,12 @@ export default function AnalyticsDashboardPage() {
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-white/[0.1] rounded-xl shadow-2xl overflow-hidden z-40">
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-lg dark:bg-slate-900 dark:border-white/[0.1] dark:shadow-2xl overflow-hidden z-40">
                 {REPORTS.map((report) => (
                   <button
                     key={report.key}
                     onClick={() => handleSelectReport(report)}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-300 hover:bg-gold-500/10 hover:text-gold-500 transition-colors"
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-blue-500/10 hover:text-blue-600 dark:text-slate-300 dark:hover:bg-gold-500/10 dark:hover:text-gold-500 transition-colors"
                   >
                     {report.title}
                   </button>
@@ -155,20 +157,20 @@ export default function AnalyticsDashboardPage() {
 
         {/* Tabs Container */}
         <Card padding={false} className="mb-6 overflow-hidden">
-          <div className="flex overflow-x-auto border-b border-white/[0.06]">
+          <div className="flex overflow-x-auto border-b border-slate-200 dark:border-white/[0.06]">
             {TABS.map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative px-6 py-3.5 text-sm font-semibold whitespace-nowrap transition-all ${
                   activeTab === tab.key
-                    ? "text-gold-500"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
+                    ? "text-blue-600 dark:text-gold-500"
+                    : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-white/[0.03]"
                 }`}
               >
                 {tab.label}
                 {activeTab === tab.key && (
-                  <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-t-full bg-gold-500 shadow-[0_0_8px_rgba(200,168,78,0.4)]" />
+                  <span className="absolute bottom-0 left-4 right-4 h-[2px] rounded-t-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)] dark:bg-gold-500 dark:shadow-[0_0_8px_rgba(200,168,78,0.4)]" />
                 )}
               </button>
             ))}

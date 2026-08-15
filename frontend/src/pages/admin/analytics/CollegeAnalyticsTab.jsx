@@ -20,15 +20,19 @@ import {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1a2e5a] border border-[#c8a84e]/20 rounded-xl px-4 py-3 shadow-2xl">
-      <p className="text-[11px] font-semibold text-[#c8a84e] mb-1.5">{label}</p>
+    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-lg dark:bg-[#1a2e5a] dark:border-[#c8a84e]/20 dark:shadow-2xl">
+      <p className="text-[11px] font-semibold text-blue-600 dark:text-[#c8a84e] mb-1.5">
+        {label}
+      </p>
       <div className="flex items-center gap-2 text-[11px]">
         <span
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: payload[0].color }}
         />
         <span className="text-slate-400">Graduates:</span>
-        <span className="text-white font-semibold">{payload[0].value}</span>
+        <span className="text-slate-800 dark:text-white font-semibold">
+          {payload[0].value}
+        </span>
       </div>
     </div>
   );
@@ -113,17 +117,19 @@ export default function CollegeAnalyticsTab() {
         <select
           value={deptFilter}
           onChange={(e) => setDeptFilter(e.target.value)}
-          className="px-3 py-2 bg-[#1a2e5a] border border-white/[0.1] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer min-w-[200px]"
-          style={{ colorScheme: "dark" }}
+          className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40 appearance-none cursor-pointer min-w-[200px] dark:bg-[#1a2e5a] dark:border-white/[0.1] dark:text-slate-300 dark:focus:ring-[#c8a84e]/40"
         >
-          <option value="" className="bg-[#1a2e5a] text-slate-300">
+          <option
+            value=""
+            className="bg-white text-slate-800 dark:bg-[#1a2e5a] dark:text-slate-300"
+          >
             All Departments
           </option>
           {departments.map((d) => (
             <option
               key={d.id}
               value={d.id}
-              className="bg-[#1a2e5a] text-slate-300"
+              className="bg-white text-slate-800 dark:bg-[#1a2e5a] dark:text-slate-300"
             >
              {d.name}
             </option>
@@ -135,17 +141,19 @@ export default function CollegeAnalyticsTab() {
           <select
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
-            className="px-3 py-2 bg-[#1a2e5a] border border-[#c8a84e]/40 rounded-xl text-sm font-medium text-[#c8a84e] focus:outline-none focus:ring-2 focus:ring-[#c8a84e]/40 appearance-none cursor-pointer min-w-[180px]"
-            style={{ colorScheme: "dark" }}
+            className="px-3 py-2 bg-slate-50 border border-blue-500/40 rounded-xl text-sm font-medium text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500/40 appearance-none cursor-pointer min-w-[180px] dark:bg-[#1a2e5a] dark:border-[#c8a84e]/40 dark:text-[#c8a84e] dark:focus:ring-[#c8a84e]/40"
           >
-            <option value="" className="bg-[#1a2e5a] text-[#c8a84e]">
+            <option
+              value=""
+              className="bg-white text-blue-600 dark:bg-[#1a2e5a] dark:text-[#c8a84e]"
+            >
               All Courses
             </option>
             {courses.map((c) => (
               <option
                 key={c.id}
                 value={c.id}
-                className="bg-[#1a2e5a] text-[#c8a84e]"
+                className="bg-white text-blue-600 dark:bg-[#1a2e5a] dark:text-[#c8a84e]"
               >
                 {c.code} — {c.name}
               </option>
@@ -159,7 +167,7 @@ export default function CollegeAnalyticsTab() {
               setDeptFilter("");
               setCourseFilter("");
             }}
-            className="text-xs text-slate-500 hover:text-[#c8a84e] underline transition-colors"
+            className="text-xs text-slate-500 hover:text-blue-600 dark:hover:text-[#c8a84e] underline transition-colors"
           >
             Clear filters
           </button>
@@ -175,7 +183,7 @@ export default function CollegeAnalyticsTab() {
             </span>
           )}
           {selectedCourse && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#c8a84e]/15 text-[#c8a84e] text-[11px] font-semibold rounded-full border border-[#c8a84e]/20">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/15 text-blue-600 border border-blue-500/20 dark:bg-[#c8a84e]/15 dark:text-[#c8a84e] dark:border-[#c8a84e]/20 text-[11px] font-semibold rounded-full">
               {selectedCourse.code} — {selectedCourse.name}
             </span>
           )}
@@ -184,7 +192,7 @@ export default function CollegeAnalyticsTab() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c8a84e] mb-3" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-[#c8a84e] mb-3" />
           <p className="text-sm text-slate-500">Loading college analytics...</p>
         </div>
       ) : (
@@ -227,8 +235,8 @@ export default function CollegeAnalyticsTab() {
 
           {/* ═══ GRADUATE TREND CHART — only when course is selected ═══ */}
           {showChart && (
-            <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6">
-              <h3 className="text-[11px] font-semibold text-[#c8a84e] uppercase tracking-wider mb-1 flex items-center gap-2">
+            <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-2xl p-6">
+              <h3 className="text-[11px] font-semibold text-blue-600 dark:text-[#c8a84e] uppercase tracking-wider mb-1 flex items-center gap-2">
                 <HiOutlineChartBar className="w-4 h-4" />
                 Graduate trend by year
               </h3>
@@ -275,14 +283,14 @@ export default function CollegeAnalyticsTab() {
 
           {/* ═══ HINT: Select a course to see trend ═══ */}
           {deptFilter && !courseFilter && chartData.length > 0 && (
-            <div className="bg-[#c8a84e]/[0.08] border border-[#c8a84e]/20 rounded-2xl p-6 text-center">
-              <div className="w-12 h-12 rounded-2xl bg-[#c8a84e]/15 flex items-center justify-center mx-auto mb-3">
-                <HiOutlineChartBar className="w-6 h-6 text-[#c8a84e]" />
+            <div className="bg-blue-500/[0.08] border border-blue-500/20 dark:bg-[#c8a84e]/[0.08] dark:border-[#c8a84e]/20 rounded-2xl p-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/15 dark:bg-[#c8a84e]/15 flex items-center justify-center mx-auto mb-3">
+                <HiOutlineChartBar className="w-6 h-6 text-blue-600 dark:text-[#c8a84e]" />
               </div>
-              <p className="text-sm font-semibold text-[#c8a84e]">
+              <p className="text-sm font-semibold text-blue-600 dark:text-[#c8a84e]">
                 Select a specific course to view the graduate trend chart
               </p>
-              <p className="text-xs text-[#c8a84e]/70 mt-1">
+              <p className="text-xs text-blue-600/70 dark:text-[#c8a84e]/70 mt-1">
                 Choose from the course dropdown above ({courses.length} courses
                 available)
               </p>
@@ -293,10 +301,10 @@ export default function CollegeAnalyticsTab() {
           {!deptFilter &&
             gradData?.by_department &&
             gradData.by_department.length > 0 && (
-              <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl overflow-hidden">
-                <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-2">
-                  <HiOutlineBuildingOffice2 className="w-4 h-4 text-[#c8a84e]" />
-                  <h3 className="text-[11px] font-semibold text-[#c8a84e] uppercase tracking-wider">
+              <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-2xl overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200 dark:border-white/[0.06] flex items-center gap-2">
+                  <HiOutlineBuildingOffice2 className="w-4 h-4 text-blue-600 dark:text-[#c8a84e]" />
+                  <h3 className="text-[11px] font-semibold text-blue-600 dark:text-[#c8a84e] uppercase tracking-wider">
                     Graduates by department
                   </h3>
                 </div>
@@ -309,21 +317,21 @@ export default function CollegeAnalyticsTab() {
                     return (
                       <div
                         key={i}
-                        className="cursor-pointer hover:bg-white/[0.04] rounded-xl p-2 -mx-2 transition-colors"
+                        className="cursor-pointer hover:bg-slate-100 dark:hover:bg-white/[0.04] rounded-xl p-2 -mx-2 transition-colors"
                         onClick={() => setDeptFilter(String(d.id))}
                       >
                         <div className="flex justify-between text-sm mb-1.5">
-                          <span className="text-slate-200">
-                            <span className="font-mono text-[11px] bg-white/[0.06] text-slate-400 px-2 py-0.5 rounded-lg border border-white/[0.06] mr-2">
+                          <span className="text-slate-700 dark:text-slate-200">
+                            <span className="font-mono text-[11px] bg-slate-100 text-slate-500 border border-slate-200 dark:bg-white/[0.06] dark:text-slate-400 dark:border-white/[0.06] px-2 py-0.5 rounded-lg mr-2">
                               {d.code}
                             </span>
                             {d.name}
                           </span>
-                          <span className="font-bold text-white">
+                          <span className="font-bold text-slate-800 dark:text-white">
                             {d.count}
                           </span>
                         </div>
-                        <div className="w-full bg-white/[0.06] rounded-full h-2 overflow-hidden">
+                        <div className="w-full bg-slate-200 dark:bg-white/[0.06] rounded-full h-2 overflow-hidden">
                           <div
                             className="bg-gradient-to-r from-[#c8a84e] to-[#a88a3a] h-2 rounded-full transition-all duration-500"
                             style={{ width: `${pct}%` }}
@@ -338,27 +346,27 @@ export default function CollegeAnalyticsTab() {
 
           {/* ═══ DEPARTMENT SELECTED, NO COURSE: Show course breakdown ═══ */}
           {deptFilter && !courseFilter && courses.length > 0 && (
-            <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl overflow-hidden">
-              <div className="px-6 py-4 border-b border-white/[0.06] flex items-center gap-2">
-                <HiOutlineAcademicCap className="w-4 h-4 text-[#c8a84e]" />
-                <h3 className="text-[11px] font-semibold text-[#c8a84e] uppercase tracking-wider">
+            <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-2xl overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-200 dark:border-white/[0.06] flex items-center gap-2">
+                <HiOutlineAcademicCap className="w-4 h-4 text-blue-600 dark:text-[#c8a84e]" />
+                <h3 className="text-[11px] font-semibold text-blue-600 dark:text-[#c8a84e] uppercase tracking-wider">
                   Courses under {selectedDept?.code || "department"}
                 </h3>
               </div>
-              <div className="divide-y divide-white/[0.04]">
+              <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                 {courses.map((c) => (
                   <div
                     key={c.id}
-                    className="flex items-center justify-between px-6 py-4 hover:bg-[#c8a84e]/[0.05] cursor-pointer transition-colors"
+                    className="flex items-center justify-between px-6 py-4 hover:bg-blue-500/[0.05] dark:hover:bg-[#c8a84e]/[0.05] cursor-pointer transition-colors"
                     onClick={() => setCourseFilter(String(c.id))}
                   >
                     <div>
-                      <p className="text-sm font-semibold text-slate-200">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                         {c.code}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">{c.name}</p>
                     </div>
-                    <span className="text-xs text-[#c8a84e] font-semibold">
+                    <span className="text-xs text-blue-600 dark:text-[#c8a84e] font-semibold">
                       View trend →
                     </span>
                   </div>
@@ -389,11 +397,11 @@ function StatCard({ title, value, icon: Icon, variant }) {
       titleText: "text-emerald-400/80",
     },
     gold: {
-      bg: "bg-[#c8a84e]/10",
-      border: "border-[#c8a84e]/20",
-      iconBg: "bg-[#c8a84e]/15",
-      iconText: "text-[#c8a84e]",
-      titleText: "text-[#c8a84e]/80",
+      bg: "bg-blue-500/10 dark:bg-[#c8a84e]/10",
+      border: "border-blue-500/20 dark:border-[#c8a84e]/20",
+      iconBg: "bg-blue-500/15 dark:bg-[#c8a84e]/15",
+      iconText: "text-blue-600 dark:text-[#c8a84e]",
+      titleText: "text-blue-600/80 dark:text-[#c8a84e]/80",
     },
   };
   const style = variantStyles[variant] || variantStyles.gold;
@@ -405,7 +413,7 @@ function StatCard({ title, value, icon: Icon, variant }) {
       >
         <Icon className={`w-5 h-5 ${style.iconText}`} />
       </div>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
       <p
         className={`text-[10px] ${style.titleText} uppercase tracking-wider font-semibold mt-1.5`}
       >

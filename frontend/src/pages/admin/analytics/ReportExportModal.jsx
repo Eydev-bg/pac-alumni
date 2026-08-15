@@ -119,7 +119,7 @@ export default function ReportExportModal({
       <div className="space-y-4">
         {/* Format selector */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 mb-1.5">
+          <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
             Export Format
           </label>
           <div className="grid grid-cols-3 gap-2">
@@ -131,8 +131,8 @@ export default function ReportExportModal({
                 className={cn(
                   "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all",
                   format === f.value
-                    ? "bg-gold-500/20 text-gold-500 border border-gold-500/40"
-                    : "bg-white/[0.04] text-slate-400 border border-white/[0.06] hover:bg-white/[0.08]",
+                    ? "bg-blue-500/10 text-blue-600 border border-blue-500/40 dark:bg-gold-500/20 dark:text-gold-500 dark:border-gold-500/40"
+                    : "bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100 dark:bg-white/[0.04] dark:text-slate-400 dark:border-white/[0.06] dark:hover:bg-white/[0.08]",
                 )}
               >
                 {f.label}

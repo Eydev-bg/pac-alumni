@@ -28,15 +28,19 @@ const CHART_COLORS = {
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-navy-800 border border-gold-500/20 rounded-xl px-4 py-3 shadow-2xl">
-      <p className="text-[11px] font-semibold text-gold-500 mb-1.5">{label}</p>
+    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-lg dark:bg-navy-800 dark:border-gold-500/20 dark:shadow-2xl">
+      <p className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 mb-1.5">
+        {label}
+      </p>
       <div className="flex items-center gap-2 text-[11px]">
         <span
           className="w-2 h-2 rounded-full"
           style={{ backgroundColor: payload[0].color }}
         />
         <span className="text-slate-400">Graduates:</span>
-        <span className="text-white font-semibold">{payload[0].value}</span>
+        <span className="text-slate-800 dark:text-white font-semibold">
+          {payload[0].value}
+        </span>
       </div>
     </div>
   );
@@ -77,7 +81,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading {label} analytics...</p>
       </div>
     );
@@ -96,14 +100,20 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
         <select
           value={yearFilter}
           onChange={(e) => setYearFilter(e.target.value)}
-          className="px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-gold-500/40 appearance-none cursor-pointer min-w-[140px]"
-          style={{ colorScheme: "dark" }}
+          className="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40 appearance-none cursor-pointer min-w-[140px] dark:bg-white/[0.06] dark:border-white/[0.08] dark:text-slate-300 dark:focus:ring-gold-500/40"
         >
-          <option value="" className="bg-navy-800 text-slate-300">
+          <option
+            value=""
+            className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300"
+          >
             All Years
           </option>
           {years.map((y) => (
-            <option key={y} value={y} className="bg-navy-800 text-slate-300">
+            <option
+              key={y}
+              value={y}
+              className="bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300"
+            >
               {y}
             </option>
           ))}
@@ -112,12 +122,14 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
 
       {/* Total Graduates Card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gold-500/10 border border-gold-500/20 rounded-2xl p-5 text-center">
-          <div className="w-11 h-11 rounded-xl bg-gold-500/15 flex items-center justify-center mx-auto mb-3">
-            <HiOutlineAcademicCap className="w-5 h-5 text-gold-500" />
+        <div className="bg-blue-500/10 border border-blue-500/20 dark:bg-gold-500/10 dark:border-gold-500/20 rounded-2xl p-5 text-center">
+          <div className="w-11 h-11 rounded-xl bg-blue-500/15 dark:bg-gold-500/15 flex items-center justify-center mx-auto mb-3">
+            <HiOutlineAcademicCap className="w-5 h-5 text-blue-600 dark:text-gold-500" />
           </div>
-          <p className="text-3xl font-bold text-white">{data.total_graduates}</p>
-          <p className="text-[10px] text-gold-500/80 uppercase font-semibold mt-1.5 tracking-wider">
+          <p className="text-3xl font-bold text-slate-800 dark:text-white">
+            {data.total_graduates}
+          </p>
+          <p className="text-[10px] text-blue-600/80 dark:text-gold-500/80 uppercase font-semibold mt-1.5 tracking-wider">
             Total {label} Graduates
           </p>
         </div>
@@ -127,19 +139,21 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
               <div className="w-11 h-11 rounded-xl bg-emerald-500/15 flex items-center justify-center mx-auto mb-3">
                 <HiOutlineChartBar className="w-5 h-5 text-emerald-400" />
               </div>
-              <p className="text-3xl font-bold text-white">
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">
                 {chartData[chartData.length - 1]?.total_graduates || 0}
               </p>
               <p className="text-[10px] text-emerald-400/80 uppercase font-semibold mt-1.5 tracking-wider">
                 Latest Year ({chartData[chartData.length - 1]?.year})
               </p>
             </div>
-            <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-5 text-center">
-              <div className="w-11 h-11 rounded-xl bg-white/[0.06] flex items-center justify-center mx-auto mb-3">
-                <HiOutlineAcademicCap className="w-5 h-5 text-slate-300" />
+            <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-2xl p-5 text-center">
+              <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-white/[0.06] flex items-center justify-center mx-auto mb-3">
+                <HiOutlineAcademicCap className="w-5 h-5 text-slate-600 dark:text-slate-300" />
               </div>
-              <p className="text-3xl font-bold text-white">{chartData.length}</p>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold mt-1.5 tracking-wider">
+              <p className="text-3xl font-bold text-slate-800 dark:text-white">
+                {chartData.length}
+              </p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-semibold mt-1.5 tracking-wider">
                 Years on Record
               </p>
             </div>
@@ -149,8 +163,8 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
 
       {/* Graduate Trend Chart */}
       {chartData.length > 0 && (
-        <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 mb-6">
-          <h3 className="text-[11px] font-semibold text-gold-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <div className="bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-2xl p-6 mb-6">
+          <h3 className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider mb-4 flex items-center gap-2">
             <HiOutlineChartBar className="w-4 h-4" />
             Graduate trend by year
           </h3>

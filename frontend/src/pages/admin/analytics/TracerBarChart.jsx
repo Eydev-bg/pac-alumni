@@ -37,8 +37,8 @@ function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="bg-slate-900 border border-gold-500/30 rounded-xl px-4 py-3 shadow-2xl min-w-[180px]">
-      <p className="text-[12px] font-bold text-gold-500 mb-2 border-b border-white/10 pb-1.5">
+    <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-lg dark:bg-slate-900 dark:border-gold-500/30 dark:shadow-2xl min-w-[180px]">
+      <p className="text-[12px] font-bold text-blue-600 dark:text-gold-500 mb-2 border-b border-slate-200 dark:border-white/10 pb-1.5">
         Batch {label}
       </p>
       {payload.map((entry, i) => (
@@ -50,7 +50,7 @@ function ChartTooltip({ active, payload, label }) {
             />
             <span className="text-[11px] text-slate-400">{entry.name}</span>
           </div>
-          <span className="text-[12px] text-white font-bold">
+          <span className="text-[12px] text-slate-800 dark:text-white font-bold">
             {entry.value?.toLocaleString()}
           </span>
         </div>
@@ -107,10 +107,10 @@ export default function TracerBarChart({ data, isBoardProgram, courseCode }) {
     <Card>
       {/* Header */}
       <div className="mb-5">
-        <h3 className="text-[16px] font-bold text-white">
+        <h3 className="text-[16px] font-bold text-slate-800 dark:text-white">
           Graduates Analytics
         </h3>
-        <p className="text-[11px] text-slate-400 mt-1">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
           {isBoardProgram
             ? "Graduates, Registered, Board Passed, and Employed per batch year"
             : "Graduates, Registered, and Employed per batch year"}
