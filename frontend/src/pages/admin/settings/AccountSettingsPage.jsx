@@ -155,8 +155,10 @@ export default function AccountSettingsPage() {
     <div className="max-w-[900px] mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Account Settings</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+          Account Settings
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Manage your personal information and password
         </p>
       </div>
@@ -164,8 +166,8 @@ export default function AccountSettingsPage() {
       {/* ─── Section 1: Profile Information ─────────────── */}
       <Card as="form" onSubmit={handleProfileSubmit} className="mb-6">
         <div className="flex items-center gap-2 mb-5">
-          <HiOutlineUser className="w-5 h-5 text-gold-500" />
-          <h2 className="text-sm font-semibold text-gold-500 uppercase tracking-wider">
+          <HiOutlineUser className="w-5 h-5 text-blue-600 dark:text-gold-500" />
+          <h2 className="text-sm font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider">
             Profile Information
           </h2>
         </div>
@@ -221,8 +223,8 @@ export default function AccountSettingsPage() {
       {/* ─── Section 2: Change Password ─────────────────── */}
       <Card as="form" onSubmit={handlePasswordSubmit}>
         <div className="flex items-center gap-2 mb-5">
-          <HiOutlineLockClosed className="w-5 h-5 text-gold-500" />
-          <h2 className="text-sm font-semibold text-gold-500 uppercase tracking-wider">
+          <HiOutlineLockClosed className="w-5 h-5 text-blue-600 dark:text-gold-500" />
+          <h2 className="text-sm font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider">
             Change Password
           </h2>
         </div>

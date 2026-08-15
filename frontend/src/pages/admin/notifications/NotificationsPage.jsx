@@ -107,14 +107,16 @@ export default function NotificationsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Notifications</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Notifications
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               System notifications and alerts
             </p>
           </div>
           <button
             onClick={handleMarkAllRead}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-300 bg-white/[0.06] border border-white/[0.08] rounded-xl hover:bg-white/[0.1] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 bg-slate-50 border border-slate-200 hover:bg-slate-100 dark:text-slate-300 dark:bg-white/[0.06] dark:border-white/[0.08] dark:hover:bg-white/[0.1] rounded-xl transition-colors"
           >
             <HiOutlineCheckCircle className="w-4 h-4" /> Mark All Read
           </button>
@@ -124,13 +126,13 @@ export default function NotificationsPage() {
         <Card padding={false} className="overflow-hidden">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
               <p className="text-sm text-slate-500">Loading notifications...</p>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <HiOutlineBell className="w-12 h-12 text-slate-600 mb-4" />
-              <h3 className="text-sm font-semibold text-slate-300 mb-1">
+              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
                 No notifications
               </h3>
               <p className="text-sm text-slate-500 max-w-sm">
@@ -138,28 +140,30 @@ export default function NotificationsPage() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
               {notifications.map((n) => (
                 <div
                   key={n.id}
                   className={`p-4 flex items-start gap-3 transition-colors cursor-pointer ${
                     !n.is_read
-                      ? "bg-gold-500/[0.05] hover:bg-gold-500/[0.08]"
-                      : "hover:bg-white/[0.03]"
+                      ? "bg-blue-500/[0.05] hover:bg-blue-500/[0.08] dark:bg-gold-500/[0.05] dark:hover:bg-gold-500/[0.08]"
+                      : "hover:bg-slate-50 dark:hover:bg-white/[0.03]"
                   }`}
                   onClick={() => handleRowClick(n)}
                 >
                   <div
                     className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                      !n.is_read ? "bg-gold-500" : "bg-transparent"
+                      !n.is_read
+                        ? "bg-blue-500 dark:bg-gold-500"
+                        : "bg-transparent"
                     }`}
                   />
                   <div className="flex-1 min-w-0">
                     <p
                       className={`text-sm ${
                         !n.is_read
-                          ? "font-semibold text-white"
-                          : "text-slate-400"
+                          ? "font-semibold text-slate-800 dark:text-white"
+                          : "text-slate-500 dark:text-slate-400"
                       }`}
                     >
                       {n.title}

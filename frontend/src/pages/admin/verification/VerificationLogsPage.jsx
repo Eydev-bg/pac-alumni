@@ -68,8 +68,8 @@ function FeedItem({ log }) {
       <div
         className={`flex items-start gap-3 px-4 sm:px-5 py-3.5 transition-colors ${
           log.rejection_reason
-            ? "hover:bg-white/[0.03] cursor-pointer"
-            : "hover:bg-white/[0.02]"
+            ? "hover:bg-slate-50 dark:hover:bg-white/[0.03] cursor-pointer"
+            : "hover:bg-slate-50 dark:hover:bg-white/[0.02]"
         }`}
         onClick={() => log.rejection_reason && setExpanded(!expanded)}
       >
@@ -89,7 +89,7 @@ function FeedItem({ log }) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-semibold text-slate-200">
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               {log.name_input}
             </span>
             <span
@@ -150,7 +150,7 @@ function FeedItem({ log }) {
             <p className="text-[10px] font-semibold text-red-400/60 uppercase tracking-wider mb-1">
               Rejection Reason
             </p>
-            <p className="text-[13px] text-red-300 leading-relaxed">
+            <p className="text-[13px] text-red-700 dark:text-red-300 leading-relaxed">
               {log.rejection_reason}
             </p>
           </div>
@@ -230,8 +230,10 @@ export default function VerificationLogsPage() {
       <div className="max-w-[900px] mx-auto">
         {/* ─── Page Header ───────────────────────────── */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Verification</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+            Verification
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Alumni registration verification activity
           </p>
         </div>
@@ -266,7 +268,7 @@ export default function VerificationLogsPage() {
         {loading ? (
           <Card className="p-16">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
               <p className="text-sm text-slate-500">Loading activity...</p>
             </div>
           </Card>
@@ -274,7 +276,7 @@ export default function VerificationLogsPage() {
           <Card className="p-16">
             <div className="flex flex-col items-center justify-center text-center">
               <HiOutlineClipboardDocumentCheck className="w-12 h-12 text-slate-600 mb-4" />
-              <h3 className="text-sm font-semibold text-slate-300 mb-1">
+              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
                 No verification activity
               </h3>
               <p className="text-sm text-slate-500 max-w-sm">
@@ -289,9 +291,9 @@ export default function VerificationLogsPage() {
             {groupedLogs.map((group) => (
               <Card key={group.dateKey} padding={false} className="overflow-hidden">
                 {/* Date Header */}
-                <div className="px-4 sm:px-5 py-3 border-b border-white/[0.06] flex items-center justify-between">
+                <div className="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-white/[0.06] flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <h3 className="text-[13px] font-bold text-white">
+                    <h3 className="text-[13px] font-bold text-slate-800 dark:text-white">
                       {formatDateLabel(group.dateKey)}
                     </h3>
                     <span className="text-[11px] text-slate-500 font-medium">
@@ -315,7 +317,7 @@ export default function VerificationLogsPage() {
                 </div>
 
                 {/* Feed Items */}
-                <div className="divide-y divide-white/[0.04]">
+                <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                   {group.items.map((log) => (
                     <FeedItem key={log.id} log={log} />
                   ))}

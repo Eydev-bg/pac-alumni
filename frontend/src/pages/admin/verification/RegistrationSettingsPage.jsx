@@ -10,7 +10,7 @@ import Button from "../../../ui/Button";
 import { HiOutlineLockClosed, HiOutlineLockOpen } from "react-icons/hi2";
 
 const dateInputClass =
-  "w-full px-3 py-2 bg-white/[0.06] border border-white/[0.08] rounded-xl text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-gold-500/40 focus:border-gold-500/30 transition-colors [color-scheme:dark]";
+  "w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/30 transition-colors dark:bg-white/[0.06] dark:border-white/[0.08] dark:text-slate-200 dark:focus:ring-gold-500/40 dark:focus:border-gold-500/30";
 
 export default function RegistrationSettingsPage() {
   const toast = useToast();
@@ -63,7 +63,7 @@ export default function RegistrationSettingsPage() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading settings...</p>
       </div>
     );
@@ -74,8 +74,10 @@ export default function RegistrationSettingsPage() {
     <div className="max-w-[900px] mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Registration Settings</h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+          Registration Settings
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           Control when alumni can register for accounts
         </p>
       </div>
@@ -106,13 +108,15 @@ export default function RegistrationSettingsPage() {
             <div className="flex items-center gap-2">
               <p
                 className={`text-lg font-bold ${
-                  isOpen ? "text-emerald-400" : "text-red-400"
+                  isOpen
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-red-600 dark:text-red-400"
                 }`}
               >
                 Registration is {isOpen ? "OPEN" : "CLOSED"}
               </p>
               {isOpen && (
-                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   Live
                 </span>
@@ -120,7 +124,9 @@ export default function RegistrationSettingsPage() {
             </div>
             <p
               className={`text-sm mt-0.5 ${
-                isOpen ? "text-emerald-300/80" : "text-red-300/80"
+                isOpen
+                  ? "text-emerald-600 dark:text-emerald-300/80"
+                  : "text-red-600 dark:text-red-300/80"
               }`}
             >
               {isOpen
@@ -133,12 +139,12 @@ export default function RegistrationSettingsPage() {
 
       {/* Settings Form */}
       <Card>
-        <h2 className="text-sm font-semibold text-gold-500 mb-5 uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-blue-600 dark:text-gold-500 mb-5 uppercase tracking-wider">
           Configuration
         </h2>
 
         {/* Toggle */}
-        <div className="flex items-center gap-4 p-4 bg-white/[0.04] border border-white/[0.06] rounded-xl mb-6">
+        <div className="flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 dark:bg-white/[0.04] dark:border-white/[0.06] rounded-xl mb-6">
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -146,10 +152,10 @@ export default function RegistrationSettingsPage() {
               onChange={(e) => setForm({ ...form, is_open: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-slate-600 peer-focus:ring-2 peer-focus:ring-gold-500/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-gold-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
+            <div className="w-11 h-6 bg-slate-300 dark:bg-slate-600 peer-focus:ring-2 peer-focus:ring-blue-500/30 dark:peer-focus:ring-gold-500/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-gold-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all" />
           </label>
           <div>
-            <p className="text-sm font-semibold text-slate-200">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
               Enable Registration
             </p>
             <p className="text-xs text-slate-500 mt-0.5">
@@ -161,7 +167,7 @@ export default function RegistrationSettingsPage() {
         {/* Date Range (optional) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
               Open From{" "}
               <span className="text-slate-500 font-normal">(optional)</span>
             </label>
@@ -176,7 +182,7 @@ export default function RegistrationSettingsPage() {
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">
+            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1.5">
               Open Until{" "}
               <span className="text-slate-500 font-normal">(optional)</span>
             </label>
