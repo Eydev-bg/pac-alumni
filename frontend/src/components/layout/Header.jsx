@@ -23,14 +23,14 @@ import {
 import { useTheme } from "../../hooks/useTheme";
 
 /**
- * Header — top bar with menu toggle, user info, and logout.
- * Accepts variant="dark" | "light" (default: "light").
- * AdminLayout passes "dark"; all other layouts keep "light".
+ * Header — shared header across Admin and Alumni layouts.
+ * Adapts to the global light/dark theme via Tailwind dark: variants.
+ * Role-based differences (bell dropdown, search bar, avatar) are driven
+ * by user.role, not a variant prop.
  */
 export default function Header({
   onToggleSidebar,
   onMobileMenuClick,
-  variant = "light",
   sidebarOpen,
 }) {
   const { user, logout } = useAuth();
@@ -53,6 +53,7 @@ export default function Header({
       ? (unread?.notifications ?? 0)
       : (adminUnread?.notifications ?? 0);
   const isAlumni = user?.role === "alumni";
+  const isAdmin = user?.role === "admin";
   const unreadMessages = unread?.messages ?? 0;
   // Recent notifications shown in the alumni bell dropdown (fetched on open).
   const [recent, setRecent] = useState([]);
@@ -72,17 +73,15 @@ export default function Header({
   const mobileSearchRef = useRef(null);
   const debouncedQuery = useDebounce(searchQuery, 300);
 
-  const dark = variant === "dark";
   // Alumni get a blue top bar on mobile (matches the approved mobile design);
-  // lg+ keeps the white desktop header untouched. Admin (dark) is unaffected.
-  const alumniBlueBar = isAlumni && !dark;
+  // lg+ keeps the white desktop header untouched. Admin is unaffected.
+  const alumniBlueBar = isAlumni;
   // Icon-button colouring: white on the alumni mobile blue bar, reverting to
-  // the slate desktop treatment at lg. Admin/dark and non-alumni keep theirs.
-  const iconBtnClass = dark
-    ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-    : alumniBlueBar
-      ? "text-white hover:bg-white/10 lg:text-slate-500 lg:hover:text-slate-700 lg:hover:bg-slate-100 lg:dark:text-slate-400 lg:dark:hover:text-white lg:dark:hover:bg-white/10"
-      : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10";
+  // the slate desktop treatment at lg. Everyone else keeps the slate treatment
+  // with dark: overrides.
+  const iconBtnClass = alumniBlueBar
+    ? "text-white hover:bg-white/10 lg:text-slate-500 lg:hover:text-slate-700 lg:hover:bg-slate-100 lg:dark:text-slate-400 lg:dark:hover:text-white lg:dark:hover:bg-white/10"
+    : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10";
   // The header is fixed to the viewport (left-0) and the sidebar (z-30) sits
   // on top of its left edge. When a layout tells us the sidebar's expanded
   // state, pad the header content past the sidebar on lg+ so left-aligned
@@ -321,8 +320,8 @@ export default function Header({
   return (
     <header
       className={`fixed top-0 right-0 left-0 z-20 h-16 flex items-center justify-between px-4 sm:px-6 border-b ${contentOffset} ${
-        dark
-          ? "bg-navy-950 border-white/[0.06]"
+        isAdmin
+          ? "bg-white border-slate-200 dark:bg-navy-950 dark:border-white/[0.06]"
           : alumniBlueBar
             ? "bg-blue-600 border-blue-600 lg:bg-white lg:border-slate-200 lg:dark:bg-slate-800 lg:dark:border-slate-700"
             : "bg-white border-slate-200 dark:bg-slate-800 dark:border-slate-700"
@@ -374,11 +373,7 @@ export default function Header({
 
         {/* Desktop sidebar toggle */}
         <button
-          className={`hidden lg:block p-2 rounded-lg transition-colors ${
-            dark
-              ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-              : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
-          }`}
+          className="hidden lg:block p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
           onClick={onToggleSidebar}
         >
           <HiOutlineBars3 className="w-5 h-5" />
@@ -447,11 +442,7 @@ export default function Header({
               aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
               aria-expanded={bellOpen}
               aria-haspopup="true"
-              className={`relative p-2 rounded-lg transition-colors ${
-                dark
-                  ? "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-                  : "text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
-              }`}
+              className="relative p-2 rounded-lg transition-colors text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10"
               onClick={() => setBellOpen(!bellOpen)}
             >
               <HiOutlineBell className="w-5 h-5" />
@@ -466,11 +457,7 @@ export default function Header({
             {bellOpen && (
               <div
                 role="menu"
-                className={`absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 ${
-                  dark
-                    ? "bg-navy-800 border border-white/[0.08] shadow-2xl"
-                    : "bg-white border border-slate-200 shadow-lg"
-                }`}
+                className="absolute right-0 mt-2 w-56 rounded-xl py-2 z-50 bg-white border border-slate-200 shadow-lg dark:bg-navy-800 dark:border-white/[0.08] dark:shadow-2xl"
               >
                 <button
                   role="menuitem"
@@ -478,11 +465,7 @@ export default function Header({
                     navigate("/admin/notifications");
                     setBellOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                    dark
-                      ? "text-slate-300 hover:bg-white/[0.06]"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
                 >
                   <HiOutlineBell className="w-4 h-4 flex-shrink-0" />
                   <span>Notifications</span>
@@ -498,11 +481,7 @@ export default function Header({
                     navigate("/admin/verification/logs");
                     setBellOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
-                    dark
-                      ? "text-slate-300 hover:bg-white/[0.06]"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors cursor-pointer text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
                 >
                   <HiOutlineClipboardDocumentCheck className="w-4 h-4 flex-shrink-0" />
                   <span>Verification</span>
@@ -615,11 +594,9 @@ export default function Header({
         <div className="relative" ref={dropdownRef}>
           <button
             className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-              dark
-                ? "hover:bg-white/[0.06]"
-                : alumniBlueBar
-                  ? "hover:bg-white/10 lg:hover:bg-slate-100"
-                  : "hover:bg-slate-100"
+              alumniBlueBar
+                ? "hover:bg-white/10 lg:hover:bg-slate-100 lg:dark:hover:bg-white/10"
+                : "hover:bg-slate-100 dark:hover:bg-white/[0.06]"
             }`}
             onClick={() => setDropdownOpen(!dropdownOpen)}
           >
@@ -633,35 +610,31 @@ export default function Header({
             ) : (
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  dark
-                    ? "bg-gradient-to-br from-gold-500 to-gold-700 shadow-lg shadow-gold-500/10"
+                  isAdmin
+                    ? "bg-blue-100 dark:bg-gradient-to-br dark:from-gold-500 dark:to-gold-700 dark:shadow-lg dark:shadow-gold-500/10"
                     : "bg-blue-100"
                 }`}
               >
                 <HiOutlineUser
-                  className={`w-4 h-4 ${dark ? "text-white" : "text-blue-600"}`}
+                  className={`w-4 h-4 ${isAdmin ? "text-blue-600 dark:text-white" : "text-blue-600"}`}
                 />
               </div>
             )}
             <div className="hidden sm:block text-left">
               <p
                 className={`text-sm font-medium ${
-                  dark
-                    ? "text-slate-200"
-                    : alumniBlueBar
-                      ? "text-white lg:text-slate-700 lg:dark:text-slate-200"
-                      : "text-slate-700 dark:text-slate-200"
+                  alumniBlueBar
+                    ? "text-white lg:text-slate-700 lg:dark:text-slate-200"
+                    : "text-slate-700 dark:text-slate-200"
                 }`}
               >
                 {user?.full_name}
               </p>
               <p
                 className={`text-[11px] ${
-                  dark
-                    ? "text-slate-500"
-                    : alumniBlueBar
-                      ? "text-blue-100 lg:text-slate-400"
-                      : "text-slate-400"
+                  alumniBlueBar
+                    ? "text-blue-100 lg:text-slate-400 lg:dark:text-slate-500"
+                    : "text-slate-400 dark:text-slate-500"
                 }`}
               >
                 {user?.role_label}
@@ -669,11 +642,9 @@ export default function Header({
             </div>
             <HiOutlineChevronDown
               className={`w-4 h-4 hidden sm:block ${
-                dark
-                  ? "text-slate-500"
-                  : alumniBlueBar
-                    ? "text-blue-100 lg:text-slate-400"
-                    : "text-slate-400"
+                alumniBlueBar
+                  ? "text-blue-100 lg:text-slate-400 lg:dark:text-slate-500"
+                  : "text-slate-400 dark:text-slate-500"
               }`}
             />
           </button>
@@ -682,36 +653,22 @@ export default function Header({
           {dropdownOpen && (
             <div
               className={`absolute right-0 mt-2 w-56 rounded-xl shadow-2xl py-2 z-50 ${
-                dark
-                  ? "bg-navy-800 border border-white/[0.08]"
+                isAdmin
+                  ? "bg-white border border-slate-200 shadow-lg dark:bg-navy-800 dark:border-white/[0.08] dark:shadow-2xl"
                   : "bg-white border border-slate-200 shadow-lg dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/50"
               }`}
             >
-              <div
-                className={`px-4 py-2 ${
-                  dark
-                    ? "border-b border-white/[0.06]"
-                    : "border-b border-slate-100 dark:border-slate-700"
-                }`}
-              >
-                <p
-                  className={`text-sm font-medium ${dark ? "text-slate-200" : "text-slate-700 dark:text-white"}`}
-                >
+              <div className="px-4 py-2 border-b border-slate-100 dark:border-white/[0.06]">
+                <p className="text-sm font-medium text-slate-700 dark:text-white">
                   {user?.full_name}
                 </p>
-                <p
-                  className={`text-[11px] ${dark ? "text-slate-500" : "text-slate-400 dark:text-slate-400"}`}
-                >
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
                   {user?.email}
                 </p>
               </div>
               <button
                 onClick={cycleTheme}
-                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
-                  dark
-                    ? "text-slate-300 hover:bg-white/[0.06]"
-                    : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                }`}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/[0.06]"
               >
                 {resolvedTheme === "dark" ? (
                   <HiOutlineSun className="w-4 h-4" />
@@ -722,11 +679,7 @@ export default function Header({
               </button>
               <button
                 onClick={handleLogout}
-                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
-                  dark
-                    ? "text-red-400 hover:bg-red-500/10"
-                    : "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-slate-700"
-                }`}
+                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
               >
                 <HiOutlineArrowRightOnRectangle className="w-4 h-4" />
                 Sign out

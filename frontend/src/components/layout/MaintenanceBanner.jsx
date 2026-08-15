@@ -13,15 +13,15 @@ export default function MaintenanceBanner() {
   if (!enabled) return null;
 
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-2.5 bg-amber-500/15 border-b border-amber-500/25">
-      <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-      <p className="text-sm text-amber-200 flex-1">
+    <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-2.5 bg-amber-50 border-b border-amber-200 dark:bg-amber-500/15 dark:border-amber-500/25">
+      <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 dark:text-amber-400" />
+      <p className="text-sm text-amber-800 flex-1 dark:text-amber-200">
         <span className="font-semibold">Maintenance mode is ON.</span>{" "}
         Alumni users are currently blocked from the system.
       </p>
       <Link
         to="/admin/settings"
-        className="text-xs font-semibold text-amber-300 hover:text-amber-100 underline underline-offset-2 whitespace-nowrap"
+        className="text-xs font-semibold text-amber-700 hover:text-amber-900 underline underline-offset-2 whitespace-nowrap dark:text-amber-300 dark:hover:text-amber-100"
       >
         Manage
       </Link>

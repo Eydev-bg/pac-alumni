@@ -8,8 +8,8 @@ import { AdminUnreadProvider } from "../../context/AdminUnreadContext";
 
 /**
  * AdminLayout — main layout for all admin pages.
- * Sidebar (collapsible, dark navy) + Header + Content area (light bg).
- * Individual pages like Dashboard can override their own background.
+ * Sidebar (always dark navy) + Header + Content area.
+ * Respects the global theme toggle (light/dark).
  */
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -18,7 +18,7 @@ export default function AdminLayout() {
   return (
     <MaintenanceProvider>
       <AdminUnreadProvider>
-        <div className="min-h-screen bg-navy-950">
+        <div className="min-h-screen bg-[#f5f7fb] dark:bg-navy-950">
           {/* Mobile sidebar overlay */}
           {mobileSidebarOpen && (
             <div
@@ -44,7 +44,6 @@ export default function AdminLayout() {
             <Header
               onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
               onMobileMenuClick={() => setMobileSidebarOpen(true)}
-              variant="dark"
             />
 
             {/* Maintenance-mode reminder (renders only when active) */}
