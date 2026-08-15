@@ -63,10 +63,13 @@ export function ThemeProvider({ children }) {
   const [theme, setThemeState] = useState(readStored);
   const [resolvedTheme, setResolvedTheme] = useState(() => resolve(readStored()));
   const syncTimer = useRef(null);
-  // Flipped off permanently for the session on a 403 — admin accounts hit an
-  // alumni-only endpoint, so retrying every toggle just spams the console.
-  // A shared endpoint later stops returning 403 and sync resumes on its own.
+  // Set from hydrateTheme: true only when the backend actually returned a
+  // preference for this user. Admin accounts get nothing back, so sync stays
+  // off and never fires a 403. The .catch() below is a backstop.
   const syncSupported = useRef(true);
+  // Drives the per-user storage key, so admin and alumni preferences on the
+  // same browser don't overwrite each other.
+  const currentUserId = useRef(null);
 
   // Apply the resolved theme whenever the preference changes, and — while on
   // 'system' — keep it in sync with the OS as the user flips their setting.
@@ -97,6 +100,9 @@ export function ThemeProvider({ children }) {
     // 1) Persist + apply immediately — the UI must never wait on the network.
     try {
       localStorage.setItem(STORAGE_KEY, value);
+      if (currentUserId.current) {
+        localStorage.setItem(`pac_theme_${currentUserId.current}`, value);
+      }
     } catch {
       // Storage blocked (private mode): in-memory state below still applies.
     }
@@ -110,6 +116,7 @@ export function ThemeProvider({ children }) {
     if (syncTimer.current) clearTimeout(syncTimer.current);
     syncTimer.current = setTimeout(() => {
       if (!syncSupported.current) return;
+      if (!currentUserId.current) return;
       settingsApi.updateAppearance(value).catch((err) => {
         if (err.response?.status === 403) {
           // Endpoint isn't available to this account — stop trying, silently.
@@ -123,22 +130,51 @@ export function ThemeProvider({ children }) {
   }, []);
 
   /**
-   * Apply a preference that came FROM the backend (login / getMe). Same as
-   * setTheme minus the debounced server sync — echoing the value straight back
-   * would be a pointless write.
+   * Apply the preference for a freshly-authenticated user (login / getMe).
+   * Same as setTheme minus the debounced server sync — echoing a backend value
+   * straight back would be a pointless write.
+   *
+   * Precedence: backend value > per-user localStorage > system.
+   *
+   * The generic key is deliberately NOT part of that chain. It holds whichever
+   * account last touched this browser, so falling back to it bleeds one user's
+   * theme into another's session. Absent a per-user value we start from
+   * 'system', never from a stranger's preference.
+   *
+   * A backend value also tells us the sync endpoint works for this account;
+   * its absence leaves sync off, so no 403 is ever fired.
    */
-  const hydrateTheme = useCallback((value) => {
-    if (!value) return;
+  const hydrateTheme = useCallback((backendValue, userId) => {
+    currentUserId.current = userId || null;
+
+    // If the backend provided a value, the sync endpoint works for this user
+    syncSupported.current = !!backendValue;
+
+    // Resolve preference: backend value > per-user localStorage > system
+    const userKey = userId ? `pac_theme_${userId}` : null;
+    let value = backendValue;
+    if (!value && userKey) {
+      try {
+        value = localStorage.getItem(userKey);
+      } catch {
+        // Storage blocked — fall through to the system default.
+      }
+    }
+    if (!value) value = "system";
+
+    // The generic key is still written — the anti-flash script in index.html
+    // runs before React mounts and can't know who is about to log in.
     try {
       localStorage.setItem(STORAGE_KEY, value);
+      if (userKey) localStorage.setItem(userKey, value);
     } catch {
       // Private mode — in-memory state still applies below.
     }
+
     const next = resolve(value);
     applyResolved(next);
     setResolvedTheme(next);
     setThemeState(value);
-    // No debounced backend sync — this value just came FROM the backend.
   }, []);
 
   const value = useMemo(

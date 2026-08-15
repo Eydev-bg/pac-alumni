@@ -44,7 +44,11 @@ export function AuthProvider({ children }) {
         setUser(response.data.data);
         tokenStorage.setUser(response.data.data);
         // Hydrate theme from user's backend preference (if available).
-        hydrateTheme(response.data.data.theme_preference);
+        // Keyed by uuid — UserResource exposes uuid, not id.
+        hydrateTheme(
+          response.data.data.theme_preference,
+          response.data.data.uuid,
+        );
         initEcho();
       } catch {
         // Token invalid or expired — clear everything
@@ -76,7 +80,8 @@ export function AuthProvider({ children }) {
       setUser(userData);
       initEcho();
       // Hydrate theme from the freshly-authenticated user's preference.
-      hydrateTheme(userData.theme_preference);
+      // Keyed by uuid — UserResource exposes uuid, not id.
+      hydrateTheme(userData.theme_preference, userData.uuid);
 
       return userData;
     },
