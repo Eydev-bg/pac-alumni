@@ -110,7 +110,7 @@ export default function DepartmentsListPage() {
       render: (dept) => (
         <Link
           to={`/admin/departments/${dept.id}`}
-          className="font-medium text-slate-200 hover:text-gold-500 transition-colors"
+          className="font-medium text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-gold-500 transition-colors"
         >
           {dept.name}
         </Link>
@@ -120,7 +120,7 @@ export default function DepartmentsListPage() {
       key: "code",
       header: "Code",
       render: (dept) => (
-        <span className="font-mono text-[11px] bg-white/[0.06] text-slate-400 px-2 py-1 rounded-lg border border-white/[0.06]">
+        <span className="font-mono text-[11px] bg-slate-50 dark:bg-white/[0.06] text-slate-500 dark:text-slate-400 px-2 py-1 rounded-lg border border-slate-200 dark:border-white/[0.06]">
           {dept.code}
         </span>
       ),
@@ -129,7 +129,7 @@ export default function DepartmentsListPage() {
       key: "education_level",
       header: "Level",
       render: (dept) => (
-        <span className="text-xs font-medium text-slate-400">
+        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
           {EDUCATION_LEVEL_LABELS[dept.education_level] ||
             dept.education_level ||
             "College"}
@@ -182,8 +182,10 @@ export default function DepartmentsListPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Departments</h1>
-            <p className="text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Departments
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Manage academic departments and programs
             </p>
           </div>

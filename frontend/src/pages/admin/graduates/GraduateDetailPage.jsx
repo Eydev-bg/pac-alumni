@@ -77,7 +77,7 @@ export default function GraduateDetailPage() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading graduate...</p>
       </div>
     );
@@ -122,7 +122,7 @@ export default function GraduateDetailPage() {
         {/* Back */}
         <button
           onClick={() => navigate("/admin/graduates")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 dark:hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Graduates
         </button>
@@ -136,10 +136,10 @@ export default function GraduateDetailPage() {
                 <img
                   src={storageUrl(graduate.profile_picture)}
                   alt={graduate.full_name}
-                  className="w-28 h-28 rounded-full border-4 border-navy-950 shadow-xl object-cover"
+                  className="w-28 h-28 rounded-full border-4 border-white dark:border-navy-950 shadow-xl object-cover"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full border-4 border-navy-950 shadow-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center">
+                <div className="w-28 h-28 rounded-full border-4 border-white dark:border-navy-950 shadow-xl bg-gradient-to-br from-gold-500 to-gold-700 flex items-center justify-center">
                   <span className="text-3xl font-bold text-white tracking-wider">
                     {graduate.first_name?.[0]}
                     {graduate.last_name?.[0]}
@@ -148,7 +148,7 @@ export default function GraduateDetailPage() {
               )}
 
               {/* Name */}
-              <h1 className="text-2xl font-bold text-white mt-4">
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-white mt-4">
                 {graduate.full_name}
               </h1>
 
@@ -218,7 +218,7 @@ export default function GraduateDetailPage() {
           >
             {/* Employment History */}
             <Card>
-              <h2 className="text-[11px] font-semibold text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
+              <h2 className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
                 <HiOutlineBriefcase className="w-4 h-4" />
                 Employment History
               </h2>
@@ -229,14 +229,14 @@ export default function GraduateDetailPage() {
                   {employmentRecords.map((r) => (
                     <div
                       key={r.id}
-                      className={`p-3 rounded-xl ${r.is_current ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-white/[0.04] border border-white/[0.06]"}`}
+                      className={`p-3 rounded-xl ${r.is_current ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06]"}`}
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <p className="text-sm font-medium text-slate-200">
+                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                             {r.job_title}
                           </p>
-                          <p className="text-xs text-slate-400 mt-0.5">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                             {r.company_name}
                           </p>
                           <p className="text-xs text-slate-500 mt-1">
@@ -267,7 +267,7 @@ export default function GraduateDetailPage() {
             {/* Board Exam — only for board program courses */}
             {isBoardProgram && (
               <Card>
-                <h2 className="text-[11px] font-semibold text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
+                <h2 className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 mb-4 uppercase tracking-wider flex items-center gap-2">
                   <HiOutlineAcademicCap className="w-4 h-4" />
                   Board Exam Records
                 </h2>
@@ -280,11 +280,11 @@ export default function GraduateDetailPage() {
                     {boardRecords.map((r) => (
                       <div
                         key={r.id}
-                        className="p-3 bg-white/[0.04] border border-white/[0.06] rounded-xl"
+                        className="p-3 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-xl"
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-slate-200">
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                               {r.exam_name}
                             </p>
                             <p className="text-xs text-slate-500 mt-0.5">
@@ -295,7 +295,7 @@ export default function GraduateDetailPage() {
                         </div>
                         {/* proof_file arrives from the API already resolved to
                             a servable URL (signed for cloud disks). */}
-                        <div className="mt-2.5 pt-2.5 border-t border-white/[0.06]">
+                        <div className="mt-2.5 pt-2.5 border-t border-slate-200 dark:border-white/[0.06]">
                           {r.proof_file ? (
                             <button
                               type="button"
@@ -306,7 +306,7 @@ export default function GraduateDetailPage() {
                                   "noopener,noreferrer",
                                 )
                               }
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-gold-500 border border-gold-500/30 rounded-lg hover:bg-gold-500/10 hover:border-gold-500/50 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium text-blue-600 dark:text-gold-500 border border-blue-500/30 dark:border-gold-500/30 rounded-lg hover:bg-blue-500/10 dark:hover:bg-gold-500/10 hover:border-blue-500/50 dark:hover:border-gold-500/50 transition-colors"
                             >
                               <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
                               View Proof
@@ -329,13 +329,13 @@ export default function GraduateDetailPage() {
         {/* ═══ 3. Graduate Details — bottom ═══ */}
         <Card>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-semibold text-gold-500 uppercase tracking-wider">
+            <h2 className="text-sm font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider">
               Graduate Details
             </h2>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowEdit(true)}
-                className={`${actionBtn} text-slate-300 bg-white/[0.06] border-white/[0.08] hover:bg-white/[0.1]`}
+                className={`${actionBtn} text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/[0.06] border-slate-200 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.1]`}
               >
                 <HiOutlinePencilSquare className="w-4 h-4" /> Edit
               </button>
@@ -351,12 +351,12 @@ export default function GraduateDetailPage() {
             {detailRows.map(([label, value]) => (
               <div
                 key={label}
-                className="py-2 border-b border-white/[0.04] last:border-0"
+                className="py-2 border-b border-slate-100 dark:border-white/[0.04] last:border-0"
               >
                 <dt className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   {label}
                 </dt>
-                <dd className="mt-1 text-sm text-slate-200 font-medium">
+                <dd className="mt-1 text-sm text-slate-700 dark:text-slate-200 font-medium">
                   {value}
                 </dd>
               </div>

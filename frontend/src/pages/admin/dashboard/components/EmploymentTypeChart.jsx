@@ -24,12 +24,12 @@ function EmploymentTypeChart({ data, totalAlumni = 1 }) {
   };
 
   return (
-    <div className="lg:col-span-2 bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
+    <div className="lg:col-span-2 bg-white dark:bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 flex flex-col">
       <div className="mb-1">
-        <h2 className="text-[15px] font-bold text-white">
+        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
           Employment Type Distribution
         </h2>
-        <p className="text-[11px] text-slate-400 mt-0.5">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
           Current employment breakdown by type
         </p>
       </div>
@@ -38,7 +38,7 @@ function EmploymentTypeChart({ data, totalAlumni = 1 }) {
         <div className="flex-1 flex flex-col justify-center gap-6 mt-6 mb-2">
           {rows.map((item) => (
             <div key={item.type} className="flex items-center gap-4">
-              <span className="w-28 shrink-0 text-[12px] text-slate-300 truncate">
+              <span className="w-28 shrink-0 text-[12px] text-slate-600 dark:text-slate-300 truncate">
                 {item.type}
               </span>
               <div
@@ -59,7 +59,7 @@ function EmploymentTypeChart({ data, totalAlumni = 1 }) {
                   />
                 )}
               </div>
-              <span className="w-10 shrink-0 text-right text-[12px] font-semibold tabular-nums text-slate-400 font-mono">
+              <span className="w-10 shrink-0 text-right text-[12px] font-semibold tabular-nums text-slate-500 dark:text-slate-400 font-mono">
                 {item.count}
               </span>
             </div>
@@ -74,11 +74,11 @@ function EmploymentTypeChart({ data, totalAlumni = 1 }) {
       {/* Legend — hairline-separated row of rounded swatches (matches the design).
           Wraps gracefully on narrow widths instead of overflowing. */}
       {hasData && (
-        <div className="flex items-center flex-wrap gap-x-5 gap-y-2 pt-4 mt-4 border-t border-white/[0.06]">
+        <div className="flex items-center flex-wrap gap-x-5 gap-y-2 pt-4 mt-4 border-t border-slate-200 dark:border-white/[0.06]">
           {rows.map((item) => (
             <span
               key={item.type}
-              className="flex items-center gap-2 text-[11px] text-slate-400"
+              className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400"
             >
               <span
                 className="w-2.5 h-2.5 rounded-[3px] inline-block shrink-0"

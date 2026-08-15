@@ -14,10 +14,12 @@ function EmploymentOverviewCard({
   totalProfiles = 0,
 }) {
   return (
-    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 flex flex-col">
+    <div className="bg-white dark:bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 flex flex-col">
       <div className="mb-2">
-        <h2 className="text-[15px] font-bold text-white">Employment Overview</h2>
-        <p className="text-[11px] text-slate-400 mt-0.5">
+        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
+          Employment Overview
+        </h2>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
           Employed · Unemployed · Unknown breakdown
         </p>
       </div>
@@ -62,7 +64,7 @@ function EmploymentOverviewCard({
               className="w-2.5 h-2.5 rounded-full inline-block"
               style={{ backgroundColor: EMPLOYMENT_COLORS[item.name] }}
             />
-            <span className="text-slate-400">
+            <span className="text-slate-500 dark:text-slate-400">
               {item.name} · {item.value}
             </span>
           </span>
@@ -76,15 +78,19 @@ function EmploymentOverviewCard({
             Employed
           </p>
         </div>
-        <div className="text-center p-3 bg-white/[0.05] rounded-xl border border-white/[0.08]">
-          <p className="text-xl font-bold text-white">{employmentRate}%</p>
-          <p className="text-[10px] text-slate-400 font-medium mt-0.5">Rate</p>
+        <div className="text-center p-3 bg-slate-50 dark:bg-white/[0.05] rounded-xl border border-slate-200 dark:border-white/[0.08]">
+          <p className="text-xl font-bold text-slate-800 dark:text-white">
+            {employmentRate}%
+          </p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+            Rate
+          </p>
         </div>
       </div>
 
       {/* Disclaimer: the rate is over profiles that reported a status, not all. */}
       {totalProfiles > 0 && (
-        <p className="text-xs text-slate-400 opacity-60 text-center mt-2">
+        <p className="text-xs text-slate-500 dark:text-slate-400 opacity-60 text-center mt-2">
           Based on {knownCount.toLocaleString()} of {totalProfiles.toLocaleString()} alumni
         </p>
       )}

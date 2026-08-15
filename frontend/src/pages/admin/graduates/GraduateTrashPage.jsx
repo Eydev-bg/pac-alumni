@@ -99,7 +99,7 @@ export default function GraduateTrashPage() {
       header: "Graduate",
       render: (g) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-navy-800/60 flex items-center justify-center flex-shrink-0 border border-white/[0.08] overflow-hidden">
+          <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-navy-800/60 flex items-center justify-center flex-shrink-0 border border-slate-200 dark:border-white/[0.08] overflow-hidden">
             {g.profile_picture ? (
               <img
                 src={storageUrl(g.profile_picture)}
@@ -111,7 +111,9 @@ export default function GraduateTrashPage() {
             )}
           </div>
           <div className="min-w-0">
-            <p className="font-medium text-slate-200 truncate">{g.full_name}</p>
+            <p className="font-medium text-slate-700 dark:text-slate-200 truncate">
+              {g.full_name}
+            </p>
             <p className="text-xs text-slate-500 truncate">
               {g.alumni_id_number || "No Alumni ID"}
             </p>
@@ -128,10 +130,10 @@ export default function GraduateTrashPage() {
     {
       key: "program",
       header: "Course / Department",
-      cellClassName: "text-xs text-slate-400",
+      cellClassName: "text-xs text-slate-500 dark:text-slate-400",
       render: (g) => (
         <>
-          <p className="text-slate-300">
+          <p className="text-slate-600 dark:text-slate-300">
             {g.course?.name || g.department?.name || "—"}
           </p>
           <p className="text-slate-500">{g.education_level_label}</p>
@@ -141,7 +143,7 @@ export default function GraduateTrashPage() {
     {
       key: "graduation_year",
       header: "Batch",
-      cellClassName: "text-slate-300",
+      cellClassName: "text-slate-600 dark:text-slate-300",
       render: (g) => g.graduation_year || "—",
     },
     {
@@ -192,8 +194,10 @@ export default function GraduateTrashPage() {
       <div className="max-w-[1400px] mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Graduate Trash</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+            Graduate Trash
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Deleted graduate records. Restore them or delete permanently.
           </p>
         </div>

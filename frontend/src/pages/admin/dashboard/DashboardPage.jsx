@@ -124,7 +124,7 @@ export default function DashboardPage() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading dashboard...</p>
       </div>
     );
@@ -153,12 +153,12 @@ export default function DashboardPage() {
         {/* ═══ Header ═══════════════════════════════════════ */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
               {greeting}, {user?.first_name}
             </h1>
             <span className="text-2xl">👋</span>
           </div>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Here's an overview of your alumni tracking system today.
           </p>
           <p className="text-[11px] text-slate-500 mt-1 uppercase tracking-[0.1em] font-semibold">
@@ -190,14 +190,14 @@ export default function DashboardPage() {
               <div className="mt-2 space-y-1">
                 <div className="flex items-center gap-1.5 text-[11px]">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-                  <span className="text-slate-300 font-semibold tabular-nums">
+                  <span className="text-slate-600 dark:text-slate-300 font-semibold tabular-nums">
                     {stats.active_recently ?? 0}
                   </span>
                   <span className="text-slate-500">active in last 30 days</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-[11px]">
                   <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
-                  <span className="text-slate-300 font-semibold tabular-nums">
+                  <span className="text-slate-600 dark:text-slate-300 font-semibold tabular-nums">
                     {stats.inactive_alumni ?? 0}
                   </span>
                   <span className="text-slate-500">

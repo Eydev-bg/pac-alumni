@@ -38,7 +38,7 @@ function ReminderStatsSection({ stats }) {
   ];
 
   return (
-    <div className="bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6 mb-8">
+    <div className="bg-white dark:bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 mb-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
@@ -46,10 +46,10 @@ function ReminderStatsSection({ stats }) {
             <HiOutlineEnvelope className="w-5 h-5 text-gold-500" />
           </div>
           <div>
-            <h2 className="text-[15px] font-bold text-white">
+            <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
               Automated Reminders
             </h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Re-engagement emails sent to inactive alumni
             </p>
           </div>
@@ -61,12 +61,12 @@ function ReminderStatsSection({ stats }) {
         {totalCards.map((card) => (
           <div
             key={card.label}
-            className="text-center p-4 bg-white/[0.04] rounded-xl border border-white/[0.06]"
+            className="text-center p-4 bg-slate-50 dark:bg-white/[0.04] rounded-xl border border-slate-200 dark:border-white/[0.06]"
           >
-            <p className="text-2xl font-extrabold text-white tracking-tight leading-none">
+            <p className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight leading-none">
               {(card.value ?? 0).toLocaleString()}
             </p>
-            <p className="text-[10px] text-slate-400 mt-1.5 uppercase tracking-[0.1em] font-semibold">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-[0.1em] font-semibold">
               {card.label}
             </p>
           </div>
@@ -74,10 +74,10 @@ function ReminderStatsSection({ stats }) {
       </div>
 
       {/* By-type breakdown */}
-      <div className="overflow-hidden rounded-xl border border-white/[0.06]">
+      <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-white/[0.06]">
         <table className="w-full text-left">
           <thead>
-            <tr className="bg-white/[0.03] text-[10px] uppercase tracking-[0.08em] text-slate-500">
+            <tr className="bg-slate-50 dark:bg-white/[0.03] text-[10px] uppercase tracking-[0.08em] text-slate-500">
               <th className="px-4 py-2.5 font-semibold">Reminder Type</th>
               <th className="px-3 py-2.5 font-semibold text-right">Today</th>
               <th className="px-3 py-2.5 font-semibold text-right">
@@ -96,7 +96,7 @@ function ReminderStatsSection({ stats }) {
               return (
                 <tr
                   key={row.type}
-                  className="border-t border-white/[0.04] hover:bg-white/[0.02] transition-colors"
+                  className="border-t border-slate-100 dark:border-white/[0.04] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
@@ -105,21 +105,21 @@ function ReminderStatsSection({ stats }) {
                       >
                         <Icon className={`w-4 h-4 ${meta.color}`} />
                       </span>
-                      <span className="text-[13px] font-medium text-slate-200">
+                      <span className="text-[13px] font-medium text-slate-700 dark:text-slate-200">
                         {row.label}
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-3 text-right text-[13px] text-slate-300 tabular-nums">
+                  <td className="px-3 py-3 text-right text-[13px] text-slate-600 dark:text-slate-300 tabular-nums">
                     {row.today}
                   </td>
-                  <td className="px-3 py-3 text-right text-[13px] text-slate-300 tabular-nums">
+                  <td className="px-3 py-3 text-right text-[13px] text-slate-600 dark:text-slate-300 tabular-nums">
                     {row.this_week}
                   </td>
-                  <td className="px-3 py-3 text-right text-[13px] text-slate-300 tabular-nums">
+                  <td className="px-3 py-3 text-right text-[13px] text-slate-600 dark:text-slate-300 tabular-nums">
                     {row.this_month}
                   </td>
-                  <td className="px-4 py-3 text-right text-[13px] font-semibold text-white tabular-nums">
+                  <td className="px-4 py-3 text-right text-[13px] font-semibold text-slate-800 dark:text-white tabular-nums">
                     {row.total}
                   </td>
                 </tr>

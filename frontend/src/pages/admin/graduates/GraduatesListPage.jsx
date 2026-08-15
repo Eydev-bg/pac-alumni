@@ -51,9 +51,9 @@ function GraduateCard({ graduate }) {
   return (
     <Link
       to={`/admin/graduates/${graduate.id}`}
-      className="group flex flex-col items-center text-center p-4 rounded-2xl border border-transparent hover:border-gold-500/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-gold-500/5 transition-all duration-300 cursor-pointer"
+      className="group flex flex-col items-center text-center p-4 rounded-2xl border border-transparent hover:border-gold-500/20 hover:bg-slate-50 dark:hover:bg-white/[0.05] hover:shadow-lg hover:shadow-gold-500/5 transition-all duration-300 cursor-pointer"
     >
-      <div className="relative w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-white/[0.08] group-hover:border-gold-500/30 transition-colors duration-300 bg-navy-800/60 flex-shrink-0">
+      <div className="relative w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-slate-200 dark:border-white/[0.08] group-hover:border-gold-500/30 transition-colors duration-300 bg-slate-100 dark:bg-navy-800/60 flex-shrink-0">
         {hasProfilePic ? (
           <img
             src={storageUrl(graduate.profile_picture)}
@@ -71,7 +71,7 @@ function GraduateCard({ graduate }) {
           <HiOutlineUserCircle className="w-10 h-10 text-slate-500" />
         </div>
       </div>
-      <p className="text-sm font-semibold text-slate-200 group-hover:text-gold-500 transition-colors duration-200 leading-tight line-clamp-2">
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-gold-500 transition-colors duration-200 leading-tight line-clamp-2">
         {graduate.full_name}
       </p>
       {graduate.course?.code && (
@@ -92,7 +92,7 @@ function CourseSection({ courseName, graduates }) {
     <div className="mb-8">
       <div className="flex items-start mb-4">
         <div>
-          <h2 className="text-lg font-bold text-white leading-tight">
+          <h2 className="text-lg font-bold text-slate-800 dark:text-white leading-tight">
             {courseName}
           </h2>
           <div className="flex items-center gap-2 mt-1.5">
@@ -288,8 +288,12 @@ export default function GraduatesListPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-white">Graduates</h1>
-            <p className="text-sm text-slate-400 mt-1">{headerSubtitle}</p>
+            <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              Graduates
+            </h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {headerSubtitle}
+            </p>
           </div>
           <Button
             icon={HiOutlineArrowUpTray}
@@ -376,7 +380,7 @@ export default function GraduatesListPage() {
         {loading ? (
           <Card className="p-16">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
               <p className="text-sm text-slate-500">Loading graduates...</p>
             </div>
           </Card>
@@ -384,7 +388,7 @@ export default function GraduatesListPage() {
           <Card className="p-16">
             <div className="flex flex-col items-center justify-center text-center">
               <HiOutlineAcademicCap className="w-12 h-12 text-slate-600 mb-4" />
-              <h3 className="text-sm font-semibold text-slate-300 mb-1">
+              <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
                 No graduates found
               </h3>
               <p className="text-sm text-slate-500 max-w-sm">
@@ -394,7 +398,7 @@ export default function GraduatesListPage() {
               </p>
               <button
                 onClick={() => navigate("/admin/graduates/import")}
-                className="mt-3 text-sm text-gold-500 hover:text-gold-300 font-medium transition-colors"
+                className="mt-3 text-sm text-blue-600 dark:text-gold-500 hover:text-blue-700 dark:hover:text-gold-300 font-medium transition-colors"
               >
                 Import Graduates
               </button>

@@ -155,15 +155,17 @@ export default function GraduateImportPage() {
 
   const isProcessing = result && !FINAL_STATUSES.includes(result.status);
   const sectionLabel =
-    "block text-sm font-semibold text-gold-500 mb-3 uppercase tracking-wider text-[11px]";
+    "block text-sm font-semibold text-blue-600 dark:text-gold-500 mb-3 uppercase tracking-wider text-[11px]";
 
   return (
     <>
       <div className="max-w-[1000px] mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-white">Import Graduates</h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+            Import Graduates
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Upload an Excel file with the official graduate list
           </p>
         </div>
@@ -186,7 +188,7 @@ export default function GraduateImportPage() {
                 </div>
               )}
               <div>
-                <h2 className="text-lg font-bold text-white">
+                <h2 className="text-lg font-bold text-slate-800 dark:text-white">
                   Import{" "}
                   {isProcessing
                     ? "Processing…"
@@ -194,7 +196,7 @@ export default function GraduateImportPage() {
                       ? "Completed"
                       : "Failed"}
                 </h2>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   {isProcessing
                     ? "Your file is being processed. This can take a moment for large files."
                     : result.file_name}
@@ -204,8 +206,8 @@ export default function GraduateImportPage() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-              <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 text-center">
-                <p className="text-2xl font-bold text-white">
+              <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-xl p-4 text-center">
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">
                   {result.total_records ?? 0}
                 </p>
                 <p className="text-[10px] text-slate-500 uppercase tracking-wider mt-1 font-semibold">
@@ -244,7 +246,7 @@ export default function GraduateImportPage() {
                 <p className="text-sm font-semibold text-red-400 mb-2">
                   Error Details:
                 </p>
-                <ul className="text-sm text-red-300/80 space-y-1 max-h-40 overflow-y-auto">
+                <ul className="text-sm text-red-600 dark:text-red-300/80 space-y-1 max-h-40 overflow-y-auto">
                   {result.error_details.map((err, i) => (
                     <li key={i}>• {err}</li>
                   ))}
@@ -284,8 +286,8 @@ export default function GraduateImportPage() {
                     onClick={() => setEducationLevel(level.value)}
                     className={`p-3 rounded-xl border text-sm font-medium text-center transition-all ${
                       educationLevel === level.value
-                        ? "border-gold-500 bg-gold-500/10 text-gold-500 shadow-lg shadow-gold-500/10"
-                        : "border-white/[0.08] bg-white/[0.04] text-slate-400 hover:border-white/[0.15] hover:text-slate-300"
+                        ? "border-blue-500 dark:border-gold-500 bg-blue-500/10 dark:bg-gold-500/10 text-blue-600 dark:text-gold-500 shadow-lg shadow-blue-500/10 dark:shadow-gold-500/10"
+                        : "border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/[0.15] hover:text-slate-700 dark:hover:text-slate-300"
                     }`}
                   >
                     {level.label}
@@ -307,10 +309,10 @@ export default function GraduateImportPage() {
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
                   dragOver
-                    ? "border-gold-500 bg-gold-500/10"
+                    ? "border-blue-500 dark:border-gold-500 bg-blue-500/10 dark:bg-gold-500/10"
                     : file
                       ? "border-emerald-500/40 bg-emerald-500/5"
-                      : "border-white/[0.12] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.04]"
+                      : "border-slate-300 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.02] hover:border-slate-400 dark:hover:border-white/[0.2] hover:bg-slate-100 dark:hover:bg-white/[0.04]"
                 }`}
               >
                 {file ? (
@@ -319,7 +321,7 @@ export default function GraduateImportPage() {
                       <HiOutlineDocumentText className="w-6 h-6 text-emerald-400" />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-semibold text-slate-200">
+                      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                         {file.name}
                       </p>
                       <p className="text-xs text-slate-500">
@@ -341,7 +343,7 @@ export default function GraduateImportPage() {
                     <div className="w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mx-auto mb-4">
                       <HiOutlineArrowUpTray className="w-7 h-7 text-gold-500" />
                     </div>
-                    <p className="text-sm text-slate-300 font-medium">
+                    <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
                       Drag and drop your Excel file here, or click to browse
                     </p>
                     <p className="text-xs text-slate-500 mt-1.5">
@@ -362,40 +364,40 @@ export default function GraduateImportPage() {
             </div>
 
             {/* Required Format Info */}
-            <div className="bg-white/[0.04] border border-white/[0.06] rounded-xl p-4 mb-6">
+            <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-xl p-4 mb-6">
               <p className={sectionLabel}>Required Excel Columns:</p>
-              <div className="text-sm text-slate-400 space-y-1.5">
+              <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
                 <p>
                   •{" "}
-                  <span className="font-semibold text-slate-200">first_name</span>{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">first_name</span>{" "}
                   - First name
                 </p>
                 <p>
                   •{" "}
-                  <span className="font-semibold text-slate-200">last_name</span>{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">last_name</span>{" "}
                   - Last name
                 </p>
                 <p>
                   •{" "}
-                  <span className="font-semibold text-slate-200">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">
                     graduation_year
                   </span>{" "}
                   - Year graduated
                 </p>
                 <p>
                   •{" "}
-                  <span className="font-semibold text-slate-200">middle_name</span>{" "}
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">middle_name</span>{" "}
                   - Middle name (optional)
                 </p>
                 <p>
-                  • <span className="font-semibold text-slate-200">suffix</span> -
+                  • <span className="font-semibold text-slate-700 dark:text-slate-200">suffix</span> -
                   Jr, Sr, III (optional)
                 </p>
                 {educationLevel === "college" && (
                   <>
                     <p>
                       •{" "}
-                      <span className="font-semibold text-gold-500">
+                      <span className="font-semibold text-blue-600 dark:text-gold-500">
                         course_code
                       </span>{" "}
                       - Course code e.g., BSIT, BSCS, BSN (required for college)
@@ -417,7 +419,7 @@ export default function GraduateImportPage() {
                   <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
                     Alumni ID Auto-Generation
                   </p>
-                  <p className="text-xs text-emerald-300/80 leading-relaxed">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300/80 leading-relaxed">
                     If the <span className="font-semibold">alumni_id</span> column
                     is filled, the system will use the existing ID (for old
                     graduates). If left blank, the system will automatically

@@ -128,15 +128,15 @@ export default function CreateDepartmentModal({ onClose, onCreated }) {
         />
 
         {/* Info box */}
-        <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
+        <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-lg p-3">
           {isCollege ? (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Board program settings are managed per Course, not per Department.
               Create a Department first, then click the Department name to
               manage and add Courses under it.
             </p>
           ) : (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               {form.education_level === "elementary"
                 ? "This department supports Graduate List and Graduation Trend tracking only."
                 : "This department supports Graduate List and Graduation Trend tracking only."}

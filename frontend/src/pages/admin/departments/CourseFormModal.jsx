@@ -147,7 +147,7 @@ export default function CourseFormModal({
           />
         </div>
 
-        <div className="flex items-center gap-3 p-3 bg-white/[0.04] border border-white/[0.06] rounded-lg">
+        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-lg">
           <label className="relative inline-flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -157,9 +157,11 @@ export default function CourseFormModal({
               }
               className="sr-only peer"
             />
-            <div className="w-9 h-5 bg-white/[0.15] peer-focus:ring-2 peer-focus:ring-gold-500/40 rounded-full peer peer-checked:bg-gold-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
+            <div className="w-9 h-5 bg-slate-300 dark:bg-white/[0.15] peer-focus:ring-2 peer-focus:ring-blue-500/40 dark:peer-focus:ring-gold-500/40 rounded-full peer peer-checked:bg-gold-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
           </label>
-          <span className="text-sm text-slate-300">Board Program</span>
+          <span className="text-sm text-slate-600 dark:text-slate-300">
+            Board Program
+          </span>
         </div>
 
         {form.is_board_program && (

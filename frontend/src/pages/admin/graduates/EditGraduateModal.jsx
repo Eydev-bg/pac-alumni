@@ -137,13 +137,13 @@ export default function EditGraduateModal({ graduate, onClose, onUpdated }) {
           />
         )}
 
-        <div className="bg-white/[0.04] border border-white/[0.06] rounded-lg p-3">
-          <p className="text-xs text-slate-400">
+        <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-lg p-3">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             <span className="font-medium">Education Level:</span>{" "}
             {graduate.education_level_label} (cannot be changed)
           </p>
           {graduate.alumni_id_number && (
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
               <span className="font-medium">Alumni ID:</span>{" "}
               {graduate.alumni_id_number} (auto-generated, cannot be changed)
             </p>

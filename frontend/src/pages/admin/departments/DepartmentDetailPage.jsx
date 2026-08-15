@@ -73,7 +73,7 @@ export default function DepartmentDetailPage() {
   if (loading)
     return (
       <div className="flex flex-col items-center justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold-500 mb-3" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 dark:border-gold-500 mb-3" />
         <p className="text-sm text-slate-500">Loading department...</p>
       </div>
     );
@@ -83,7 +83,7 @@ export default function DepartmentDetailPage() {
   const isCollege = dept.education_level === "college";
   const hasCourses = isCollege && dept.courses && dept.courses.length > 0;
   const thClass =
-    "text-left py-3 px-4 font-semibold text-gold-500 text-[11px] uppercase tracking-wider";
+    "text-left py-3 px-4 font-semibold text-blue-600 dark:text-gold-500 text-[11px] uppercase tracking-wider";
 
   return (
     <>
@@ -91,19 +91,21 @@ export default function DepartmentDetailPage() {
         {/* Back button */}
         <button
           onClick={() => navigate("/admin/departments")}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-gold-500 mb-5 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 dark:hover:text-gold-500 mb-5 transition-colors"
         >
           <HiOutlineArrowLeft className="w-4 h-4" /> Back to Departments
         </button>
 
         {/* Page title */}
-        <h1 className="text-xl font-bold text-white mb-6">{dept.name}</h1>
+        <h1 className="text-xl font-bold text-slate-800 dark:text-white mb-6">
+          {dept.name}
+        </h1>
 
         {/* Courses Under This Department — ONLY for College */}
         {isCollege && (
           <Card className="mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[11px] font-semibold text-gold-500 uppercase tracking-wider">
+              <h2 className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider">
                 Courses Under This Department
               </h2>
               <Button
@@ -118,7 +120,7 @@ export default function DepartmentDetailPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-white/[0.06]">
+                    <tr className="border-b border-slate-200 dark:border-white/[0.06]">
                       <th className={thClass}>Code</th>
                       <th className={thClass}>Course Name</th>
                       <th className={`${thClass} text-center`}>Board?</th>
@@ -127,18 +129,18 @@ export default function DepartmentDetailPage() {
                       <th className={`${thClass} text-right`}>Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04]">
+                  <tbody className="divide-y divide-slate-100 dark:divide-white/[0.04]">
                     {dept.courses.map((c) => (
                       <tr
                         key={c.id}
-                        className="hover:bg-white/[0.03] transition-colors"
+                        className="hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors"
                       >
                         <td className="py-3 px-4">
                           <span className="font-mono text-[11px] bg-gold-500/10 text-gold-500 px-2 py-0.5 rounded-lg border border-gold-500/15 font-semibold">
                             {c.code}
                           </span>
                         </td>
-                        <td className="py-3 px-4 font-medium text-slate-200">
+                        <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-200">
                           {c.name}
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -152,7 +154,7 @@ export default function DepartmentDetailPage() {
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-400">
+                        <td className="py-3 px-4 text-xs text-slate-500 dark:text-slate-400">
                           {c.board_exam_name || (
                             <span className="text-slate-600">—</span>
                           )}
@@ -162,7 +164,7 @@ export default function DepartmentDetailPage() {
                             className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                               c.status === "active"
                                 ? "bg-emerald-500/15 text-emerald-400"
-                                : "bg-white/[0.06] text-slate-500"
+                                : "bg-slate-50 dark:bg-white/[0.06] text-slate-500"
                             }`}
                           >
                             {c.status}
@@ -198,7 +200,7 @@ export default function DepartmentDetailPage() {
             ) : (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <HiOutlineAcademicCap className="w-10 h-10 text-slate-600 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-300 mb-1">
+                <h3 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   No courses yet
                 </h3>
                 <p className="text-sm text-slate-500 max-w-sm mb-3">
@@ -207,7 +209,7 @@ export default function DepartmentDetailPage() {
                 </p>
                 <button
                   onClick={() => setCourseModal({ course: null })}
-                  className="text-sm text-gold-500 hover:text-gold-300 font-medium transition-colors"
+                  className="text-sm text-blue-600 dark:text-gold-500 hover:text-blue-700 dark:hover:text-gold-300 font-medium transition-colors"
                 >
                   Add Course
                 </button>
@@ -218,8 +220,8 @@ export default function DepartmentDetailPage() {
 
         {/* Non-college info box */}
         {!isCollege && (
-          <div className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-6 mb-6">
-            <p className="text-sm text-slate-400">
+          <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-2xl p-6 mb-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               {dept.education_level === "elementary"
                 ? "This department supports Graduate List and Graduation Trend tracking only."
                 : "This department supports Graduate List and Graduation Trend tracking only."}
@@ -229,7 +231,7 @@ export default function DepartmentDetailPage() {
 
         {/* Department Details */}
         <Card>
-          <h2 className="text-[11px] font-semibold text-gold-500 mb-5 uppercase tracking-wider">
+          <h2 className="text-[11px] font-semibold text-blue-600 dark:text-gold-500 mb-5 uppercase tracking-wider">
             Department Details
           </h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -246,12 +248,12 @@ export default function DepartmentDetailPage() {
             ].map(([label, value]) => (
               <div
                 key={label}
-                className="py-2 border-b border-white/[0.04] last:border-0"
+                className="py-2 border-b border-slate-100 dark:border-white/[0.04] last:border-0"
               >
                 <dt className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
                   {label}
                 </dt>
-                <dd className="mt-1 text-sm text-slate-200 font-medium">
+                <dd className="mt-1 text-sm text-slate-700 dark:text-slate-200 font-medium">
                   {value}
                 </dd>
               </div>
