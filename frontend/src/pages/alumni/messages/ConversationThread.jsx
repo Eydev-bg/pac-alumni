@@ -13,7 +13,7 @@ import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
 import { useRealtimeReadReceipts } from "../../../hooks/useRealtimeReadReceipts";
 import { useConversationTyping } from "../../../hooks/useConversationTyping";
 import { getEcho } from "../../../config/echo";
-import { isRecentlyActive } from "../../../utils/formatters";
+import { isRecentlyActive, storageUrl } from "../../../utils/formatters";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
 import { Avatar } from "../../../components/alumni/ui";
@@ -582,56 +582,90 @@ export default function ConversationThread({
                     >
                       {/* Attachment first, then the text (which may be null on
                           an attachment-only message). */}
-                      {m.attachment && m.attachment.type === "image" && (
-                        <img
-                          src={m.attachment.url}
-                          alt={m.attachment.name || "Image attachment"}
-                          onClick={(e) => {
-                            // Don't also toggle the bubble's reply reveal.
-                            e.stopPropagation();
-                            if (m.attachment.url)
-                              setLightboxSrc(m.attachment.url);
-                          }}
-                          className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
-                        />
-                      )}
-                      {m.attachment && m.attachment.type === "pdf" && (
-                        <a
-                          href={m.attachment.url || undefined}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className={`flex items-center gap-2 mb-1 px-3 py-2 rounded-xl ${
-                            own
-                              ? "bg-blue-500/40"
-                              : "bg-slate-100 dark:bg-slate-700"
-                          }`}
-                        >
-                          <HiOutlineDocument
-                            className={`w-6 h-6 flex-shrink-0 ${
-                              own ? "text-white" : "text-red-500"
-                            }`}
-                          />
-                          <span className="min-w-0">
+                      {m.attachment &&
+                        m.attachment.type === "image" &&
+                        (() => {
+                          // A pending bubble's url is a local blob: — use it
+                          // as-is; only server paths need resolving.
+                          const imgUrl = m.attachment._local
+                            ? m.attachment.url
+                            : storageUrl(m.attachment.url);
+                          return (
+                            <img
+                              src={imgUrl}
+                              alt={m.attachment.name || "Image attachment"}
+                              onClick={(e) => {
+                                // Don't also toggle the bubble's reply reveal.
+                                e.stopPropagation();
+                                if (imgUrl) setLightboxSrc(imgUrl);
+                              }}
+                              className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
+                            />
+                          );
+                        })()}
+                      {m.attachment &&
+                        m.attachment.type === "pdf" &&
+                        (() => {
+                          // We only build object URLs for images, so a pending
+                          // PDF has no url at all — render it unclickable
+                          // rather than as a broken link.
+                          const pdfUrl = m.attachment._local
+                            ? null
+                            : storageUrl(m.attachment.url);
+                          const card = (
                             <span
-                              className={`block text-xs font-semibold truncate ${
+                              className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
                                 own
-                                  ? "text-white"
-                                  : "text-slate-700 dark:text-slate-200"
+                                  ? "bg-blue-500/40"
+                                  : "bg-slate-100 dark:bg-slate-700"
                               }`}
                             >
-                              {m.attachment.name || "Document.pdf"}
+                              <HiOutlineDocument
+                                className={`w-6 h-6 flex-shrink-0 ${
+                                  own ? "text-white" : "text-red-500"
+                                }`}
+                              />
+                              <span className="min-w-0">
+                                <span
+                                  className={`block text-xs font-semibold truncate ${
+                                    own
+                                      ? "text-white"
+                                      : "text-slate-700 dark:text-slate-200"
+                                  }`}
+                                >
+                                  {m.attachment.name || "Document.pdf"}
+                                </span>
+                                <span
+                                  className={`block text-[0.65rem] ${
+                                    own ? "text-blue-100" : "text-slate-400"
+                                  }`}
+                                >
+                                  {formatFileSize(m.attachment.size)} · PDF
+                                </span>
+                              </span>
                             </span>
-                            <span
-                              className={`block text-[0.65rem] ${
-                                own ? "text-blue-100" : "text-slate-400"
-                              }`}
+                          );
+
+                          if (!pdfUrl) {
+                            return (
+                              <span className="block mb-1 opacity-80">
+                                {card}
+                              </span>
+                            );
+                          }
+
+                          return (
+                            <a
+                              href={pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="block mb-1"
                             >
-                              {formatFileSize(m.attachment.size)} · PDF
-                            </span>
-                          </span>
-                        </a>
-                      )}
+                              {card}
+                            </a>
+                          );
+                        })()}
                       {m.content && <span>{m.content}</span>}
                     </div>
 

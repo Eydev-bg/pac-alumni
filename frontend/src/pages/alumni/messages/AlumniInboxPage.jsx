@@ -172,9 +172,21 @@ export default function AlumniInboxPage() {
                 <ul className="divide-y divide-slate-100 dark:divide-slate-700">
                   {conversations.map((c) => {
                     const isActive = c.id === selectedId;
-                    const preview = c.last_message
-                      ? `${c.last_message.is_mine ? "You: " : ""}${c.last_message.content}`
-                      : "No messages yet";
+                    // An attachment-only message has no text, so fall back to a
+                    // label for the file rather than printing a bare null.
+                    let preview = "No messages yet";
+                    if (c.last_message) {
+                      const prefix = c.last_message.is_mine ? "You: " : "";
+                      let body = c.last_message.content;
+                      if (!body) {
+                        if (c.last_message.attachment_type === "image")
+                          body = "📷 Photo";
+                        else if (c.last_message.attachment_type === "pdf")
+                          body = "📄 PDF";
+                        else body = "Attachment";
+                      }
+                      preview = `${prefix}${body}`;
+                    }
                     return (
                       <li key={c.id}>
                         <button
