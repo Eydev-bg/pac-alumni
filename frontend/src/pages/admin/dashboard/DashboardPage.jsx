@@ -9,13 +9,11 @@ import StatCard from "../../../ui/StatCard";
 import EmploymentTypeChart from "./components/EmploymentTypeChart";
 import EmploymentOverviewCard from "./components/EmploymentOverviewCard";
 import BoardExamOverviewCard from "./components/BoardExamOverviewCard";
-import ReminderStatsSection from "./components/ReminderStatsSection";
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const toast = useToast();
   const [data, setData] = useState(null);
-  const [reminderStats, setReminderStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // `silent=true` on poll ticks — the loading spinner should only ever show
@@ -42,19 +40,7 @@ export default function DashboardPage() {
   );
 
   useEffect(() => {
-    // Reminder stats are non-blocking — a failure here must not hide the
-    // dashboard, so it fails silently (the section simply doesn't render).
-    const fetchReminderStats = async () => {
-      try {
-        const res = await adminApi.getReminderStats();
-        setReminderStats(res.data.data);
-      } catch {
-        // Intentionally ignored — secondary widget, non-blocking.
-      }
-    };
-
     fetchDashboard();
-    fetchReminderStats();
   }, [fetchDashboard]);
 
   // Keep "active in last 30 days" / "inactive" (and the rest of the stats
@@ -245,9 +231,6 @@ export default function DashboardPage() {
             newLastMonth={boardChart.newLastMonth}
           />
         </div>
-
-        {/* ═══ Automated Reminders ═════════════════════════ */}
-        {reminderStats && <ReminderStatsSection stats={reminderStats} />}
       </div>
     </>
   );
