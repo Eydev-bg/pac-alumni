@@ -33,21 +33,21 @@ class ProfileCompletionService
                 'label' => 'Profile Photo',
                 'done'  => !empty($user?->profile_picture),
                 'hint'  => 'Add a profile photo',
-                'link'  => '/alumni/profile',
+                'link'  => '/alumni/profile#section-personal',
             ],
             [
                 'key'   => 'contact_number',
                 'label' => 'Contact Number',
                 'done'  => !empty($user?->phone),
                 'hint'  => 'Add your contact number',
-                'link'  => '/alumni/profile',
+                'link'  => '/alumni/profile#section-personal',
             ],
             [
                 'key'   => 'address',
                 'label' => 'Current Location',
                 'done'  => !empty($profile->current_location),
                 'hint'  => 'Add your current location',
-                'link'  => '/alumni/profile',
+                'link'  => '/alumni/profile#section-personal',
             ],
             [
                 'key'   => 'employment_status',
@@ -73,10 +73,10 @@ class ProfileCompletionService
         }
 
         $total = count($items);
-        $completed = count(array_filter($items, fn ($i) => $i['done']));
+        $completed = count(array_filter($items, fn($i) => $i['done']));
         $percentage = $total > 0 ? (int) round(($completed / $total) * 100) : 0;
 
-        $missing = array_values(array_filter($items, fn ($i) => !$i['done']));
+        $missing = array_values(array_filter($items, fn($i) => !$i['done']));
 
         return [
             'percentage'  => $percentage,
