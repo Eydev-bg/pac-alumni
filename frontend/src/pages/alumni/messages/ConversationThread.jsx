@@ -52,6 +52,52 @@ function bubbleTime(iso) {
   });
 }
 
+// Matches http(s):// URLs and bare www. URLs. Kept deliberately simple —
+// good enough to make links tappable in chat without a heavy dependency.
+const URL_REGEX = /((?:https?:\/\/|www\.)[^\s]+)/gi;
+
+/**
+ * Render message text with any URLs turned into clickable links.
+ * - Preserves the surrounding plain text.
+ * - Opens links in a new tab with safe rel attributes.
+ * - stopPropagation so tapping a link doesn't also toggle the mobile
+ *   reply-reveal on the bubble.
+ * `own` controls link color so links stay legible on the blue (own) bubble.
+ */
+function MessageText({ text, own }) {
+  if (!text) return null;
+
+  const parts = String(text).split(URL_REGEX);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (!part) return null;
+        const isUrl = /^(https?:\/\/|www\.)/i.test(part);
+        if (!isUrl) return <span key={i}>{part}</span>;
+
+        const href = part.startsWith("http") ? part : `https://${part}`;
+        return (
+          <a
+            key={i}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            onClick={(e) => e.stopPropagation()}
+            className={`underline underline-offset-2 break-all ${
+              own
+                ? "text-blue-100 hover:text-white"
+                : "text-blue-600 dark:text-blue-400 hover:opacity-80"
+            }`}
+          >
+            {part}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
 /** Human-readable file size for an attachment label (e.g. "1.4 MB"). */
 function formatFileSize(bytes) {
   if (!bytes && bytes !== 0) return "";
@@ -574,7 +620,7 @@ export default function ConversationThread({
                   >
                     <div
                       onClick={() => toggleReplyReveal(m)}
-                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words select-none md:select-auto cursor-pointer md:cursor-default ${
+                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
                         own
                           ? "bg-blue-600 text-white rounded-br-md"
                           : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
@@ -666,7 +712,7 @@ export default function ConversationThread({
                             </a>
                           );
                         })()}
-                      {m.content && <span>{m.content}</span>}
+                      {m.content && <MessageText text={m.content} own={own} />}
                     </div>
 
                     {/* Reply button — only for real (saved) messages, not pending/failed */}
