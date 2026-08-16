@@ -21,6 +21,8 @@ import {
   HiOutlineArrowLeft,
   HiOutlinePaperAirplane,
   HiOutlineUserCircle,
+  HiOutlineArrowUturnLeft,
+  HiXMark,
 } from "react-icons/hi2";
 
 const MAX_LEN = 1000;
@@ -87,8 +89,10 @@ export default function ConversationThread({
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null); // the message being replied to, or null
 
   const bottomRef = useRef(null);
+  const textareaRef = useRef(null);
   const onActivityRef = useRef(onActivity);
   onActivityRef.current = onActivity;
 
@@ -223,6 +227,12 @@ export default function ConversationThread({
     scrollToBottom(loading ? "auto" : "smooth");
   }, [messages, pending, loading, scrollToBottom]);
 
+  // Picking a message to reply to should drop the caret straight into the
+  // composer — no extra tap needed before typing.
+  useEffect(() => {
+    if (replyingTo) textareaRef.current?.focus();
+  }, [replyingTo]);
+
   const handleSend = async (e) => {
     e.preventDefault();
     const text = content.trim();
@@ -234,17 +244,31 @@ export default function ConversationThread({
       content: text,
       is_mine: true, // always mine — this is the local user's message
       created_at: new Date().toISOString(),
+      // Carry the quote locally so the optimistic bubble already shows it,
+      // rather than popping in once the server response lands.
+      reply_to: replyingTo
+        ? {
+            id: replyingTo.id,
+            content: replyingTo.content,
+            sender_name: replyingTo.sender?.name ?? "PAC Alumnus",
+            is_mine: isOwnMessage(replyingTo),
+          }
+        : null,
       _status: "sending", // "sending" | "failed"
     };
 
+    // Grab the id before the state clear below wipes it.
+    const replyId = replyingTo?.id ?? null;
+
     setPending((prev) => [...prev, optimistic]);
     setContent(""); // clear input immediately (Messenger behaviour)
+    setReplyingTo(null); // clear the reply preview after sending
     sendStoppedTyping();
     setSending(true);
     setError("");
 
     try {
-      const res = await alumniApi.sendMessage(conversationId, text);
+      const res = await alumniApi.sendMessage(conversationId, text, replyId);
       const saved = res.data.data;
       // Remove the optimistic copy and append the server message (de-duped).
       setPending((prev) => prev.filter((p) => p.id !== tempId));
@@ -407,15 +431,54 @@ export default function ConversationThread({
                     <span className="w-7 flex-shrink-0" aria-hidden="true" />
                   ))}
                 <div className="max-w-[75%]">
+                  {/* Quoted message (this bubble is a reply) */}
+                  {m.reply_to && (
+                    <div
+                      className={`mb-1 px-3 py-1.5 rounded-xl border-l-2 text-[0.72rem] leading-snug ${
+                        own
+                          ? "bg-blue-50 dark:bg-blue-500/10 border-blue-400 text-slate-500 dark:text-slate-400 ml-auto"
+                          : "bg-slate-100 dark:bg-slate-700/50 border-slate-400 text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      <span className="block font-semibold text-slate-600 dark:text-slate-300 truncate">
+                        {m.reply_to.is_mine ? "You" : m.reply_to.sender_name}
+                      </span>
+                      <span className="block truncate opacity-80">
+                        {m.reply_to.content}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Bubble + reply action, side by side */}
                   <div
-                    className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
-                      own
-                        ? "bg-blue-600 text-white rounded-br-md"
-                        : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
-                    } ${m._status === "sending" ? "opacity-70" : ""}`}
+                    className={`group/bubble flex items-center gap-1.5 ${
+                      own ? "flex-row-reverse" : "flex-row"
+                    }`}
                   >
-                    {m.content}
+                    <div
+                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                        own
+                          ? "bg-blue-600 text-white rounded-br-md"
+                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
+                      } ${m._status === "sending" ? "opacity-70" : ""}`}
+                    >
+                      {m.content}
+                    </div>
+
+                    {/* Reply button — only for real (saved) messages, not pending/failed */}
+                    {!m._status && (
+                      <button
+                        type="button"
+                        onClick={() => setReplyingTo(m)}
+                        title="Reply"
+                        aria-label="Reply to this message"
+                        className="flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 max-md:opacity-100 group-hover/bubble:opacity-100 focus:opacity-100 transition-opacity"
+                      >
+                        <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
+
                   <p
                     className={`mt-1 text-[0.65rem] text-slate-400 ${
                       own ? "text-right" : "text-left"
@@ -448,8 +511,34 @@ export default function ConversationThread({
             {error}
           </p>
         )}
+        {replyingTo && (
+          <div className="flex items-start gap-2 mb-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border-l-2 border-blue-500">
+            <HiOutlineArrowUturnLeft className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[0.7rem] font-semibold text-slate-600 dark:text-slate-300">
+                Replying to{" "}
+                {isOwnMessage(replyingTo)
+                  ? "yourself"
+                  : other?.name?.split(" ")[0] || "them"}
+              </p>
+              <p className="text-[0.72rem] text-slate-500 dark:text-slate-400 truncate">
+                {replyingTo.content}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReplyingTo(null)}
+              title="Cancel reply"
+              aria-label="Cancel reply"
+              className="flex-shrink-0 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            >
+              <HiXMark className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSend} className="flex items-end gap-2">
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={handleContentChange}
             onKeyDown={(e) => {

@@ -126,8 +126,11 @@ const alumniApi = {
     return api.get(`/alumni/conversations/${conversationId}/messages`);
   },
 
-  sendMessage(conversationId, content) {
-    return api.post(`/alumni/conversations/${conversationId}/messages`, { content });
+  sendMessage(conversationId, content, replyToId = null) {
+    return api.post(`/alumni/conversations/${conversationId}/messages`, {
+      content,
+      reply_to_id: replyToId,
+    });
   },
 
   getMessagesUnreadCount() {
