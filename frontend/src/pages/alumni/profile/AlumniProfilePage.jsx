@@ -12,6 +12,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
@@ -64,6 +65,7 @@ import {
 export default function AlumniProfilePage() {
   const { user } = useAuth();
   const toast = useToast();
+  const location = useLocation();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -88,6 +90,30 @@ export default function AlumniProfilePage() {
 
   // Board Exam section is gated on the same auth flag the sidebar used.
   const isBoardProgram = user?.is_board_program === true;
+
+  // ─── Hash-scroll: deep-link from dashboard completion widget ──
+  useEffect(() => {
+    if (!loading && location.hash) {
+      const id = location.hash.replace("#", "");
+      const el = document.getElementById(id);
+      if (!el) return;
+      // Small delay so layout is stable after render
+      const t = setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        el.classList.add(
+          "transition-shadow",
+          "ring-2",
+          "ring-blue-400",
+          "ring-offset-2",
+        );
+        setTimeout(
+          () => el.classList.remove("ring-2", "ring-blue-400", "ring-offset-2"),
+          1400,
+        );
+      }, 150);
+      return () => clearTimeout(t);
+    }
+  }, [loading, location.hash]);
 
   useEffect(() => {
     loadProfile();
