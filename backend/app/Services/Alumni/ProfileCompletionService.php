@@ -40,14 +40,14 @@ class ProfileCompletionService
                 'label' => 'Contact Number',
                 'done'  => !empty($user?->phone),
                 'hint'  => 'Add your contact number',
-                'link'  => '/alumni/profile#section-personal',
+                'link'  => '/alumni/profile#section-personal-info',
             ],
             [
                 'key'   => 'address',
                 'label' => 'Current Location',
                 'done'  => !empty($profile->current_location),
                 'hint'  => 'Add your current location',
-                'link'  => '/alumni/profile#section-personal',
+                'link'  => '/alumni/profile#section-personal-info',
             ],
             [
                 'key'   => 'employment_status',
