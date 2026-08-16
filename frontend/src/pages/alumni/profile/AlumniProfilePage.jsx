@@ -65,7 +65,7 @@ import {
 export default function AlumniProfilePage() {
   const { user } = useAuth();
   const toast = useToast();
-  const location = useLocation();
+  const routerLocation = useLocation();
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -93,8 +93,8 @@ export default function AlumniProfilePage() {
 
   // ─── Hash-scroll: deep-link from dashboard completion widget ──
   useEffect(() => {
-    if (!loading && location.hash) {
-      const id = location.hash.replace("#", "");
+    if (!loading && routerLocation.hash) {
+      const id = routerLocation.hash.replace("#", "");
       const el = document.getElementById(id);
       if (!el) return;
       // Small delay so layout is stable after render
@@ -113,7 +113,7 @@ export default function AlumniProfilePage() {
       }, 150);
       return () => clearTimeout(t);
     }
-  }, [loading, location.hash]);
+  }, [loading, routerLocation.hash]);
 
   useEffect(() => {
     loadProfile();
