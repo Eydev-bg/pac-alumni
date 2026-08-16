@@ -35,9 +35,13 @@ class ConversationResource extends JsonResource
                 }
 
                 return [
-                    'content'    => $this->latestMessage->content,
-                    'is_mine'    => (int) $this->latestMessage->sender_id === (int) $authUserId,
-                    'created_at' => $this->latestMessage->created_at?->toISOString(),
+                    'content'         => $this->latestMessage->content,
+                    // Lets the inbox show "📷 Photo" / "📄 PDF" for an
+                    // attachment-only message, which has no text to preview.
+                    // Already a column on messages — no extra query.
+                    'attachment_type' => $this->latestMessage->attachment_type, // 'image' | 'pdf' | null
+                    'is_mine'         => (int) $this->latestMessage->sender_id === (int) $authUserId,
+                    'created_at'      => $this->latestMessage->created_at?->toISOString(),
                 ];
             }),
             'unread_count'    => $this->unread_count ?? 0,
