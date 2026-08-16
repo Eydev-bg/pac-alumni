@@ -16,6 +16,7 @@ class Message extends Model
         'conversation_id',
         'sender_id',
         'content',
+        'reply_to_id',
         'is_read',
     ];
 
@@ -26,7 +27,7 @@ class Message extends Model
             // caller (MessageService::sendMessage) loads `sender` right
             // after create(), but that happens after this event fires, so
             // load explicitly here rather than depend on call-site order.
-            $message->loadMissing(['sender', 'conversation']);
+            $message->loadMissing(['sender', 'conversation', 'replyTo.sender']);
             broadcast(new MessageSent($message));
         });
     }
@@ -47,5 +48,14 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
+    }
+
+    /**
+     * The message this one is quoting, if any. Nullable — the parent may have
+     * been deleted (nullOnDelete), in which case the quote resolves to null.
+     */
+    public function replyTo(): BelongsTo
+    {
+        return $this->belongsTo(Message::class, 'reply_to_id');
     }
 }

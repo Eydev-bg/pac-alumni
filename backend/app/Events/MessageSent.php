@@ -75,6 +75,16 @@ class MessageSent implements ShouldBroadcastNow
             'content'         => $this->message->content,
             'is_read'         => $this->message->is_read,
             'read_at'         => $this->message->read_at?->toISOString(),
+            // Quote snapshot. No `is_mine` here for the same reason as the main
+            // message — one payload reaches both participants; the frontend
+            // derives it from the sender.
+            'reply_to'        => $this->message->reply_to_id && $this->message->replyTo
+                ? [
+                    'id'          => $this->message->replyTo->id,
+                    'content'     => $this->message->replyTo->content,
+                    'sender_name' => $this->message->replyTo->sender?->full_name ?? 'PAC Alumnus',
+                ]
+                : null,
             'sender'          => [
                 'uuid' => $this->message->sender?->uuid,
                 'name' => $this->message->sender?->full_name ?? 'PAC Alumnus',

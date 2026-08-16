@@ -120,7 +120,7 @@ class MessageService
         $conversation->load([
             'participantOne',
             'participantTwo',
-            'messages' => fn($q) => $q->with('sender')->orderBy('created_at'),
+            'messages' => fn($q) => $q->with(['sender', 'replyTo.sender'])->orderBy('created_at'),
         ]);
 
         return $conversation;
@@ -131,7 +131,7 @@ class MessageService
      *
      * @throws \Exception 404 if the user is not a participant.
      */
-    public function sendMessage(User $user, int $conversationId, string $content): Message
+    public function sendMessage(User $user, int $conversationId, string $content, ?int $replyToId = null): Message
     {
         $conversation = $this->authorizedConversation($user, $conversationId);
 
@@ -139,12 +139,13 @@ class MessageService
             'conversation_id' => $conversation->id,
             'sender_id'       => $user->id,
             'content'         => $content,
+            'reply_to_id'     => $replyToId,
             'is_read'         => false,
         ]);
 
         $conversation->update(['last_message_at' => $message->created_at]);
 
-        $message->load('sender');
+        $message->load(['sender', 'replyTo.sender']);
 
         return $message;
     }

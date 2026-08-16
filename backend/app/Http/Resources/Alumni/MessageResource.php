@@ -20,6 +20,16 @@ class MessageResource extends JsonResource
             'is_mine'    => (int) $this->sender_id === (int) $authUserId,
             'is_read'    => $this->is_read,
             'read_at'    => $this->read_at?->toISOString(),
+            // Compact snapshot of the quoted parent, or null when this isn't a
+            // reply (or the parent was deleted — nullOnDelete leaves this null).
+            'reply_to' => $this->reply_to_id && $this->relationLoaded('replyTo') && $this->replyTo
+                ? [
+                    'id'          => $this->replyTo->id,
+                    'content'     => $this->replyTo->content,
+                    'sender_name' => $this->replyTo->sender?->full_name ?? 'PAC Alumnus',
+                    'is_mine'     => (int) $this->replyTo->sender_id === (int) $authUserId,
+                ]
+                : null,
             'sender'     => [
                 'uuid' => $this->sender?->uuid,
                 'name' => $this->sender?->full_name ?? 'PAC Alumnus',

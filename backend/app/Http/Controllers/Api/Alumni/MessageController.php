@@ -79,6 +79,7 @@ class MessageController extends Controller
             $user,
             $id,
             $request->validated('content'),
+            $request->validated('reply_to_id'),
         );
 
         return $this->created(new MessageResource($message), 'Message sent.');
