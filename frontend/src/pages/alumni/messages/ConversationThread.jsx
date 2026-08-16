@@ -30,8 +30,6 @@ const MAX_LEN = 1000;
 // not on every keystroke, just enough to keep the other side's 4s
 // TYPING_TIMEOUT_MS (see useConversationTyping) topped up.
 const TYPING_WHISPER_INTERVAL_MS = 2000;
-// How long (ms) a bubble must be held on touch before the reply composer opens.
-const LONG_PRESS_MS = 500;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
 function bubbleTime(iso) {
@@ -92,11 +90,10 @@ export default function ConversationThread({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [replyingTo, setReplyingTo] = useState(null); // the message being replied to, or null
+  const [revealedReplyId, setRevealedReplyId] = useState(null); // mobile: bubble whose reply btn is shown
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
-  const longPressTimerRef = useRef(null);
-  const longPressTriggeredRef = useRef(false);
   const onActivityRef = useRef(onActivity);
   onActivityRef.current = onActivity;
 
@@ -299,27 +296,11 @@ export default function ConversationThread({
     }
   };
 
-  // ─── Long-press to reply (mobile) ───────────────────────────
-  // Hold a bubble ~500ms to open the reply composer for that message.
-  // We track whether the press actually fired so the accompanying
-  // touch doesn't also count as a tap on anything underneath.
-  const startLongPress = (message) => {
-    // Only real (saved) messages can be replied to.
-    if (message._status) return;
-    longPressTriggeredRef.current = false;
-    longPressTimerRef.current = setTimeout(() => {
-      longPressTriggeredRef.current = true;
-      setReplyingTo(message);
-      // Subtle haptic feedback where supported.
-      if (navigator.vibrate) navigator.vibrate(30);
-    }, LONG_PRESS_MS);
-  };
-
-  const cancelLongPress = () => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
+  // Mobile: tapping a saved bubble toggles its reply button. Tapping the same
+  // bubble again hides it. Desktop uses hover instead and ignores this.
+  const toggleReplyReveal = (message) => {
+    if (message._status) return; // only saved messages
+    setRevealedReplyId((cur) => (cur === message.id ? null : message.id));
   };
 
   // Pending (optimistic) bubbles always render after the confirmed messages.
@@ -405,7 +386,10 @@ export default function ConversationThread({
       </div>
 
       {/* ── Messages ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50 dark:bg-slate-900">
+      <div
+        onScroll={() => revealedReplyId && setRevealedReplyId(null)}
+        className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50 dark:bg-slate-900"
+      >
         {loading ? (
           <p className="text-center text-sm text-slate-400 mt-6">
             Loading messages…
@@ -483,18 +467,8 @@ export default function ConversationThread({
                     }`}
                   >
                     <div
-                      onTouchStart={() => startLongPress(m)}
-                      onTouchEnd={cancelLongPress}
-                      onTouchMove={cancelLongPress}
-                      onContextMenu={(e) => {
-                        // Suppress the native long-press context/callout menu on
-                        // mobile so it doesn't fight our reply gesture. Desktop
-                        // right-click is unaffected in practice because desktop
-                        // users use the hover icon, but guard with a touch check
-                        // to be safe.
-                        if ("ontouchstart" in window) e.preventDefault();
-                      }}
-                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words select-none md:select-auto ${
+                      onClick={() => toggleReplyReveal(m)}
+                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words select-none md:select-auto cursor-pointer md:cursor-default ${
                         own
                           ? "bg-blue-600 text-white rounded-br-md"
                           : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
@@ -507,10 +481,17 @@ export default function ConversationThread({
                     {!m._status && (
                       <button
                         type="button"
-                        onClick={() => setReplyingTo(m)}
+                        onClick={() => {
+                          setReplyingTo(m);
+                          setRevealedReplyId(null);
+                        }}
                         title="Reply"
                         aria-label="Reply to this message"
-                        className="flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 hidden md:block md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 transition-opacity"
+                        className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
+                          revealedReplyId === m.id
+                            ? "opacity-100"
+                            : "opacity-0 pointer-events-none md:pointer-events-auto"
+                        }`}
                       >
                         <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
                       </button>
