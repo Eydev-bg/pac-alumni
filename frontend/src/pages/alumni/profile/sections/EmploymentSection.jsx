@@ -107,16 +107,20 @@ export default function EmploymentSection({ onSaved }) {
         formData.employment_status === "unemployed"
           ? { employment_status: "unemployed" }
           : { ...formData };
-      await alumniApi.submitEmployment(payload);
+      const res = await alumniApi.submitEmployment(payload);
       await load();
       onSaved?.();
       setShowForm(false);
       resetForm();
-      toast.success(
-        formData.employment_status === "employed"
-          ? "Employment updated! The Admin team has been notified."
-          : "Status updated to Unemployed. The Admin team has been notified.",
-      );
+      if (res.data.data?.already) {
+        toast.info("Your status is already set to Unemployed.");
+      } else {
+        toast.success(
+          formData.employment_status === "employed"
+            ? "Employment updated! The Admin team has been notified."
+            : "Status updated to Unemployed. The Admin team has been notified.",
+        );
+      }
     } catch (err) {
       if (err.response?.status === 422) {
         setFieldErrors(err.response.data.errors || {});
@@ -248,6 +252,8 @@ export default function EmploymentSection({ onSaved }) {
                     tone="amber"
                     title="Unemployed"
                     subtitle="Currently not working"
+                    disabled={current?.employment_status === "unemployed"}
+                    disabledNote="Already set as unemployed"
                   />
                 </div>
                 {fieldErrors.employment_status && (
