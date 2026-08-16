@@ -110,6 +110,30 @@ class DashboardController extends Controller
             ? round((($thisMonthAlumni - $lastMonthAlumni) / $lastMonthAlumni) * 100, 1)
             : ($thisMonthAlumni > 0 ? 100 : 0);
 
+        // ─── Month-over-month: new employed this month vs last month ──
+        // EmploymentRecord has no status column — a current record IS the
+        // employment, so `is_current` alone identifies an employed alumni.
+        $newEmployedThisMonth = $this->excludeTrashedGraduates(
+            EmploymentRecord::where('is_current', true)
+                ->where('created_at', '>=', now()->startOfMonth())
+        )->count();
+        $newEmployedLastMonth = $this->excludeTrashedGraduates(
+            EmploymentRecord::where('is_current', true)
+                ->where('created_at', '>=', now()->subMonth()->startOfMonth())
+                ->where('created_at', '<', now()->startOfMonth())
+        )->count();
+
+        // ─── Month-over-month: new board passers this month vs last month ──
+        $newPassersThisMonth = $this->excludeTrashedGraduates(
+            BoardExamRecord::where('status', BoardStatus::PASSED->value)
+                ->where('created_at', '>=', now()->startOfMonth())
+        )->count();
+        $newPassersLastMonth = $this->excludeTrashedGraduates(
+            BoardExamRecord::where('status', BoardStatus::PASSED->value)
+                ->where('created_at', '>=', now()->subMonth()->startOfMonth())
+                ->where('created_at', '<', now()->startOfMonth())
+        )->count();
+
         return [
             'total_graduates' => $totalGraduates,
             'total_college_graduates' => $totalCollegeGrads,
@@ -130,6 +154,10 @@ class DashboardController extends Controller
             'unemployed_count' => $unemployed,
             'new_alumni_this_month' => $thisMonthAlumni,
             'alumni_growth_percent' => $alumniGrowth,
+            'new_employed_this_month' => $newEmployedThisMonth,
+            'new_employed_last_month' => $newEmployedLastMonth,
+            'new_passers_this_month'  => $newPassersThisMonth,
+            'new_passers_last_month'  => $newPassersLastMonth,
         ];
     }
 
