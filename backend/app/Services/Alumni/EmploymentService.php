@@ -98,6 +98,19 @@ class EmploymentService
             $graduate = $profile->graduate;
             $oldStatus = $profile->employment_status?->value;
 
+            // ─── Guard: already unemployed → no-op (prevents notification spam) ──
+            if (
+                $data['employment_status'] === 'unemployed'
+                && $oldStatus === 'unemployed'
+            ) {
+                return [
+                    'employment_status' => 'unemployed',
+                    'employment_label'  => EmploymentStatus::UNEMPLOYED->label(),
+                    'record'            => null,
+                    'already'           => true,
+                ];
+            }
+
             // ─── Phase 4.1: Track profile activity for reminders ──
             $user->update(['last_profile_update_at' => now()]);
 
