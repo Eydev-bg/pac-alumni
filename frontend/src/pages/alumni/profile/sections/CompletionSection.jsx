@@ -63,8 +63,8 @@ export default function CompletionSection({ reloadSignal }) {
 // standalone /alumni/employment and /alumni/board-exam routes.
 const SECTION_BY_KEY = {
   profile_picture: "section-personal",
-  contact_number: "section-personal",
-  address: "section-personal",
+  contact_number: "section-personal-info",
+  address: "section-personal-info",
   employment_status: "section-employment",
   board_exam: "section-board-exam",
 };

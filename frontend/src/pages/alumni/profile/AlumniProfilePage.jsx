@@ -402,7 +402,7 @@ export default function AlumniProfilePage() {
       </AlumniCard>
 
       {/* ══ A) Personal Information ══ */}
-      <AlumniCard>
+      <AlumniCard id="section-personal-info" className="scroll-mt-20">
         <SectionHeader
           title="Personal Information"
           action={
