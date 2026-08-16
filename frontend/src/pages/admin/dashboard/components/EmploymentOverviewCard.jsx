@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { CustomPieTooltip } from "./tooltips";
+import TrendBadge from "./TrendBadge";
 import { EMPLOYMENT_COLORS } from "../constants";
 
 // ─── Employment Overview (pie) ───────────────────────────
@@ -12,16 +13,21 @@ function EmploymentOverviewCard({
   employmentRate,
   knownCount = 0,
   totalProfiles = 0,
+  newThisMonth = 0,
+  newLastMonth = 0,
 }) {
   return (
     <div className="bg-white dark:bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 flex flex-col">
-      <div className="mb-2">
-        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
-          Employment Overview
-        </h2>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-          Employed · Unemployed · Unknown breakdown
-        </p>
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
+            Employment Overview
+          </h2>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Employed · Unemployed · Unknown breakdown
+          </p>
+        </div>
+        <TrendBadge thisMonth={newThisMonth} lastMonth={newLastMonth} />
       </div>
 
       <div className="flex-1 flex items-center justify-center min-h-[200px]">

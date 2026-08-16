@@ -1,20 +1,31 @@
 import { memo } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { CustomPieTooltip } from "./tooltips";
+import TrendBadge from "./TrendBadge";
 import { BOARD_COLORS } from "../constants";
 
 // ─── Board Exam Overview (pie) ───────────────────────────
 // Memoized: re-renders only when its derived props change.
-function BoardExamOverviewCard({ pieData, legend, passed, passingRate }) {
+function BoardExamOverviewCard({
+  pieData,
+  legend,
+  passed,
+  passingRate,
+  newThisMonth = 0,
+  newLastMonth = 0,
+}) {
   return (
     <div className="bg-white dark:bg-navy-800/40 backdrop-blur-sm rounded-2xl border border-slate-200 dark:border-white/[0.06] p-6 flex flex-col">
-      <div className="mb-2">
-        <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
-          Board Exam Overview
-        </h2>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-          Passed · Not Yet Taken · Pass Rate
-        </p>
+      <div className="flex items-start justify-between mb-2">
+        <div>
+          <h2 className="text-[15px] font-bold text-slate-800 dark:text-white">
+            Board Exam Overview
+          </h2>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Passed · Not Yet Taken · Pass Rate
+          </p>
+        </div>
+        <TrendBadge thisMonth={newThisMonth} lastMonth={newLastMonth} />
       </div>
 
       <div className="flex-1 flex items-center justify-center min-h-[200px]">

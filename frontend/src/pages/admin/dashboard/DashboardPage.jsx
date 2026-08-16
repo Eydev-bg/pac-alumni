@@ -97,6 +97,8 @@ export default function DashboardPage() {
       // Context for the rate: how many profiles actually reported a status.
       knownCount: stats.employment_known_count ?? 0,
       totalProfiles: stats.employment_total_profiles ?? 0,
+      newThisMonth: stats.new_employed_this_month || 0,
+      newLastMonth: stats.new_employed_last_month || 0,
     };
   }, [data]);
 
@@ -118,6 +120,8 @@ export default function DashboardPage() {
       // Population-based: passed / total board-program graduates (meaningful,
       // unlike the record-based AnalyticsService rate removed in Phase 2.2).
       passingRate: stats.board_passing_rate || 0,
+      newThisMonth: stats.new_passers_this_month || 0,
+      newLastMonth: stats.new_passers_last_month || 0,
     };
   }, [data]);
 
@@ -227,6 +231,8 @@ export default function DashboardPage() {
             employmentRate={employmentChart.employmentRate}
             knownCount={employmentChart.knownCount}
             totalProfiles={employmentChart.totalProfiles}
+            newThisMonth={employmentChart.newThisMonth}
+            newLastMonth={employmentChart.newLastMonth}
           />
 
           {/* Board Exam Overview pie — right */}
@@ -235,6 +241,8 @@ export default function DashboardPage() {
             legend={boardChart.legend}
             passed={boardChart.passed}
             passingRate={boardChart.passingRate}
+            newThisMonth={boardChart.newThisMonth}
+            newLastMonth={boardChart.newLastMonth}
           />
         </div>
 
