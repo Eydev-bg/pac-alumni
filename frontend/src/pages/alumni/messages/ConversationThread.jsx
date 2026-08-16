@@ -17,15 +17,27 @@ import { isRecentlyActive } from "../../../utils/formatters";
 // Shared avatar (person-icon fallback) — single source of truth for the header
 // and the per-group message avatars.
 import { Avatar } from "../../../components/alumni/ui";
+import ImageLightbox from "../../../components/alumni/ui/ImageLightbox";
 import {
   HiOutlineArrowLeft,
   HiOutlinePaperAirplane,
   HiOutlineUserCircle,
   HiOutlineArrowUturnLeft,
+  HiOutlinePaperClip,
+  HiOutlineDocument,
   HiXMark,
 } from "react-icons/hi2";
 
 const MAX_LEN = 1000;
+const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024; // 10 MB, mirrors the backend cap
+const ALLOWED_ATTACHMENT_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  "application/pdf",
+];
 // How often (ms) a "typing" whisper is sent while the user keeps typing —
 // not on every keystroke, just enough to keep the other side's 4s
 // TYPING_TIMEOUT_MS (see useConversationTyping) topped up.
@@ -38,6 +50,14 @@ function bubbleTime(iso) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+/** Human-readable file size for an attachment label (e.g. "1.4 MB"). */
+function formatFileSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /** "Read • 2:14 PM" label for a read own-message; null while unread. */
@@ -91,9 +111,13 @@ export default function ConversationThread({
   const [error, setError] = useState("");
   const [replyingTo, setReplyingTo] = useState(null); // the message being replied to, or null
   const [revealedReplyId, setRevealedReplyId] = useState(null); // mobile: bubble whose reply btn is shown
+  const [attachment, setAttachment] = useState(null); // the File picked, not yet sent
+  const [attachmentPreview, setAttachmentPreview] = useState(null); // object URL for image preview, or null for pdf
+  const [lightboxSrc, setLightboxSrc] = useState(null); // open image attachment full screen
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
   const onActivityRef = useRef(onActivity);
   onActivityRef.current = onActivity;
 
@@ -234,17 +258,81 @@ export default function ConversationThread({
     if (replyingTo) textareaRef.current?.focus();
   }, [replyingTo]);
 
+  // Object URLs handed off to an in-flight optimistic bubble. The composer no
+  // longer owns these, so the cleanup below must NOT revoke them — the bubble
+  // is still rendering from them until the server URL replaces it.
+  const handedOffUrlsRef = useRef(new Set());
+
+  // Release the composer preview's object URL when it's replaced or the
+  // thread unmounts, so picking file after file doesn't leak blobs.
+  useEffect(() => {
+    return () => {
+      if (
+        attachmentPreview &&
+        !handedOffUrlsRef.current.has(attachmentPreview)
+      ) {
+        URL.revokeObjectURL(attachmentPreview);
+      }
+    };
+  }, [attachmentPreview]);
+
+  const handleFilePick = (e) => {
+    const file = e.target.files?.[0];
+    // Reset the input so re-picking the same file still fires onChange.
+    e.target.value = "";
+    if (!file) return;
+
+    // Mirrors the backend's `mimes:` + `max:10240` rules so an invalid pick is
+    // rejected before a pointless upload.
+    if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
+      setError("Only images (JPG, PNG, WEBP, HEIC) and PDF files are allowed.");
+      return;
+    }
+    if (file.size > MAX_ATTACHMENT_BYTES) {
+      setError("The file must not be larger than 10 MB.");
+      return;
+    }
+
+    setError("");
+    setAttachment(file);
+    // Image → build an object URL for the preview. PDF → no thumbnail.
+    if (file.type.startsWith("image/")) {
+      setAttachmentPreview(URL.createObjectURL(file));
+    } else {
+      setAttachmentPreview(null);
+    }
+  };
+
+  const clearAttachment = () => {
+    if (attachmentPreview) URL.revokeObjectURL(attachmentPreview);
+    setAttachment(null);
+    setAttachmentPreview(null);
+  };
+
   const handleSend = async (e) => {
     e.preventDefault();
     const text = content.trim();
-    if (!text || sending) return;
+    // A message needs text, an attachment, or both.
+    if ((!text && !attachment) || sending) return;
 
     const tempId = `temp-${Date.now()}`;
+    const fileToSend = attachment;
     const optimistic = {
       id: tempId,
-      content: text,
+      content: text || null,
       is_mine: true, // always mine — this is the local user's message
       created_at: new Date().toISOString(),
+      // Optimistic attachment preview: reuse the local object URL for images so
+      // the bubble shows instantly. PDF shows a generic card (no preview).
+      attachment: fileToSend
+        ? {
+            url: attachmentPreview || null,
+            type: fileToSend.type.startsWith("image/") ? "image" : "pdf",
+            name: fileToSend.name,
+            size: fileToSend.size,
+            _local: true, // marks this as a not-yet-uploaded preview
+          }
+        : null,
       // Carry the quote locally so the optimistic bubble already shows it,
       // rather than popping in once the server response lands.
       reply_to: replyingTo
@@ -264,18 +352,36 @@ export default function ConversationThread({
     setPending((prev) => [...prev, optimistic]);
     setContent(""); // clear input immediately (Messenger behaviour)
     setReplyingTo(null); // clear the reply preview after sending
+    // Detach the attachment from the composer WITHOUT revoking its object URL
+    // yet — the optimistic bubble is still using it. It'll be revoked once the
+    // server URL takes over.
+    if (optimistic.attachment?.url) {
+      handedOffUrlsRef.current.add(optimistic.attachment.url);
+    }
+    setAttachment(null);
+    setAttachmentPreview(null);
     sendStoppedTyping();
     setSending(true);
     setError("");
 
     try {
-      const res = await alumniApi.sendMessage(conversationId, text, replyId);
+      const res = await alumniApi.sendMessage(
+        conversationId,
+        text,
+        replyId,
+        fileToSend,
+      );
       const saved = res.data.data;
       // Remove the optimistic copy and append the server message (de-duped).
       setPending((prev) => prev.filter((p) => p.id !== tempId));
       setMessages((prev) =>
         prev.some((x) => x.id === saved.id) ? prev : [...prev, saved],
       );
+      // Now safe to revoke the optimistic object URL (server URL is in use).
+      if (optimistic.attachment?._local && optimistic.attachment.url) {
+        handedOffUrlsRef.current.delete(optimistic.attachment.url);
+        URL.revokeObjectURL(optimistic.attachment.url);
+      }
       onActivityRef.current?.();
     } catch (err) {
       // Mark the optimistic bubble as failed so it stays visible on the right.
@@ -474,7 +580,59 @@ export default function ConversationThread({
                           : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
                       } ${m._status === "sending" ? "opacity-70" : ""}`}
                     >
-                      {m.content}
+                      {/* Attachment first, then the text (which may be null on
+                          an attachment-only message). */}
+                      {m.attachment && m.attachment.type === "image" && (
+                        <img
+                          src={m.attachment.url}
+                          alt={m.attachment.name || "Image attachment"}
+                          onClick={(e) => {
+                            // Don't also toggle the bubble's reply reveal.
+                            e.stopPropagation();
+                            if (m.attachment.url)
+                              setLightboxSrc(m.attachment.url);
+                          }}
+                          className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
+                        />
+                      )}
+                      {m.attachment && m.attachment.type === "pdf" && (
+                        <a
+                          href={m.attachment.url || undefined}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className={`flex items-center gap-2 mb-1 px-3 py-2 rounded-xl ${
+                            own
+                              ? "bg-blue-500/40"
+                              : "bg-slate-100 dark:bg-slate-700"
+                          }`}
+                        >
+                          <HiOutlineDocument
+                            className={`w-6 h-6 flex-shrink-0 ${
+                              own ? "text-white" : "text-red-500"
+                            }`}
+                          />
+                          <span className="min-w-0">
+                            <span
+                              className={`block text-xs font-semibold truncate ${
+                                own
+                                  ? "text-white"
+                                  : "text-slate-700 dark:text-slate-200"
+                              }`}
+                            >
+                              {m.attachment.name || "Document.pdf"}
+                            </span>
+                            <span
+                              className={`block text-[0.65rem] ${
+                                own ? "text-blue-100" : "text-slate-400"
+                              }`}
+                            >
+                              {formatFileSize(m.attachment.size)} · PDF
+                            </span>
+                          </span>
+                        </a>
+                      )}
+                      {m.content && <span>{m.content}</span>}
                     </div>
 
                     {/* Reply button — only for real (saved) messages, not pending/failed */}
@@ -555,7 +713,59 @@ export default function ConversationThread({
             </button>
           </div>
         )}
+        {attachment && (
+          <div className="flex items-center gap-3 mb-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            {attachmentPreview ? (
+              <img
+                src={attachmentPreview}
+                alt="Attachment preview"
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+              />
+            ) : (
+              <span className="w-12 h-12 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <HiOutlineDocument className="w-6 h-6 text-red-500" />
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                {attachment.name}
+              </p>
+              <p className="text-[0.65rem] text-slate-400">
+                {formatFileSize(attachment.size)} ·{" "}
+                {attachment.type.startsWith("image/") ? "Image" : "PDF"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={clearAttachment}
+              title="Remove attachment"
+              aria-label="Remove attachment"
+              className="flex-shrink-0 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            >
+              <HiXMark className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSend} className="flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+            onChange={handleFilePick}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending || !!attachment}
+            title={
+              attachment ? "One attachment at a time" : "Attach image or PDF"
+            }
+            aria-label="Attach file"
+            className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+          >
+            <HiOutlinePaperClip className="w-5 h-5" />
+          </button>
           <textarea
             ref={textareaRef}
             value={content}
@@ -572,7 +782,7 @@ export default function ConversationThread({
           />
           <button
             type="submit"
-            disabled={!content.trim() || sending}
+            disabled={(!content.trim() && !attachment) || sending}
             className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white bg-blue-600 transition-opacity disabled:opacity-40"
             aria-label="Send"
           >
@@ -583,6 +793,14 @@ export default function ConversationThread({
           {content.length}/{MAX_LEN}
         </p>
       </div>
+
+      {lightboxSrc && (
+        <ImageLightbox
+          src={lightboxSrc}
+          alt="Image attachment"
+          onClose={() => setLightboxSrc(null)}
+        />
+      )}
     </div>
   );
 }

@@ -126,10 +126,16 @@ const alumniApi = {
     return api.get(`/alumni/conversations/${conversationId}/messages`);
   },
 
-  sendMessage(conversationId, content, replyToId = null) {
-    return api.post(`/alumni/conversations/${conversationId}/messages`, {
-      content,
-      reply_to_id: replyToId,
+  // Sent as multipart so the request can carry an optional image/PDF file.
+  // FormData can't express a JSON null, hence the conditional appends — an
+  // attachment-only message simply omits `content`, which the backend allows.
+  sendMessage(conversationId, content, replyToId = null, attachment = null) {
+    const form = new FormData();
+    if (content) form.append('content', content);
+    if (replyToId) form.append('reply_to_id', replyToId);
+    if (attachment) form.append('attachment', attachment);
+    return api.post(`/alumni/conversations/${conversationId}/messages`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
