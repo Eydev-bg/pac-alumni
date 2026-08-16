@@ -80,6 +80,7 @@ class MessageController extends Controller
             $id,
             $request->validated('content'),
             $request->validated('reply_to_id'),
+            $request->file('attachment'),
         );
 
         return $this->created(new MessageResource($message), 'Message sent.');

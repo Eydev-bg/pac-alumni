@@ -30,6 +30,16 @@ class MessageResource extends JsonResource
                     'is_mine'     => (int) $this->replyTo->sender_id === (int) $authUserId,
                 ]
                 : null,
+            // One optional image or PDF. `url` is resolved by the model
+            // accessor (short-lived signed URL on a cloud disk).
+            'attachment' => $this->attachment_path
+                ? [
+                    'url'  => $this->attachment_url,
+                    'type' => $this->attachment_type,  // 'image' | 'pdf'
+                    'name' => $this->attachment_name,
+                    'size' => $this->attachment_size,
+                ]
+                : null,
             'sender'     => [
                 'uuid' => $this->sender?->uuid,
                 'name' => $this->sender?->full_name ?? 'PAC Alumnus',

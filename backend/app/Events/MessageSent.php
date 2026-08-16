@@ -85,6 +85,16 @@ class MessageSent implements ShouldBroadcastNow
                     'sender_name' => $this->message->replyTo->sender?->full_name ?? 'PAC Alumnus',
                 ]
                 : null,
+            // Attachment snapshot, so a real-time-delivered file renders
+            // immediately without a refetch. URL via the model accessor.
+            'attachment'      => $this->message->attachment_path
+                ? [
+                    'url'  => $this->message->attachment_url,
+                    'type' => $this->message->attachment_type,
+                    'name' => $this->message->attachment_name,
+                    'size' => $this->message->attachment_size,
+                ]
+                : null,
             'sender'          => [
                 'uuid' => $this->message->sender?->uuid,
                 'name' => $this->message->sender?->full_name ?? 'PAC Alumnus',

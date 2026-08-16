@@ -7,10 +7,15 @@ use App\Events\MessagesRead;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
+use App\Services\StorageService;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 
 class MessageService
 {
+    /** Extensions a message attachment may be stored under (matches the `mimes:` rule). */
+    private const ATTACHMENT_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'pdf'];
+
     /**
      * All conversations the user participates in, newest activity first, each
      * annotated with the unread count (messages sent by the OTHER party that the
@@ -128,20 +133,46 @@ class MessageService
 
     /**
      * Persist a new message in the conversation and bump its activity timestamp.
+     * The message may be text-only, attachment-only, or both — validation in
+     * SendMessageRequest guarantees at least one is present.
      *
      * @throws \Exception 404 if the user is not a participant.
      */
-    public function sendMessage(User $user, int $conversationId, string $content, ?int $replyToId = null): Message
-    {
+    public function sendMessage(
+        User $user,
+        int $conversationId,
+        ?string $content,
+        ?int $replyToId = null,
+        ?UploadedFile $attachment = null,
+    ): Message {
         $conversation = $this->authorizedConversation($user, $conversationId);
 
-        $message = Message::create([
+        $attachmentData = [];
+        if ($attachment) {
+            // Extension comes from the sniffed content type, not the uploaded
+            // filename — see StorageService::safeExtension().
+            $extension = StorageService::safeExtension($attachment, self::ATTACHMENT_EXTENSIONS);
+            $isPdf = $extension === 'pdf';
+            $filename = 'message_attachments/' . $conversation->id . '/' . $user->uuid . '_' . time() . '.' . $extension;
+            $path = StorageService::store($attachment, $filename);
+
+            // Persist the RAW storage path — a signed cloud URL would expire;
+            // Message::getAttachmentUrlAttribute() resolves it at read time.
+            $attachmentData = [
+                'attachment_path' => $path,
+                'attachment_type' => $isPdf ? 'pdf' : 'image',
+                'attachment_name' => $attachment->getClientOriginalName(),
+                'attachment_size' => $attachment->getSize(),
+            ];
+        }
+
+        $message = Message::create(array_merge([
             'conversation_id' => $conversation->id,
             'sender_id'       => $user->id,
             'content'         => $content,
             'reply_to_id'     => $replyToId,
             'is_read'         => false,
-        ]);
+        ], $attachmentData));
 
         $conversation->update(['last_message_at' => $message->created_at]);
 

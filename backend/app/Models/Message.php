@@ -7,6 +7,7 @@
 namespace App\Models;
 
 use App\Events\MessageSent;
+use App\Services\StorageService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -17,6 +18,10 @@ class Message extends Model
         'sender_id',
         'content',
         'reply_to_id',
+        'attachment_path',
+        'attachment_type',
+        'attachment_name',
+        'attachment_size',
         'is_read',
     ];
 
@@ -38,6 +43,17 @@ class Message extends Model
             'is_read' => 'boolean',
             'read_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Resolve the attachment's URL at read time — the DB holds the RAW storage
+     * path, and a cloud disk's signed URL would expire if it were persisted.
+     */
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        $raw = $this->getRawOriginal('attachment_path');
+
+        return $raw ? StorageService::url($raw) : null;
     }
 
     public function conversation(): BelongsTo
