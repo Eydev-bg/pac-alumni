@@ -30,6 +30,8 @@ const MAX_LEN = 1000;
 // not on every keystroke, just enough to keep the other side's 4s
 // TYPING_TIMEOUT_MS (see useConversationTyping) topped up.
 const TYPING_WHISPER_INTERVAL_MS = 2000;
+// How long (ms) a bubble must be held on touch before the reply composer opens.
+const LONG_PRESS_MS = 500;
 
 /** Short, friendly bubble timestamp (e.g. "3:45 PM"). */
 function bubbleTime(iso) {
@@ -93,6 +95,8 @@ export default function ConversationThread({
 
   const bottomRef = useRef(null);
   const textareaRef = useRef(null);
+  const longPressTimerRef = useRef(null);
+  const longPressTriggeredRef = useRef(false);
   const onActivityRef = useRef(onActivity);
   onActivityRef.current = onActivity;
 
@@ -295,6 +299,29 @@ export default function ConversationThread({
     }
   };
 
+  // ─── Long-press to reply (mobile) ───────────────────────────
+  // Hold a bubble ~500ms to open the reply composer for that message.
+  // We track whether the press actually fired so the accompanying
+  // touch doesn't also count as a tap on anything underneath.
+  const startLongPress = (message) => {
+    // Only real (saved) messages can be replied to.
+    if (message._status) return;
+    longPressTriggeredRef.current = false;
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTriggeredRef.current = true;
+      setReplyingTo(message);
+      // Subtle haptic feedback where supported.
+      if (navigator.vibrate) navigator.vibrate(30);
+    }, LONG_PRESS_MS);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
   // Pending (optimistic) bubbles always render after the confirmed messages.
   const allMessages = [...messages, ...pending];
 
@@ -456,7 +483,18 @@ export default function ConversationThread({
                     }`}
                   >
                     <div
-                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                      onTouchStart={() => startLongPress(m)}
+                      onTouchEnd={cancelLongPress}
+                      onTouchMove={cancelLongPress}
+                      onContextMenu={(e) => {
+                        // Suppress the native long-press context/callout menu on
+                        // mobile so it doesn't fight our reply gesture. Desktop
+                        // right-click is unaffected in practice because desktop
+                        // users use the hover icon, but guard with a touch check
+                        // to be safe.
+                        if ("ontouchstart" in window) e.preventDefault();
+                      }}
+                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words select-none md:select-auto ${
                         own
                           ? "bg-blue-600 text-white rounded-br-md"
                           : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
@@ -472,7 +510,7 @@ export default function ConversationThread({
                         onClick={() => setReplyingTo(m)}
                         title="Reply"
                         aria-label="Reply to this message"
-                        className="flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 opacity-0 max-md:opacity-100 group-hover/bubble:opacity-100 focus:opacity-100 transition-opacity"
+                        className="flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 hidden md:block md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 transition-opacity"
                       >
                         <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
                       </button>
