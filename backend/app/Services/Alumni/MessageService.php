@@ -89,46 +89,76 @@ class MessageService
     }
 
     /**
-     * Load a conversation's messages (oldest first) and mark everything the user
-     * received as read. Returns the conversation with `messages` loaded.
+     * Load a page of a conversation's messages (oldest first within the page)
+     * using cursor pagination: the newest $perPage messages by default, or the
+     * batch immediately older than $beforeId when paging back through history.
+     * On the initial load only, everything the user received is marked as read.
+     *
+     * @return array{conversation: Conversation, messages: \Illuminate\Support\Collection, has_more: bool, next_cursor: ?int}
      *
      * @throws \Exception 404 if the user is not a participant.
      */
-    public function messages(User $user, int $conversationId): Conversation
+    public function messages(User $user, int $conversationId, ?int $beforeId = null, int $perPage = 30): array
     {
         $conversation = $this->authorizedConversation($user, $conversationId);
 
-        // Mark the other party's messages as read on open, and broadcast the
-        // read receipt so the sender's open thread flips "Sent" -> "Read" live.
-        // A bulk update() bypasses Eloquent model events, so we grab the ids
-        // first and dispatch MessagesRead explicitly rather than relying on a
-        // model hook.
-        $unreadIds = Message::where('conversation_id', $conversation->id)
-            ->where('sender_id', '!=', $user->id)
-            ->where('is_read', false)
-            ->pluck('id');
+        // Only on the initial load — paging back through older history must not
+        // flip read receipts.
+        if ($beforeId === null) {
+            // Mark the other party's messages as read on open, and broadcast the
+            // read receipt so the sender's open thread flips "Sent" -> "Read" live.
+            // A bulk update() bypasses Eloquent model events, so we grab the ids
+            // first and dispatch MessagesRead explicitly rather than relying on a
+            // model hook.
+            $unreadIds = Message::where('conversation_id', $conversation->id)
+                ->where('sender_id', '!=', $user->id)
+                ->where('is_read', false)
+                ->pluck('id');
 
-        if ($unreadIds->isNotEmpty()) {
-            $readAt = now();
+            if ($unreadIds->isNotEmpty()) {
+                $readAt = now();
 
-            Message::whereIn('id', $unreadIds)
-                ->update(['is_read' => true, 'read_at' => $readAt]);
+                Message::whereIn('id', $unreadIds)
+                    ->update(['is_read' => true, 'read_at' => $readAt]);
 
-            broadcast(new MessagesRead(
-                conversationId: $conversation->id,
-                readerId: $user->id,
-                messageIds: $unreadIds->all(),
-                readAt: $readAt,
-            ));
+                broadcast(new MessagesRead(
+                    conversationId: $conversation->id,
+                    readerId: $user->id,
+                    messageIds: $unreadIds->all(),
+                    readAt: $readAt,
+                ));
+            }
         }
 
-        $conversation->load([
-            'participantOne',
-            'participantTwo',
-            'messages' => fn($q) => $q->with(['sender', 'replyTo.sender'])->orderBy('created_at'),
-        ]);
+        $query = Message::where('conversation_id', $conversation->id)
+            ->with(['sender', 'replyTo.sender'])
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
-        return $conversation;
+        if ($beforeId) {
+            $query->where('id', '<', $beforeId);
+        }
+
+        // Fetch one extra row to detect whether an older batch exists.
+        $paginated = $query->limit($perPage + 1)->get();
+
+        $hasMore = $paginated->count() > $perPage;
+        if ($hasMore) {
+            $paginated = $paginated->slice(0, $perPage);
+        }
+
+        // Capture next_cursor BEFORE reversing — last() in DESC order is the oldest message
+        $nextCursor = $hasMore ? $paginated->last()->id : null;
+
+        // Reverse to chronological order for the frontend
+        $messages = $paginated->reverse()->values();
+
+        return [
+            'conversation' => $conversation->load(['participantOne', 'participantTwo']),
+            'messages'     => $messages,
+            'has_more'     => $hasMore,
+            'next_cursor'  => $nextCursor,
+        ];
     }
 
     /**

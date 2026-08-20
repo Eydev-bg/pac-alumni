@@ -58,13 +58,22 @@ class MessageController extends Controller
      */
     public function messages(Request $request, int $id): JsonResponse
     {
-        $user = auth('api')->user();
+        $validated = $request->validate([
+            'before'   => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+        ]);
 
-        $conversation = $this->messageService->messages($user, $id);
+        $user = auth('api')->user();
+        $beforeId = $validated['before'] ?? null;
+        $perPage  = $validated['per_page'] ?? 30;
+
+        $result = $this->messageService->messages($user, $id, $beforeId, $perPage);
 
         return $this->success([
-            'conversation' => new ConversationResource($conversation),
-            'messages'     => MessageResource::collection($conversation->messages),
+            'conversation' => new ConversationResource($result['conversation']),
+            'messages'     => MessageResource::collection($result['messages']),
+            'has_more'     => $result['has_more'],
+            'next_cursor'  => $result['next_cursor'],
         ], 'Messages retrieved.');
     }
 
