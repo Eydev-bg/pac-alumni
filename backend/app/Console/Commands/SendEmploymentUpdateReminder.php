@@ -2,7 +2,7 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: backend/app/Console/Commands/SendEmploymentUpdateReminder.php
 //  Phase 4.2 — Nudge alumni whose current job has been on record
-//  for 6+ months to confirm/refresh their employment status.
+//  for 3+ months to confirm/refresh their employment status.
 //  Scheduled weekly on Monday at 09:00 (see routes/console.php).
 // ═══════════════════════════════════════════════════════════
 
@@ -17,12 +17,12 @@ class SendEmploymentUpdateReminder extends AbstractReminderCommand
 {
     protected $signature = 'reminder:employment';
 
-    protected $description = 'Email alumni whose current employment has not changed in 6+ months to refresh it.';
+    protected $description = 'Email alumni whose current employment has not changed in 3+ months to refresh it.';
 
     // Current employment older than this (months) is considered stale.
-    private const STALE_MONTHS = 6;
-    // Do not send another employment reminder within this many days (~6 months).
-    private const THROTTLE_DAYS = 180;
+    private const STALE_MONTHS = 3;
+    // Do not send another employment reminder within this many days (~3 months).
+    private const THROTTLE_DAYS = 90;
 
     public function handle(): int
     {
@@ -30,7 +30,7 @@ class SendEmploymentUpdateReminder extends AbstractReminderCommand
 
         // Current employment records whose start date is older than the cutoff.
         // A newer job would have created a fresh record and marked this one
-        // not-current, so a stale start_date means "no update in 6 months".
+        // not-current, so a stale start_date means "no update in 3 months".
         $records = EmploymentRecord::where('is_current', true)
             ->whereNotNull('start_date')
             ->whereDate('start_date', '<', $cutoff)
