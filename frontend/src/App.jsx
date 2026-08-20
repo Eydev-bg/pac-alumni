@@ -3,6 +3,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import AppRouter from "./routes/AppRouter";
+import NetworkStatusBanner from "./components/common/NetworkStatusBanner";
 
 export default function App() {
   return (
@@ -12,6 +13,9 @@ export default function App() {
     // the backend on login/refresh.
     <BrowserRouter>
       <ThemeProvider>
+        {/* Purely a browser API feature — no auth or toast context needed, but
+            inside ThemeProvider so its dark mode classes apply. */}
+        <NetworkStatusBanner />
         <ToastProvider>
           <AuthProvider>
             <AppRouter />
