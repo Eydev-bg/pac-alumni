@@ -160,8 +160,17 @@ export default function ConversationThread({
   const [attachment, setAttachment] = useState(null); // the File picked, not yet sent
   const [attachmentPreview, setAttachmentPreview] = useState(null); // object URL for image preview, or null for pdf
   const [lightboxSrc, setLightboxSrc] = useState(null); // open image attachment full screen
+  // Cursor pagination — the thread loads the newest page first, then walks
+  // backwards through history as the user scrolls up.
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
+  const scrollContainerRef = useRef(null);
   const bottomRef = useRef(null);
+  // Message count at the previous render — lets the auto-scroll effect tell an
+  // append (new message) from a prepend (loadMore).
+  const prevMessageCountRef = useRef(0);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const onActivityRef = useRef(onActivity);
@@ -189,6 +198,8 @@ export default function ConversationThread({
           const data = res.data.data;
           setOther(data.conversation?.other_participant ?? null);
           setMessages(data.messages ?? []);
+          setHasMore(data.has_more ?? false);
+          setNextCursor(data.next_cursor ?? null);
           // Opening a thread marks it read on the server — refresh badges.
           onActivityRef.current?.();
         })
@@ -198,10 +209,67 @@ export default function ConversationThread({
     [conversationId],
   );
 
+  // Fetch the batch immediately older than the current cursor and prepend it,
+  // holding the viewport still so the content the user is reading doesn't jump.
+  const loadMore = useCallback(() => {
+    if (!conversationId || !hasMore || !nextCursor || loadingMore) return;
+
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    // Save scroll metrics BEFORE the fetch
+    const prevScrollHeight = container.scrollHeight;
+    const prevScrollTop = container.scrollTop;
+
+    setLoadingMore(true);
+
+    alumniApi
+      .getMessages(conversationId, { before: nextCursor })
+      .then((res) => {
+        const data = res.data.data;
+        const olderMessages = data.messages ?? [];
+
+        setMessages((prev) => {
+          // Deduplicate by id
+          const existingIds = new Set(prev.map((m) => m.id));
+          const newOnes = olderMessages.filter((m) => !existingIds.has(m.id));
+          return [...newOnes, ...prev];
+        });
+
+        setHasMore(data.has_more ?? false);
+        setNextCursor(data.next_cursor ?? null);
+
+        // Restore scroll position AFTER React renders the prepended messages.
+        // requestAnimationFrame ensures the DOM has been updated.
+        requestAnimationFrame(() => {
+          if (container) {
+            const newScrollHeight = container.scrollHeight;
+            container.scrollTop =
+              prevScrollTop + (newScrollHeight - prevScrollHeight);
+          }
+        });
+      })
+      .catch(() => setError("Failed to load older messages."))
+      .finally(() => setLoadingMore(false));
+  }, [conversationId, hasMore, nextCursor, loadingMore]);
+
+  // Near the top of the thread → pull in the previous batch.
+  const handleScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    if (container.scrollTop < 80 && hasMore && !loadingMore) {
+      loadMore();
+    }
+  }, [hasMore, loadingMore, loadMore]);
+
   // Initial load + reload whenever the selected conversation changes.
   useEffect(() => {
     setLoading(true);
     setError("");
+    setHasMore(false);
+    setNextCursor(null);
+    setLoadingMore(false);
+    prevMessageCountRef.current = 0;
     load(true);
   }, [conversationId, load]);
 
@@ -292,10 +360,34 @@ export default function ConversationThread({
     }
   };
 
-  // Auto-scroll to the latest message when the list grows (including when an
-  // optimistic bubble is added to `pending`).
+  // Auto-scroll to the latest message when the list grows at the END (a new
+  // message, or an optimistic bubble added to `pending`) — but never when
+  // loadMore prepends older history at the top.
   useEffect(() => {
-    scrollToBottom(loading ? "auto" : "smooth");
+    // On initial load, scroll to bottom instantly
+    if (loading) return;
+
+    const currentCount = messages.length + pending.length;
+    const prevCount = prevMessageCountRef.current;
+
+    // Only auto-scroll when messages are added at the END (new messages or initial load)
+    // Not when prepended at the top (loadMore)
+    if (prevCount === 0 || currentCount <= prevCount) {
+      // Initial load or conversation switch — instant scroll
+      scrollToBottom("auto");
+    } else {
+      const container = scrollContainerRef.current;
+      if (container) {
+        // Auto-scroll only if user was already near the bottom
+        const distanceFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight;
+        if (distanceFromBottom < 150) {
+          scrollToBottom("smooth");
+        }
+      }
+    }
+
+    prevMessageCountRef.current = currentCount;
   }, [messages, pending, loading, scrollToBottom]);
 
   // Picking a message to reply to should drop the caret straight into the
@@ -539,7 +631,11 @@ export default function ConversationThread({
 
       {/* ── Messages ── */}
       <div
-        onScroll={() => revealedReplyId && setRevealedReplyId(null)}
+        ref={scrollContainerRef}
+        onScroll={() => {
+          if (revealedReplyId) setRevealedReplyId(null);
+          handleScroll();
+        }}
         className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50 dark:bg-slate-900"
       >
         {loading ? (
@@ -551,212 +647,230 @@ export default function ConversationThread({
             No messages yet. Say hello! 👋
           </p>
         ) : (
-          allMessages.map((m, i) => {
-            const own = isOwnMessage(m);
-            // A message is the LAST of its group when the next message is from a
-            // different sender (or there is no next message).
-            const next = allMessages[i + 1];
-            const isLastOfGroup = !next || isOwnMessage(next) !== own;
-            // Sent/Read status only makes sense on the very last message in
-            // the whole thread (Messenger-style) — showing it on every own
-            // bubble would be noisy and redundant.
-            const isLastOverall = i === allMessages.length - 1;
-            return (
-              <div
-                key={m.id}
-                className={`flex items-end gap-2 ${
-                  own ? "justify-end" : "justify-start"
-                }`}
-              >
-                {!own &&
-                  (isLastOfGroup ? (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        other?.uuid &&
-                        navigate(`/alumni/directory/${other.uuid}`)
-                      }
-                      title={
-                        other?.name
-                          ? `View ${other.name}'s profile`
-                          : "View profile"
-                      }
-                      className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                    >
-                      <Avatar
-                        src={other?.profile_picture}
-                        name={other?.name}
-                        size="xs"
-                      />
-                    </button>
-                  ) : (
-                    // Spacer so grouped bubbles stay aligned with the avatar row.
-                    <span className="w-7 flex-shrink-0" aria-hidden="true" />
-                  ))}
-                <div className="max-w-[75%]">
-                  {/* Quoted message (this bubble is a reply) */}
-                  {m.reply_to && (
-                    <div
-                      className={`mb-1 px-3 py-1.5 rounded-xl border-l-2 text-[0.72rem] leading-snug ${
-                        own
-                          ? "bg-blue-50 dark:bg-blue-500/10 border-blue-400 text-slate-500 dark:text-slate-400 ml-auto"
-                          : "bg-slate-100 dark:bg-slate-700/50 border-slate-400 text-slate-500 dark:text-slate-400"
-                      }`}
-                    >
-                      <span className="block font-semibold text-slate-600 dark:text-slate-300 truncate">
-                        {m.reply_to.is_mine ? "You" : m.reply_to.sender_name}
-                      </span>
-                      <span className="block truncate opacity-80">
-                        {m.reply_to.content}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Bubble + reply action, side by side */}
-                  <div
-                    className={`group/bubble flex items-center gap-1.5 ${
-                      own ? "flex-row-reverse" : "flex-row"
-                    }`}
+          <>
+            {hasMore && (
+              <div className="flex justify-center py-2">
+                {loadingMore ? (
+                  <p className="text-xs text-slate-400">
+                    Loading older messages…
+                  </p>
+                ) : (
+                  <button
+                    onClick={loadMore}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    <div
-                      onClick={() => toggleReplyReveal(m)}
-                      className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
-                        own
-                          ? "bg-blue-600 text-white rounded-br-md"
-                          : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
-                      } ${m._status === "sending" ? "opacity-70" : ""}`}
-                    >
-                      {/* Attachment first, then the text (which may be null on
-                          an attachment-only message). */}
-                      {m.attachment &&
-                        m.attachment.type === "image" &&
-                        (() => {
-                          // A pending bubble's url is a local blob: — use it
-                          // as-is; only server paths need resolving.
-                          const imgUrl = m.attachment._local
-                            ? m.attachment.url
-                            : storageUrl(m.attachment.url);
-                          return (
-                            <img
-                              src={imgUrl}
-                              alt={m.attachment.name || "Image attachment"}
-                              onClick={(e) => {
-                                // Don't also toggle the bubble's reply reveal.
-                                e.stopPropagation();
-                                if (imgUrl) setLightboxSrc(imgUrl);
-                              }}
-                              className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
-                            />
-                          );
-                        })()}
-                      {m.attachment &&
-                        m.attachment.type === "pdf" &&
-                        (() => {
-                          // We only build object URLs for images, so a pending
-                          // PDF has no url at all — render it unclickable
-                          // rather than as a broken link.
-                          const pdfUrl = m.attachment._local
-                            ? null
-                            : storageUrl(m.attachment.url);
-                          const card = (
-                            <span
-                              className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
-                                own
-                                  ? "bg-blue-500/40"
-                                  : "bg-slate-100 dark:bg-slate-700"
-                              }`}
-                            >
-                              <HiOutlineDocument
-                                className={`w-6 h-6 flex-shrink-0 ${
-                                  own ? "text-white" : "text-red-500"
-                                }`}
-                              />
-                              <span className="min-w-0">
-                                <span
-                                  className={`block text-xs font-semibold truncate ${
-                                    own
-                                      ? "text-white"
-                                      : "text-slate-700 dark:text-slate-200"
-                                  }`}
-                                >
-                                  {m.attachment.name || "Document.pdf"}
-                                </span>
-                                <span
-                                  className={`block text-[0.65rem] ${
-                                    own ? "text-blue-100" : "text-slate-400"
-                                  }`}
-                                >
-                                  {formatFileSize(m.attachment.size)} · PDF
-                                </span>
-                              </span>
-                            </span>
-                          );
-
-                          if (!pdfUrl) {
-                            return (
-                              <span className="block mb-1 opacity-80">
-                                {card}
-                              </span>
-                            );
-                          }
-
-                          return (
-                            <a
-                              href={pdfUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="block mb-1"
-                            >
-                              {card}
-                            </a>
-                          );
-                        })()}
-                      {m.content && <MessageText text={m.content} own={own} />}
-                    </div>
-
-                    {/* Reply button — only for real (saved) messages, not pending/failed */}
-                    {!m._status && (
+                    ↑ Load older messages
+                  </button>
+                )}
+              </div>
+            )}
+            {allMessages.map((m, i) => {
+              const own = isOwnMessage(m);
+              // A message is the LAST of its group when the next message is from a
+              // different sender (or there is no next message).
+              const next = allMessages[i + 1];
+              const isLastOfGroup = !next || isOwnMessage(next) !== own;
+              // Sent/Read status only makes sense on the very last message in
+              // the whole thread (Messenger-style) — showing it on every own
+              // bubble would be noisy and redundant.
+              const isLastOverall = i === allMessages.length - 1;
+              return (
+                <div
+                  key={m.id}
+                  className={`flex items-end gap-2 ${
+                    own ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {!own &&
+                    (isLastOfGroup ? (
                       <button
                         type="button"
-                        onClick={() => {
-                          setReplyingTo(m);
-                          setRevealedReplyId(null);
-                        }}
-                        title="Reply"
-                        aria-label="Reply to this message"
-                        className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
-                          revealedReplyId === m.id
-                            ? "opacity-100"
-                            : "opacity-0 pointer-events-none md:pointer-events-auto"
+                        onClick={() =>
+                          other?.uuid &&
+                          navigate(`/alumni/directory/${other.uuid}`)
+                        }
+                        title={
+                          other?.name
+                            ? `View ${other.name}'s profile`
+                            : "View profile"
+                        }
+                        className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                      >
+                        <Avatar
+                          src={other?.profile_picture}
+                          name={other?.name}
+                          size="xs"
+                        />
+                      </button>
+                    ) : (
+                      // Spacer so grouped bubbles stay aligned with the avatar row.
+                      <span className="w-7 flex-shrink-0" aria-hidden="true" />
+                    ))}
+                  <div className="max-w-[75%]">
+                    {/* Quoted message (this bubble is a reply) */}
+                    {m.reply_to && (
+                      <div
+                        className={`mb-1 px-3 py-1.5 rounded-xl border-l-2 text-[0.72rem] leading-snug ${
+                          own
+                            ? "bg-blue-50 dark:bg-blue-500/10 border-blue-400 text-slate-500 dark:text-slate-400 ml-auto"
+                            : "bg-slate-100 dark:bg-slate-700/50 border-slate-400 text-slate-500 dark:text-slate-400"
                         }`}
                       >
-                        <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
-                      </button>
+                        <span className="block font-semibold text-slate-600 dark:text-slate-300 truncate">
+                          {m.reply_to.is_mine ? "You" : m.reply_to.sender_name}
+                        </span>
+                        <span className="block truncate opacity-80">
+                          {m.reply_to.content}
+                        </span>
+                      </div>
                     )}
-                  </div>
 
-                  <p
-                    className={`mt-1 text-[0.65rem] text-slate-400 ${
-                      own ? "text-right" : "text-left"
-                    }`}
-                  >
-                    {own && m._status === "sending" ? (
-                      "Sending…"
-                    ) : own && m._status === "failed" ? (
-                      <span className="text-red-500 dark:text-red-400">
-                        Failed to send
-                      </span>
-                    ) : own && isLastOverall ? (
-                      (readLabel(m) ?? "Sent")
-                    ) : (
-                      bubbleTime(m.created_at)
-                    )}
-                  </p>
+                    {/* Bubble + reply action, side by side */}
+                    <div
+                      className={`group/bubble flex items-center gap-1.5 ${
+                        own ? "flex-row-reverse" : "flex-row"
+                      }`}
+                    >
+                      <div
+                        onClick={() => toggleReplyReveal(m)}
+                        className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
+                          own
+                            ? "bg-blue-600 text-white rounded-br-md"
+                            : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
+                        } ${m._status === "sending" ? "opacity-70" : ""}`}
+                      >
+                        {/* Attachment first, then the text (which may be null on
+                            an attachment-only message). */}
+                        {m.attachment &&
+                          m.attachment.type === "image" &&
+                          (() => {
+                            // A pending bubble's url is a local blob: — use it
+                            // as-is; only server paths need resolving.
+                            const imgUrl = m.attachment._local
+                              ? m.attachment.url
+                              : storageUrl(m.attachment.url);
+                            return (
+                              <img
+                                src={imgUrl}
+                                alt={m.attachment.name || "Image attachment"}
+                                onClick={(e) => {
+                                  // Don't also toggle the bubble's reply reveal.
+                                  e.stopPropagation();
+                                  if (imgUrl) setLightboxSrc(imgUrl);
+                                }}
+                                className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
+                              />
+                            );
+                          })()}
+                        {m.attachment &&
+                          m.attachment.type === "pdf" &&
+                          (() => {
+                            // We only build object URLs for images, so a pending
+                            // PDF has no url at all — render it unclickable
+                            // rather than as a broken link.
+                            const pdfUrl = m.attachment._local
+                              ? null
+                              : storageUrl(m.attachment.url);
+                            const card = (
+                              <span
+                                className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
+                                  own
+                                    ? "bg-blue-500/40"
+                                    : "bg-slate-100 dark:bg-slate-700"
+                                }`}
+                              >
+                                <HiOutlineDocument
+                                  className={`w-6 h-6 flex-shrink-0 ${
+                                    own ? "text-white" : "text-red-500"
+                                  }`}
+                                />
+                                <span className="min-w-0">
+                                  <span
+                                    className={`block text-xs font-semibold truncate ${
+                                      own
+                                        ? "text-white"
+                                        : "text-slate-700 dark:text-slate-200"
+                                    }`}
+                                  >
+                                    {m.attachment.name || "Document.pdf"}
+                                  </span>
+                                  <span
+                                    className={`block text-[0.65rem] ${
+                                      own ? "text-blue-100" : "text-slate-400"
+                                    }`}
+                                  >
+                                    {formatFileSize(m.attachment.size)} · PDF
+                                  </span>
+                                </span>
+                              </span>
+                            );
+
+                            if (!pdfUrl) {
+                              return (
+                                <span className="block mb-1 opacity-80">
+                                  {card}
+                                </span>
+                              );
+                            }
+
+                            return (
+                              <a
+                                href={pdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className="block mb-1"
+                              >
+                                {card}
+                              </a>
+                            );
+                          })()}
+                        {m.content && <MessageText text={m.content} own={own} />}
+                      </div>
+
+                      {/* Reply button — only for real (saved) messages, not pending/failed */}
+                      {!m._status && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyingTo(m);
+                            setRevealedReplyId(null);
+                          }}
+                          title="Reply"
+                          aria-label="Reply to this message"
+                          className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
+                            revealedReplyId === m.id
+                              ? "opacity-100"
+                              : "opacity-0 pointer-events-none md:pointer-events-auto"
+                          }`}
+                        >
+                          <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <p
+                      className={`mt-1 text-[0.65rem] text-slate-400 ${
+                        own ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {own && m._status === "sending" ? (
+                        "Sending…"
+                      ) : own && m._status === "failed" ? (
+                        <span className="text-red-500 dark:text-red-400">
+                          Failed to send
+                        </span>
+                      ) : own && isLastOverall ? (
+                        (readLabel(m) ?? "Sent")
+                      ) : (
+                        bubbleTime(m.created_at)
+                      )}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </>
         )}
         <div ref={bottomRef} />
       </div>

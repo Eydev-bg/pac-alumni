@@ -122,8 +122,13 @@ const alumniApi = {
     return api.post('/alumni/conversations', { recipient_id: recipientId });
   },
 
-  getMessages(conversationId) {
-    return api.get(`/alumni/conversations/${conversationId}/messages`);
+  getMessages(conversationId, { before, perPage } = {}) {
+    const params = {};
+    if (before) params.before = before;
+    if (perPage) params.per_page = perPage;
+    return api.get(`/alumni/conversations/${conversationId}/messages`, {
+      params,
+    });
   },
 
   // Sent as multipart so the request can carry an optional image/PDF file.
