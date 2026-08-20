@@ -1,4 +1,7 @@
-import { HiOutlineExclamationTriangle, HiOutlineCheckCircle } from "react-icons/hi2";
+import {
+  HiOutlineExclamationTriangle,
+  HiOutlineCheckCircle,
+} from "react-icons/hi2";
 import useNetworkStatus from "../../hooks/useNetworkStatus";
 
 /**
@@ -30,8 +33,8 @@ export default function NetworkStatusBanner() {
       )}
       <span>
         {isOffline
-          ? "Connection problem — Please check your internet connection."
-          : "Back online — Your connection has been restored."}
+          ? "Connection problem - Please check your internet connection."
+          : "Back online - Your connection has been restored."}
       </span>
     </div>
   );
