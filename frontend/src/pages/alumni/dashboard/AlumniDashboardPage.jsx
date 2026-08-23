@@ -226,11 +226,12 @@ function QuickActions() {
 
   return (
     <div>
-      <h2 className="text-base font-semibold text-slate-800 mb-3 dark:text-slate-200">
+      <h2 className="hidden lg:block text-base font-semibold text-slate-800 mb-3 dark:text-slate-200">
         Quick Actions
       </h2>
-      {/* 2×2 on mobile, a single row of 4 on sm+. */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {/* Hidden on mobile — the MobileTabBar (lg:hidden) already covers this
+          navigation. A single row of 4 on lg+. */}
+      <div className="hidden lg:grid lg:grid-cols-4 gap-3">
         {actions.map((a) => (
           <Link
             key={a.to}
