@@ -154,7 +154,7 @@ export default function AlumniInboxPage() {
       </div>
 
       {/* ━━━━ Two-panel layout ━━━━ */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
         <div className="flex h-[calc(100dvh-220px)] min-h-[320px]">
           {/* ── Left: conversation list ── */}
           <div className="w-full lg:w-[360px] lg:border-r border-slate-200 dark:border-slate-700 flex flex-col">

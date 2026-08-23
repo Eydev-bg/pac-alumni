@@ -8,7 +8,7 @@ function ThemePreview({ dark }) {
   return (
     <div
       className={cn(
-        "rounded-lg border overflow-hidden shadow-sm",
+        "rounded-lg border overflow-hidden shadow-sm dark:shadow-none",
         dark ? "bg-slate-900 border-slate-700" : "bg-white border-slate-200",
       )}
       aria-hidden="true"

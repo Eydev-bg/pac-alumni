@@ -373,7 +373,7 @@ export default function EmploymentSection({ onSaved }) {
                               }
                               className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
                                 selected
-                                  ? "border-blue-500 bg-blue-50 shadow-sm dark:border-blue-400 dark:bg-blue-500/15"
+                                  ? "border-blue-500 bg-blue-50 shadow-sm dark:shadow-none dark:border-blue-400 dark:bg-blue-500/15"
                                   : "border-slate-200 hover:border-slate-300 bg-white dark:border-slate-600 dark:hover:border-slate-500 dark:bg-slate-900"
                               }`}
                             >

@@ -177,7 +177,7 @@ export default function AlumniBoardExamPage() {
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm p-8">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none p-8">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -297,7 +297,7 @@ export default function AlumniBoardExamPage() {
       )}
 
       {/* ━━━━ Submit New Record ━━━━ */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
@@ -336,7 +336,7 @@ export default function AlumniBoardExamPage() {
                   onClick={() => setFormData({ ...formData, status: "passed" })}
                   className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all duration-200 ${
                     formData.status === "passed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500 dark:bg-emerald-500/15"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:shadow-none dark:border-emerald-500 dark:bg-emerald-500/15"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
@@ -545,7 +545,7 @@ export default function AlumniBoardExamPage() {
 
       {/* ━━━━ Exam History ━━━━ */}
       {hasRecords && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
           <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">

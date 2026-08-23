@@ -142,7 +142,7 @@ function AnnouncementCard({ announcement: a, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className={`w-full text-left block bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm ${
+      className={`w-full text-left block bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
         a.is_read
           ? "border-slate-200 dark:border-slate-700"
           : "border-blue-300 ring-1 ring-blue-100 dark:border-blue-500/50 dark:ring-blue-500/20"

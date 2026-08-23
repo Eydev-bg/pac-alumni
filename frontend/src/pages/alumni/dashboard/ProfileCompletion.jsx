@@ -28,7 +28,7 @@ export default function ProfileCompletion() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-5">
         <div className="h-2 w-40 bg-slate-100 dark:bg-slate-700 rounded animate-pulse mb-3" />
         <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full animate-pulse" />
       </div>
@@ -59,7 +59,7 @@ export default function ProfileCompletion() {
   const nextPercentage = total > 0 ? Math.round(((completed + 1) / total) * 100) : 100;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-5">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-5">
       {/* ── Header row ── */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

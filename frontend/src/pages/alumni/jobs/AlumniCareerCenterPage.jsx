@@ -338,7 +338,7 @@ function PosterAttribution({ job }) {
 function JobCard({ job, showOwnerActions, onEdit, onDelete }) {
   return (
     <div
-      className={`bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm ${
+      className={`bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
         job.is_pinned
           ? "border-amber-300 ring-1 ring-amber-100 dark:border-amber-500/50 dark:ring-amber-500/20"
           : "border-slate-200 dark:border-slate-700"

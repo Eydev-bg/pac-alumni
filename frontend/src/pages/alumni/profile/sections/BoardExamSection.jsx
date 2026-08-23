@@ -209,7 +209,7 @@ export default function BoardExamSection({ onSaved }) {
                   onClick={() => setFormData({ ...formData, status: "passed" })}
                   className={`relative flex items-center gap-3 p-4 w-full rounded-xl border-2 transition-all ${
                     formData.status === "passed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500/50 dark:bg-emerald-500/10"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:shadow-none dark:border-emerald-500/50 dark:bg-emerald-500/10"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >

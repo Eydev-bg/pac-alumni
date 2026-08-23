@@ -91,7 +91,7 @@ export default function AchievementFeed() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm dark:bg-slate-800 dark:border-slate-700">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm dark:shadow-none dark:bg-slate-800 dark:border-slate-700">
       <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2 dark:border-slate-700">
         <HiOutlineTrophy className="w-4 h-4 text-blue-600 dark:text-blue-400" />
         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Alumni Achievements</h3>

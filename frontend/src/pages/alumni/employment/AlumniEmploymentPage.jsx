@@ -310,7 +310,7 @@ export default function AlumniEmploymentPage() {
       )}
 
       {/* ━━━━ Update Form ━━━━ */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
         <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
@@ -358,7 +358,7 @@ export default function AlumniEmploymentPage() {
                   }
                   className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "employed"
-                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:border-emerald-500 dark:bg-emerald-500/15"
+                      ? "border-emerald-400 bg-emerald-50 shadow-sm dark:shadow-none dark:border-emerald-500 dark:bg-emerald-500/15"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
@@ -423,7 +423,7 @@ export default function AlumniEmploymentPage() {
                   }
                   className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "unemployed"
-                      ? "border-amber-300 bg-amber-50 shadow-sm dark:border-amber-500 dark:bg-amber-500/15"
+                      ? "border-amber-300 bg-amber-50 shadow-sm dark:shadow-none dark:border-amber-500 dark:bg-amber-500/15"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
                   }`}
                 >
@@ -613,7 +613,7 @@ export default function AlumniEmploymentPage() {
                             }
                             className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
                               selected
-                                ? "border-[#1a2e5a] bg-[#1a2e5a]/[0.05] shadow-sm dark:border-blue-500 dark:bg-blue-500/10"
+                                ? "border-[#1a2e5a] bg-[#1a2e5a]/[0.05] shadow-sm dark:shadow-none dark:border-blue-500 dark:bg-blue-500/10"
                                 : "border-slate-200 hover:border-slate-300 bg-white dark:border-slate-700 dark:hover:border-slate-500 dark:bg-slate-800"
                             }`}
                           >
@@ -733,7 +733,7 @@ export default function AlumniEmploymentPage() {
 
       {/* ━━━━ Employment History ━━━━ */}
       {hasRecords && (
-        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
           <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">

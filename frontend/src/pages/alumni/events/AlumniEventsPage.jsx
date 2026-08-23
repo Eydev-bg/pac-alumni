@@ -300,7 +300,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
   return (
     <div
       className={cn(
-        "bg-white dark:bg-slate-800 rounded-2xl border p-6 shadow-sm transition-all hover:shadow-md",
+        "bg-white dark:bg-slate-800 rounded-2xl border p-6 shadow-sm dark:shadow-none transition-all hover:shadow-md dark:hover:shadow-none",
         a.is_pinned
           ? "border-amber-300 ring-1 ring-amber-100 dark:border-amber-500/50 dark:ring-amber-500/20"
           : "border-slate-200 dark:border-slate-700",

@@ -235,7 +235,7 @@ function QuickActions() {
           <Link
             key={a.to}
             to={a.to}
-            className="group flex flex-col items-center text-center bg-white rounded-xl border border-slate-200/80 shadow-sm p-3 lg:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all dark:bg-slate-800 dark:border-slate-700"
+            className="group flex flex-col items-center text-center bg-white rounded-xl border border-slate-200/80 shadow-sm dark:shadow-none p-3 lg:p-5 hover:shadow-md dark:hover:shadow-none hover:-translate-y-0.5 transition-all dark:bg-slate-800 dark:border-slate-700"
           >
             <span
               className={`inline-flex items-center justify-center flex-shrink-0 rounded-xl w-10 h-10 lg:w-12 lg:h-12 mb-2 lg:mb-3 ${chipColor[a.color]}`}
