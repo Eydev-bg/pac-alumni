@@ -22,8 +22,8 @@ export default function NetworkStatusBanner() {
       role="alert"
       className={`fixed top-0 inset-x-0 z-[9999] flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium shadow-sm transition-colors ${
         isOffline
-          ? "bg-amber-50 text-amber-800 border-b border-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:border-amber-500/25"
-          : "bg-emerald-50 text-emerald-800 border-b border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:border-emerald-500/25"
+          ? "bg-amber-50 text-amber-800 border-b border-amber-200 dark:bg-amber-900/90 dark:text-amber-100 dark:border-amber-700"
+          : "bg-emerald-50 text-emerald-800 border-b border-emerald-200 dark:bg-emerald-900/90 dark:text-emerald-100 dark:border-emerald-700"
       }`}
     >
       {isOffline ? (
