@@ -4,7 +4,7 @@
 //  panel AND the standalone mobile conversation page).
 // ═══════════════════════════════════════════════════════════
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -50,6 +50,60 @@ function bubbleTime(iso) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+/**
+ * Messenger-style separator label:
+ *   Today → "Today 3:45 PM"
+ *   Yesterday → "Yesterday 3:45 PM"
+ *   This week → "Mon 3:45 PM"
+ *   This year → "Jan 15, 3:45 PM"
+ *   Older → "Jan 15, 2024, 3:45 PM"
+ */
+function formatSeparatorDate(iso) {
+  if (!iso) return "";
+  const date = new Date(iso);
+  const now = new Date();
+  const time = date.toLocaleTimeString("en-PH", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  const diffMs = now - date;
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  const isToday = date.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  if (isToday) return `Today ${time}`;
+  if (isYesterday) return `Yesterday ${time}`;
+  if (diffDays < 7) {
+    const day = date.toLocaleDateString("en-PH", { weekday: "short" });
+    return `${day} ${time}`;
+  }
+  if (date.getFullYear() === now.getFullYear()) {
+    const monthDay = date.toLocaleDateString("en-PH", {
+      month: "short",
+      day: "numeric",
+    });
+    return `${monthDay}, ${time}`;
+  }
+  const full = date.toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+  return `${full}, ${time}`;
+}
+
+/** Returns true when a centered time divider should appear before this message. */
+function shouldShowSeparator(currentMsg, prevMsg) {
+  if (!prevMsg) return true; // first message always gets a separator
+  const curr = new Date(currentMsg.created_at).getTime();
+  const prev = new Date(prevMsg.created_at).getTime();
+  return curr - prev > 5 * 60 * 1000; // 5 minutes
 }
 
 // Matches http(s):// URLs and bare www. URLs. Kept deliberately simple —
@@ -674,200 +728,215 @@ export default function ConversationThread({
               // the whole thread (Messenger-style) — showing it on every own
               // bubble would be noisy and redundant.
               const isLastOverall = i === allMessages.length - 1;
+              // Messenger-style: a centered time divider opens each group of
+              // messages that are close together in time.
+              const prev = allMessages[i - 1];
+              const showSeparator = shouldShowSeparator(m, prev);
               return (
-                <div
-                  key={m.id}
-                  className={`flex items-end gap-2 ${
-                    own ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  {!own &&
-                    (isLastOfGroup ? (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          other?.uuid &&
-                          navigate(`/alumni/directory/${other.uuid}`)
-                        }
-                        title={
-                          other?.name
-                            ? `View ${other.name}'s profile`
-                            : "View profile"
-                        }
-                        className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                      >
-                        <Avatar
-                          src={other?.profile_picture}
-                          name={other?.name}
-                          size="xs"
-                        />
-                      </button>
-                    ) : (
-                      // Spacer so grouped bubbles stay aligned with the avatar row.
-                      <span className="w-7 flex-shrink-0" aria-hidden="true" />
-                    ))}
-                  <div className="max-w-[75%]">
-                    {/* Quoted message (this bubble is a reply) */}
-                    {m.reply_to && (
-                      <div
-                        className={`mb-1 px-3 py-1.5 rounded-xl border-l-2 text-[0.72rem] leading-snug ${
-                          own
-                            ? "bg-blue-50 dark:bg-blue-500/10 border-blue-400 text-slate-500 dark:text-slate-400 ml-auto"
-                            : "bg-slate-100 dark:bg-slate-700/50 border-slate-400 text-slate-500 dark:text-slate-400"
-                        }`}
-                      >
-                        <span className="block font-semibold text-slate-600 dark:text-slate-300 truncate">
-                          {m.reply_to.is_mine ? "You" : m.reply_to.sender_name}
-                        </span>
-                        <span className="block truncate opacity-80">
-                          {m.reply_to.content}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Bubble + reply action, side by side */}
-                    <div
-                      className={`group/bubble flex items-center gap-1.5 ${
-                        own ? "flex-row-reverse" : "flex-row"
-                      }`}
-                    >
-                      <div
-                        onClick={() => toggleReplyReveal(m)}
-                        className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
-                          own
-                            ? "bg-blue-600 text-white rounded-br-md"
-                            : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
-                        } ${m._status === "sending" ? "opacity-70" : ""}`}
-                      >
-                        {/* Attachment first, then the text (which may be null on
-                            an attachment-only message). */}
-                        {m.attachment &&
-                          m.attachment.type === "image" &&
-                          (() => {
-                            // A pending bubble's url is a local blob: — use it
-                            // as-is; only server paths need resolving.
-                            const imgUrl = m.attachment._local
-                              ? m.attachment.url
-                              : storageUrl(m.attachment.url);
-                            return (
-                              <img
-                                src={imgUrl}
-                                alt={m.attachment.name || "Image attachment"}
-                                onClick={(e) => {
-                                  // Don't also toggle the bubble's reply reveal.
-                                  e.stopPropagation();
-                                  if (imgUrl) setLightboxSrc(imgUrl);
-                                }}
-                                className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
-                              />
-                            );
-                          })()}
-                        {m.attachment &&
-                          m.attachment.type === "pdf" &&
-                          (() => {
-                            // We only build object URLs for images, so a pending
-                            // PDF has no url at all — render it unclickable
-                            // rather than as a broken link.
-                            const pdfUrl = m.attachment._local
-                              ? null
-                              : storageUrl(m.attachment.url);
-                            const card = (
-                              <span
-                                className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
-                                  own
-                                    ? "bg-blue-500/40"
-                                    : "bg-slate-100 dark:bg-slate-700"
-                                }`}
-                              >
-                                <HiOutlineDocument
-                                  className={`w-6 h-6 flex-shrink-0 ${
-                                    own ? "text-white" : "text-red-500"
-                                  }`}
-                                />
-                                <span className="min-w-0">
-                                  <span
-                                    className={`block text-xs font-semibold truncate ${
-                                      own
-                                        ? "text-white"
-                                        : "text-slate-700 dark:text-slate-200"
-                                    }`}
-                                  >
-                                    {m.attachment.name || "Document.pdf"}
-                                  </span>
-                                  <span
-                                    className={`block text-[0.65rem] ${
-                                      own ? "text-blue-100" : "text-slate-400"
-                                    }`}
-                                  >
-                                    {formatFileSize(m.attachment.size)} · PDF
-                                  </span>
-                                </span>
-                              </span>
-                            );
-
-                            if (!pdfUrl) {
-                              return (
-                                <span className="block mb-1 opacity-80">
-                                  {card}
-                                </span>
-                              );
-                            }
-
-                            return (
-                              <a
-                                href={pdfUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="block mb-1"
-                              >
-                                {card}
-                              </a>
-                            );
-                          })()}
-                        {m.content && <MessageText text={m.content} own={own} />}
-                      </div>
-
-                      {/* Reply button — only for real (saved) messages, not pending/failed */}
-                      {!m._status && (
+                <React.Fragment key={m.id}>
+                  {showSeparator && (
+                    <div className="flex justify-center my-4">
+                      <span className="px-3 py-1 text-[0.68rem] font-medium text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 rounded-full">
+                        {formatSeparatorDate(m.created_at)}
+                      </span>
+                    </div>
+                  )}
+                  <div
+                    className={`flex items-end gap-2 ${
+                      own ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {!own &&
+                      (isLastOfGroup ? (
                         <button
                           type="button"
-                          onClick={() => {
-                            setReplyingTo(m);
-                            setRevealedReplyId(null);
-                          }}
-                          title="Reply"
-                          aria-label="Reply to this message"
-                          className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
-                            revealedReplyId === m.id
-                              ? "opacity-100"
-                              : "opacity-0 pointer-events-none md:pointer-events-auto"
+                          onClick={() =>
+                            other?.uuid &&
+                            navigate(`/alumni/directory/${other.uuid}`)
+                          }
+                          title={
+                            other?.name
+                              ? `View ${other.name}'s profile`
+                              : "View profile"
+                          }
+                          className="flex-shrink-0 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                        >
+                          <Avatar
+                            src={other?.profile_picture}
+                            name={other?.name}
+                            size="xs"
+                          />
+                        </button>
+                      ) : (
+                        // Spacer so grouped bubbles stay aligned with the avatar row.
+                        <span className="w-7 flex-shrink-0" aria-hidden="true" />
+                      ))}
+                    <div className="max-w-[75%]">
+                      {/* Quoted message (this bubble is a reply) */}
+                      {m.reply_to && (
+                        <div
+                          className={`mb-1 px-3 py-1.5 rounded-xl border-l-2 text-[0.72rem] leading-snug ${
+                            own
+                              ? "bg-blue-50 dark:bg-blue-500/10 border-blue-400 text-slate-500 dark:text-slate-400 ml-auto"
+                              : "bg-slate-100 dark:bg-slate-700/50 border-slate-400 text-slate-500 dark:text-slate-400"
                           }`}
                         >
-                          <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
-                        </button>
+                          <span className="block font-semibold text-slate-600 dark:text-slate-300 truncate">
+                            {m.reply_to.is_mine ? "You" : m.reply_to.sender_name}
+                          </span>
+                          <span className="block truncate opacity-80">
+                            {m.reply_to.content}
+                          </span>
+                        </div>
                       )}
-                    </div>
 
-                    <p
-                      className={`mt-1 text-[0.65rem] text-slate-400 ${
-                        own ? "text-right" : "text-left"
-                      }`}
-                    >
-                      {own && m._status === "sending" ? (
-                        "Sending…"
-                      ) : own && m._status === "failed" ? (
-                        <span className="text-red-500 dark:text-red-400">
-                          Failed to send
-                        </span>
-                      ) : own && isLastOverall ? (
-                        (readLabel(m) ?? "Sent")
-                      ) : (
-                        bubbleTime(m.created_at)
-                      )}
-                    </p>
+                      {/* Bubble + reply action, side by side */}
+                      <div
+                        className={`group/bubble flex items-center gap-1.5 ${
+                          own ? "flex-row-reverse" : "flex-row"
+                        }`}
+                      >
+                        <div
+                          onClick={() => toggleReplyReveal(m)}
+                          className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
+                            own
+                              ? "bg-blue-600 text-white rounded-br-md"
+                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
+                          } ${m._status === "sending" ? "opacity-70" : ""}`}
+                        >
+                          {/* Attachment first, then the text (which may be null on
+                              an attachment-only message). */}
+                          {m.attachment &&
+                            m.attachment.type === "image" &&
+                            (() => {
+                              // A pending bubble's url is a local blob: — use it
+                              // as-is; only server paths need resolving.
+                              const imgUrl = m.attachment._local
+                                ? m.attachment.url
+                                : storageUrl(m.attachment.url);
+                              return (
+                                <img
+                                  src={imgUrl}
+                                  alt={m.attachment.name || "Image attachment"}
+                                  onClick={(e) => {
+                                    // Don't also toggle the bubble's reply reveal.
+                                    e.stopPropagation();
+                                    if (imgUrl) setLightboxSrc(imgUrl);
+                                  }}
+                                  className="max-w-[220px] max-h-[260px] rounded-xl object-cover cursor-pointer mb-1"
+                                />
+                              );
+                            })()}
+                          {m.attachment &&
+                            m.attachment.type === "pdf" &&
+                            (() => {
+                              // We only build object URLs for images, so a pending
+                              // PDF has no url at all — render it unclickable
+                              // rather than as a broken link.
+                              const pdfUrl = m.attachment._local
+                                ? null
+                                : storageUrl(m.attachment.url);
+                              const card = (
+                                <span
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-xl ${
+                                    own
+                                      ? "bg-blue-500/40"
+                                      : "bg-slate-100 dark:bg-slate-700"
+                                  }`}
+                                >
+                                  <HiOutlineDocument
+                                    className={`w-6 h-6 flex-shrink-0 ${
+                                      own ? "text-white" : "text-red-500"
+                                    }`}
+                                  />
+                                  <span className="min-w-0">
+                                    <span
+                                      className={`block text-xs font-semibold truncate ${
+                                        own
+                                          ? "text-white"
+                                          : "text-slate-700 dark:text-slate-200"
+                                      }`}
+                                    >
+                                      {m.attachment.name || "Document.pdf"}
+                                    </span>
+                                    <span
+                                      className={`block text-[0.65rem] ${
+                                        own ? "text-blue-100" : "text-slate-400"
+                                      }`}
+                                    >
+                                      {formatFileSize(m.attachment.size)} · PDF
+                                    </span>
+                                  </span>
+                                </span>
+                              );
+
+                              if (!pdfUrl) {
+                                return (
+                                  <span className="block mb-1 opacity-80">
+                                    {card}
+                                  </span>
+                                );
+                              }
+
+                              return (
+                                <a
+                                  href={pdfUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="block mb-1"
+                                >
+                                  {card}
+                                </a>
+                              );
+                            })()}
+                          {m.content && <MessageText text={m.content} own={own} />}
+                        </div>
+
+                        {/* Reply button — only for real (saved) messages, not pending/failed */}
+                        {!m._status && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReplyingTo(m);
+                              setRevealedReplyId(null);
+                            }}
+                            title="Reply"
+                            aria-label="Reply to this message"
+                            className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
+                              revealedReplyId === m.id
+                                ? "opacity-100"
+                                : "opacity-0 pointer-events-none md:pointer-events-auto"
+                            }`}
+                          >
+                            <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {own &&
+                        (m._status === "sending" ||
+                          m._status === "failed" ||
+                          isLastOverall) && (
+                          <p
+                            className={`mt-1 text-[0.65rem] text-slate-400 ${
+                              own ? "text-right" : "text-left"
+                            }`}
+                          >
+                            {m._status === "sending" ? (
+                              "Sending…"
+                            ) : m._status === "failed" ? (
+                              <span className="text-red-500 dark:text-red-400">
+                                Failed to send
+                              </span>
+                            ) : (
+                              (readLabel(m) ?? "Sent")
+                            )}
+                          </p>
+                        )}
+                    </div>
                   </div>
-                </div>
+                </React.Fragment>
               );
             })}
           </>
