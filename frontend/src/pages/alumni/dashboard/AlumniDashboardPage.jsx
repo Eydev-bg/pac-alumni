@@ -1,9 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/pages/alumni/dashboard/AlumniDashboardPage.jsx
 //  Alumni Home Dashboard — blue light-SaaS redesign (Phase A, Batch 2).
-//  Multi-column layout: Welcome + Quick Actions + Latest Announcement +
-//  Upcoming Event + Latest Jobs (main), Notifications + Recent Messages
-//  (right rail). Every panel fetches from an EXISTING endpoint
+//  Single-column layout: Welcome + Quick Actions + Latest Announcement +
+//  Upcoming Event + Latest Jobs. Every panel fetches from an EXISTING endpoint
 //  and owns its loading skeleton + empty state independently.
 // ═══════════════════════════════════════════════════════════
 
@@ -56,25 +55,14 @@ function dateParts(iso) {
 
 export default function AlumniDashboardPage() {
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* ── Main column ── */}
-        <div className="xl:col-span-2 space-y-6">
-          <WelcomeCard />
-          <QuickActions />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <LatestAnnouncement />
-            <UpcomingEvent />
-          </div>
-          <LatestJobs />
-        </div>
-
-        {/* ── Right rail ── */}
-        <div className="space-y-6">
-          <NotificationsPanel />
-          <RecentMessages />
-        </div>
+    <div className="max-w-7xl mx-auto space-y-6">
+      <WelcomeCard />
+      <QuickActions />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <LatestAnnouncement />
+        <UpcomingEvent />
       </div>
+      <LatestJobs />
     </div>
   );
 }
@@ -123,40 +111,43 @@ function WelcomeCard() {
 
   return (
     <AlumniCard className="p-6 dark:bg-slate-800 dark:border-slate-700">
-      <div className="flex flex-col sm:flex-row gap-5">
-        {/* Photo */}
-        {personal?.profile_picture ? (
-          <img
-            src={storageUrl(personal.profile_picture)}
-            alt={personal.full_name}
-            className="w-20 h-20 rounded-full object-cover flex-shrink-0"
-          />
-        ) : (
-          <Avatar
-            name={personal?.full_name}
-            size="xl"
-            className="w-20 h-20 rounded-full"
-          />
-        )}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+        {/* Greeting half — avatar + text share the left 50% on desktop */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 flex-1 min-w-0">
+          {/* Photo */}
+          {personal?.profile_picture ? (
+            <img
+              src={storageUrl(personal.profile_picture)}
+              alt={personal.full_name}
+              className="w-20 h-20 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <Avatar
+              name={personal?.full_name}
+              size="xl"
+              className="w-20 h-20 rounded-full"
+            />
+          )}
 
-        {/* Greeting + welcome text */}
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-bold text-slate-800 dark:text-white">
-            {greeting()}, {firstName}! <span aria-hidden="true">👋</span>
-          </h1>
-          <p className="mt-1 text-sm text-slate-500 leading-relaxed dark:text-slate-400">
-            Welcome back to PAC Alumni Community. Let's stay connected and
-            continue building our future together.
-          </p>
+          {/* Greeting + welcome text */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white">
+              {greeting()}, {firstName}! <span aria-hidden="true">👋</span>
+            </h1>
+            <p className="mt-1 text-sm text-slate-500 leading-relaxed dark:text-slate-400">
+              Welcome back to PAC Alumni Community. Let's stay connected and
+              continue building our future together.
+            </p>
+          </div>
         </div>
 
         {/* Profile completion — hidden once the profile is 100% complete so the
             card collapses to just the greeting + avatar (the border-l divider
             lives on this block, so hiding it leaves no orphaned divider, and the
-            greeting's flex-1 expands to fill the space). Gated on `completion`
+            greeting half's flex-1 then expands to fill the card). Gated on `completion`
             so it doesn't flash in while data is still loading. */}
         {completion && pct < 100 && (
-          <div className="sm:w-56 sm:border-l sm:border-slate-100 sm:pl-5 flex-shrink-0 sm:dark:border-slate-700">
+          <div className="flex-1 min-w-0 sm:border-l sm:border-slate-100 sm:pl-5 sm:dark:border-slate-700">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
                 Profile Completion
