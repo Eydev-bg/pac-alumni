@@ -104,15 +104,6 @@ const alumniApi = {
     return api.delete(`/alumni/events/${id}/rsvp`);
   },
 
-  // ─── Achievement Feed (Phase 3.1) ──────────────────────
-  getAchievementFeed(params = {}) {
-    return api.get('/alumni/achievement-feed', { params });
-  },
-
-  toggleAchievementVisibility(id) {
-    return api.patch(`/alumni/achievement-feed/${id}/visibility`);
-  },
-
   // ─── Messaging (Phase 3.3) ─────────────────────────────
   getConversations() {
     return api.get('/alumni/conversations');

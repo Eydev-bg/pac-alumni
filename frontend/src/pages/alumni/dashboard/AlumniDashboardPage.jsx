@@ -2,8 +2,8 @@
 //  FILE: frontend/src/pages/alumni/dashboard/AlumniDashboardPage.jsx
 //  Alumni Home Dashboard — blue light-SaaS redesign (Phase A, Batch 2).
 //  Multi-column layout: Welcome + Quick Actions + Latest Announcement +
-//  Upcoming Event + Latest Jobs (main), Notifications + Recent Messages +
-//  Achievements (right rail). Every panel fetches from an EXISTING endpoint
+//  Upcoming Event + Latest Jobs (main), Notifications + Recent Messages
+//  (right rail). Every panel fetches from an EXISTING endpoint
 //  and owns its loading skeleton + empty state independently.
 // ═══════════════════════════════════════════════════════════
 
@@ -25,7 +25,6 @@ import {
   Avatar,
   Badge,
 } from "../../../components/alumni/ui";
-import AchievementFeed from "./AchievementFeed";
 import {
   HiOutlineUser,
   HiOutlineUserGroup,
@@ -74,7 +73,6 @@ export default function AlumniDashboardPage() {
         <div className="space-y-6">
           <NotificationsPanel />
           <RecentMessages />
-          <AchievementFeed />
         </div>
       </div>
     </div>
