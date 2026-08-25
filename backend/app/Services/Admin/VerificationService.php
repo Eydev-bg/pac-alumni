@@ -9,7 +9,6 @@ use App\Enums\EmploymentStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Enums\VerificationStatus;
-use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\Graduate;
 use App\Models\RegistrationBlacklist;
@@ -123,9 +122,6 @@ class VerificationService
                 'employment_status' => EmploymentStatus::UNKNOWN,
                 'board_status' => $boardStatus,
             ]);
-
-            // ─── Phase 3.1: Welcome the new alumnus to the feed ─
-            AchievementFeed::recordRegistration($profile, $user->full_name);
 
             // Log success
             VerificationLog::create([

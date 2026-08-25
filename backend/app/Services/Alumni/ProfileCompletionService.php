@@ -90,7 +90,7 @@ class ProfileCompletionService
 
     /**
      * Whether the alumni's profile is 100% complete. Single source of truth
-     * reused by the achievement feed's "profile completed" milestone.
+     * for profile-completion checks across the app.
      */
     public function isComplete(AlumniProfile $profile): bool
     {

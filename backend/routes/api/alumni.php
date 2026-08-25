@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\Alumni\AchievementFeedController;
 use App\Http\Controllers\Api\Alumni\AlumniAnnouncementController;
 use App\Http\Controllers\Api\Alumni\AlumniController;
 use App\Http\Controllers\Api\Alumni\BoardExamController;
@@ -113,12 +112,6 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
         ->name('alumni.notifications.mark-read');
     Route::patch('/notifications/read-all', [AlumniNotificationController::class, 'markAllRead'])
         ->name('alumni.notifications.read-all');
-
-    // ─── Achievement Feed (Phase 3.1) ────────────────────
-    Route::get('/achievement-feed', [AchievementFeedController::class, 'index'])
-        ->name('alumni.achievement-feed.index');
-    Route::patch('/achievement-feed/{id}/visibility', [AchievementFeedController::class, 'toggleVisibility'])
-        ->whereNumber('id')->name('alumni.achievement-feed.visibility');
 
     // ─── Alumni Directory (Phase B) ───────────────────────
     // Browse/search fellow alumni + view a public profile. Static

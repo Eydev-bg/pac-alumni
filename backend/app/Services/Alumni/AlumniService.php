@@ -8,7 +8,6 @@
 
 namespace App\Services\Alumni;
 
-use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\Notification;
 use App\Models\ProfileActivityLog;
@@ -196,9 +195,6 @@ class AlumniService
 
                 // ─── Phase 4.1: Track profile activity for reminders ──
                 $user->update(['last_profile_update_at' => now()]);
-
-                // ─── Phase 3.1: Profile-completion achievement ──
-                AchievementFeed::maybeRecordProfileCompleted($profile);
             }
 
             $fresh = $profile->fresh();
@@ -248,9 +244,6 @@ class AlumniService
                     'Alumni uploaded a new profile picture.',
                     null
                 );
-
-                // ─── Phase 3.1: Profile-completion achievement ──
-                AchievementFeed::maybeRecordProfileCompleted($profile);
             }
 
             return [

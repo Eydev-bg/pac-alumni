@@ -13,7 +13,6 @@ namespace App\Services\Alumni;
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
 use App\Enums\UserRole;
-use App\Models\AchievementFeed;
 use App\Models\AlumniProfile;
 use App\Models\EmploymentRecord;
 use App\Models\EmploymentStatusHistory;  // ← ADDED
@@ -158,10 +157,6 @@ class EmploymentService
 
                 // ─── Auto-trigger notifications ──
                 $this->notifyAdmins($user, $graduate, $profile, 'employed', $record);
-
-                // ─── Phase 3.1: Achievement feed entries ─────
-                AchievementFeed::recordEmployment($profile, $record, $user->full_name);
-                AchievementFeed::maybeRecordProfileCompleted($profile);
 
                 return [
                     'employment_status' => 'employed',
