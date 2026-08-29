@@ -13,7 +13,7 @@ export default function CtaBand() {
   return (
     <section
       id="get-started"
-      className="relative scroll-mt-20 overflow-hidden bg-[linear-gradient(135deg,var(--color-navy-900)_0%,var(--color-navy-950)_100%)] px-5 py-16 sm:px-8 lg:px-12 lg:py-20"
+      className="relative scroll-mt-20 overflow-hidden bg-[linear-gradient(135deg,var(--color-navy-950)_0%,var(--color-navy-900)_55%,var(--color-navy-950)_100%)] px-5 py-16 sm:px-8 lg:px-12 lg:py-20"
     >
       {/* Centered glow — purely cosmetic */}
       <div

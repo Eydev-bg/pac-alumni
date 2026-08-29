@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
 const OFFSET = {
-  up: "translate-y-6",
-  left: "-translate-x-6",
-  right: "translate-x-6",
+  up: "translate-y-4",
+  left: "-translate-x-4",
+  right: "translate-x-4",
   none: "",
 };
 
@@ -53,8 +53,8 @@ export default function Reveal({
       ref={ref}
       className={`transition-all duration-700 ease-out motion-reduce:transition-none motion-reduce:transform-none ${
         visible
-          ? "translate-x-0 translate-y-0 opacity-100"
-          : `opacity-0 ${OFFSET[direction]}`
+          ? "translate-x-0 translate-y-0 scale-100 opacity-100"
+          : `scale-[0.98] opacity-0 ${OFFSET[direction]}`
       } ${className}`}
       style={
         delay ? { transitionDelay: `${visible ? delay : 0}ms` } : undefined

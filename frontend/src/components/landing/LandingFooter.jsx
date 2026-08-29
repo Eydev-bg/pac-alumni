@@ -1,12 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  TbBrandFacebook,
-  TbBrandInstagram,
-  TbBrandYoutube,
-  TbMapPin,
-  TbMail,
-  TbPhone,
-} from "react-icons/tb";
+import { TbBrandFacebook, TbMapPin, TbMail, TbPhone } from "react-icons/tb";
 
 const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
 
@@ -17,15 +10,15 @@ const QUICK_LINKS = [
 ];
 
 const linkClass =
-  "block text-[12px] text-[#aebbd6] transition hover:text-blue-300";
+  "block text-[13px] text-[#aebbd6] transition hover:text-blue-300";
 const colHeading =
-  "mb-3 text-[12px] font-semibold uppercase tracking-[0.05em] text-blue-300";
+  "mb-3 text-[12.5px] font-semibold uppercase tracking-[0.05em] text-blue-300";
 
 /**
- * LandingFooter — deep-navy footer: brand + tagline + social placeholders,
- * quick links, account links, and contact details. The dedicated
- * ContactSection now owns the "#contact" nav anchor, so this footer no
- * longer carries that id (kept it before ContactSection existed).
+ * LandingFooter — deep-navy footer: brand + tagline + the college's real
+ * Facebook page, quick links, account links, and contact details. The
+ * dedicated ContactSection now owns the "#contact" nav anchor, so this
+ * footer no longer carries that id (kept it before ContactSection existed).
  */
 export default function LandingFooter() {
   return (
@@ -39,20 +32,22 @@ export default function LandingFooter() {
               <img
                 src="/pac-logo.jpg"
                 alt="Philippine Advent College seal"
-                className="h-[34px] w-[34px] flex-none rounded-full border-2 border-blue-500 bg-navy-900 object-cover"
+                className="h-[34px] w-[34px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-navy-900 object-cover"
               />
               <span>
                 <span
-                  className="block text-[13px] font-extrabold text-white"
+                  className="block text-[15px] font-extrabold text-white"
                   style={SERIF}
                 >
                   Philippine Advent College
                 </span>
+                <span className="block text-[11px] font-medium uppercase tracking-[0.12em] text-blue-300">
+                  Alumni Tracking System
+                </span>
               </span>
             </div>
-            <p className="mb-3 max-w-[230px] text-[11.5px] leading-[1.6] text-[#8ea0c4]">
-              The school that prepares students to serve — connecting graduates
-              since 1975.
+            <p className="mb-4 max-w-[240px] text-[12.5px] leading-[1.6] text-[#8ea0c4]">
+              Connecting Philippine Advent College graduates since 1975.
             </p>
             <div className="flex gap-2">
               {[
@@ -61,18 +56,6 @@ export default function LandingFooter() {
                   icon: TbBrandFacebook,
                   label: "Facebook",
                   href: "https://www.facebook.com/PACollege1975/",
-                },
-                // TODO: replace with official PAC Instagram once created.
-                {
-                  icon: TbBrandInstagram,
-                  label: "Instagram",
-                  href: "https://www.instagram.com/",
-                },
-                // TODO: replace with official PAC YouTube once created.
-                {
-                  icon: TbBrandYoutube,
-                  label: "YouTube",
-                  href: "https://www.youtube.com/",
                 },
               ].map(({ icon: Icon, label, href }) => (
                 <a
@@ -120,26 +103,26 @@ export default function LandingFooter() {
           {/* Contact */}
           <div>
             <h3 className={colHeading}>Contact</h3>
-            <p className="mb-2 flex items-center gap-1.5 text-[12px] text-[#aebbd6]">
+            <p className="mb-2 flex items-center gap-1.5 text-[13px] text-[#aebbd6]">
               <TbMapPin aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-              Sindangan, Zamboanga del Norte
+              Ramon Magsaysay, Sindangan, Zamboanga del Norte, 7112
             </p>
             <a
               href="mailto:philippineadventcollege@gmail.com"
-              className="mb-2 flex items-center gap-1.5 text-[12px] text-[#aebbd6] transition hover:text-blue-300"
+              className="mb-2 flex items-center gap-1.5 text-[13px] text-[#aebbd6] transition hover:text-blue-300"
             >
               <TbMail aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
               philippineadventcollege@gmail.com
             </a>
-            <p className="flex items-center gap-1.5 text-[12px] text-[#aebbd6]">
+            <p className="flex items-center gap-1.5 text-[13px] text-[#aebbd6]">
               <TbPhone aria-hidden="true" className="h-3.5 w-3.5 flex-none" />
-              (63+) 9357768845
+              (63+) 9399185586
             </p>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-3.5 text-center">
-          <span className="text-[11px] text-[#7286a8]">
+        <div className="mt-10 border-t border-white/10 pt-5 text-center">
+          <span className="text-[12px] text-[#7286a8]">
             © {new Date().getFullYear()} Philippine Advent College. All rights
             reserved.
           </span>
