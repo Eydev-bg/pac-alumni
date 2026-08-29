@@ -63,7 +63,7 @@ export default function HeroSection() {
                 Join the Alumni Network
               </Link>
               <a href="#about" className={GHOST_BTN}>
-                Learn More
+                Explore the Platform
               </a>
             </div>
 

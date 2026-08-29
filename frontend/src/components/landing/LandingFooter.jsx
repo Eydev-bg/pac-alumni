@@ -94,10 +94,6 @@ export default function LandingFooter() {
             <Link to="/forgot-password" className={linkClass}>
               Forgot password
             </Link>
-            {/* TODO: real help center URL */}
-            <a href="#" className={linkClass}>
-              Help center
-            </a>
           </div>
 
           {/* Contact */}
