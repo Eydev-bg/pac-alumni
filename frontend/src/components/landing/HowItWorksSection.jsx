@@ -7,17 +7,17 @@ const STEPS = [
   {
     icon: TbUserPlus,
     title: "Create Your Account",
-    desc: "Register with your name, graduation year, and program. Verification keeps the network trusted.",
+    desc: "Register using your Alumni ID, first name, and last name. Your information is verified against the college's official records to ensure that only verified PAC graduates can access the platform.",
   },
   {
     icon: TbListCheck,
     title: "Complete Your Profile",
-    desc: "Add your employment details, board exam results, and contact preferences.",
+    desc: "Provide your current employment information, board exam results, and contact details to keep your alumni record accurate and up to date.",
   },
   {
     icon: TbUsersGroup,
     title: "Connect & Engage",
-    desc: "Access the alumni directory, receive announcements, discover job opportunities, and message fellow alumni.",
+    desc: "Explore the alumni directory, receive important announcements, discover career opportunities, and connect with fellow PAC alumni.",
   },
 ];
 

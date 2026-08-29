@@ -3,19 +3,20 @@ import {
   TbBriefcase,
   TbMessages,
   TbCertificate,
+  TbCalendarEvent,
 } from "react-icons/tb";
 import Reveal from "./Reveal";
 
 const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
 
-// Four real, implemented, distinct capabilities. Cards describe what the
+// Five real, implemented, distinct capabilities. Cards describe what the
 // platform does — they deliberately carry no CTA link, since a feature card
 // that pretends to deep-link somewhere it can't reach is just misleading.
 const FEATURES = [
   {
     icon: TbAddressBook,
     title: "Alumni Directory",
-    desc: "Search and reconnect with verified PAC alumni organized by batch, program, and graduation year — and control your own visibility with privacy settings.",
+    desc: "Search and reconnect with verified PAC alumni organized by batch, program, and graduation year - and control your own visibility with privacy settings.",
   },
   {
     icon: TbBriefcase,
@@ -32,12 +33,33 @@ const FEATURES = [
     title: "Board Exam Records",
     desc: "Record your licensure examination results to help the college track program outcomes and recognize alumni achievements.",
   },
+  {
+    icon: TbCalendarEvent,
+    title: "Events & Gatherings",
+    desc: "Stay updated on alumni homecomings, reunions, and community activities - and RSVP directly through the platform.",
+  },
 ];
 
+/** One glassmorphic feature card. Shared so the top row and the centered
+ *  bottom row stay pixel-identical. */
+function FeatureCard({ icon: Icon, title, desc }) {
+  return (
+    <div className="group flex h-full flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 backdrop-blur-sm transition-all duration-300 ease-out hover:border-white/[0.14] hover:bg-white/[0.07] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] motion-reduce:transition-none">
+      <div className="mb-4 flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-blue-600/15 text-blue-400">
+        <Icon aria-hidden="true" className="h-6 w-6" />
+      </div>
+      <h3 className="mb-2 text-[17px] font-semibold text-white">{title}</h3>
+      <p className="text-[13.5px] leading-[1.65] text-slate-300">{desc}</p>
+    </div>
+  );
+}
+
 /**
- * FeaturesSection — four glassmorphic cards on a deep-navy surface. Moving
+ * FeaturesSection — five glassmorphic cards on a deep-navy surface. Moving
  * this section off a light background is the redesign's signature structural
  * change: it bookends the hero and breaks the run of light sections above.
+ * The first three sit in a 3-up grid; the remaining two sit in a separate
+ * centered flex row below so the odd card count doesn't leave a ragged gap.
  */
 export default function FeaturesSection() {
   return (
@@ -68,25 +90,28 @@ export default function FeaturesSection() {
           </p>
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:gap-6">
-          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+        <div className="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          {FEATURES.slice(0, 3).map((feature, i) => (
             <Reveal
-              key={title}
+              key={feature.title}
               direction="up"
               delay={i * 80}
               className="h-full"
             >
-              <div className="group flex h-full flex-col rounded-2xl border border-white/[0.08] bg-white/[0.04] p-6 backdrop-blur-sm transition-all duration-300 ease-out hover:border-white/[0.14] hover:bg-white/[0.07] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] motion-reduce:transition-none">
-                <div className="mb-4 flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-blue-600/15 text-blue-400">
-                  <Icon aria-hidden="true" className="h-6 w-6" />
-                </div>
-                <h3 className="mb-2 text-[17px] font-semibold text-white">
-                  {title}
-                </h3>
-                <p className="text-[13.5px] leading-[1.65] text-slate-300">
-                  {desc}
-                </p>
-              </div>
+              <FeatureCard {...feature} />
+            </Reveal>
+          ))}
+        </div>
+
+        <div className="mt-5 flex flex-col items-center gap-5 sm:flex-row sm:justify-center lg:mt-6 lg:gap-6">
+          {FEATURES.slice(3).map((feature, i) => (
+            <Reveal
+              key={feature.title}
+              direction="up"
+              delay={(i + 3) * 80}
+              className="h-full w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-16px)]"
+            >
+              <FeatureCard {...feature} />
             </Reveal>
           ))}
         </div>
