@@ -1,6 +1,7 @@
 import LandingNav from "../../components/landing/LandingNav";
 import HeroSection from "../../components/landing/HeroSection";
 import AboutSection from "../../components/landing/AboutSection";
+import HowItWorksSection from "../../components/landing/HowItWorksSection";
 import FeaturesSection from "../../components/landing/FeaturesSection";
 import ContactSection from "../../components/landing/ContactSection";
 import LandingFooter from "../../components/landing/LandingFooter";
@@ -8,8 +9,8 @@ import LandingFooter from "../../components/landing/LandingFooter";
 /**
  * LandingPage — public marketing home at `/`.
  *
- * Composes the landing sections in the approved order: Hero, About,
- * Features, Events, Success Stories, Contact, Footer. WhyJoinSection,
+ * Composes the landing sections in the approved order: Hero, About, How It
+ * Works, Features, Contact, Footer. WhyJoinSection,
  * AnnouncementsPreview, GallerySection, CareersPreview, and CtaBand from an
  * earlier iteration are NOT rendered here (per the latest approved
  * structure) but are left in place under components/landing/ in case they're
@@ -34,6 +35,7 @@ export default function LandingPage() {
       <main>
         <HeroSection />
         <AboutSection />
+        <HowItWorksSection />
         <FeaturesSection />
 
         <ContactSection />
