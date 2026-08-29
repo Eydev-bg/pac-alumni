@@ -72,8 +72,8 @@ export default function HeroSection() {
                 aria-hidden="true"
                 className="h-4 w-4 flex-none text-blue-400"
               />
-              Trusted by 4,800+ verified alumni across the Philippines and
-              beyond.
+              The official alumni platform of Philippine Advent College - built
+              to connect, verify, and support our alumni community.
             </p>
           </div>
 

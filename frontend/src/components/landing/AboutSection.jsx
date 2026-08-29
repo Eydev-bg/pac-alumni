@@ -1,4 +1,5 @@
 import {
+  TbBuildingBank,
   TbChartHistogram,
   TbHeartHandshake,
   TbUsersGroup,
@@ -115,12 +116,12 @@ function NetworkGraphic() {
       {/* Floating glass stat chip — minimal and real, not a fake dashboard. */}
       <div className="absolute bottom-4 left-4 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 backdrop-blur-md">
         <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
-          <TbUsersGroup aria-hidden="true" className="h-4 w-4 text-white" />
+          <TbBuildingBank aria-hidden="true" className="h-4 w-4 text-white" />
         </span>
         <span className="block">
-          <b className="block text-[16px] font-bold text-white">4,800+</b>
+          <b className="block text-[16px] font-bold text-white">Since 1975</b>
           <span className="block text-[11px] text-slate-300">
-            Connected alumni
+            Serving PAC graduates
           </span>
         </span>
       </div>
