@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   TbSchool,
   TbBriefcase,
@@ -15,6 +15,10 @@ const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
  * render skeleton cards (matching the real card dimensions) so no placeholder
  * numbers ever flash. On success we render the real numbers. Only if the
  * request fails do we fall back to sample values, dimmed and clearly labelled.
+ *
+ * Once the panel scrolls into view the numbers count up from zero — the same
+ * fire-once IntersectionObserver pattern Reveal/LandingNav already use, and
+ * skipped entirely under prefers-reduced-motion.
  */
 
 // Icon + accent-underline per stat, matched by id, for the dark panel layout.
@@ -37,6 +41,62 @@ const SAMPLE_STATS = [
   },
   { id: "degree_programs", value: "24", label: "Degree Programs" },
 ];
+
+// Count-up timing: ~1.5s on an ease-out cubic curve.
+const COUNT_UP_MS = 1500;
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
+
+// "4,820" becomes 4820. Anything that is not a plain number (empty, "N/A", …)
+// returns null so the caller can render it verbatim instead of animating.
+function parseNumeric(value) {
+  const raw = String(value ?? "")
+    .replace(/,/g, "")
+    .trim();
+  if (raw === "") return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * CountUp — animates an integer 0 to target once `active` flips true,
+ * re-formatting with toLocaleString() on every frame so the thousands
+ * separator survives. Non-numeric values pass straight through, unanimated.
+ */
+function CountUp({ value, active }) {
+  const target = useMemo(() => parseNumeric(value), [value]);
+  const [reduced] = useState(prefersReducedMotion);
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (target === null) return;
+    if (reduced) {
+      setCurrent(target);
+      return;
+    }
+    if (!active) return;
+
+    let frame;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - start) / COUNT_UP_MS, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setCurrent(Math.round(target * eased));
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target, active, reduced]);
+
+  if (target === null) return value;
+  return current.toLocaleString();
+}
 
 // Map the API payload onto the card shape. Any missing field falls back to its
 // sample value so a partial response still renders cleanly.
@@ -89,10 +149,10 @@ function buildStats(d) {
 function SkeletonStat() {
   return (
     <div className="flex items-center gap-3.5" aria-hidden="true">
-      <div className="h-11 w-11 flex-none animate-pulse rounded-full bg-white/10" />
+      <div className="h-12 w-12 flex-none animate-pulse rounded-full bg-white/10" />
       <div>
-        <div className="h-[1.6em] w-14 animate-pulse rounded bg-white/10" />
-        <div className="mt-1.5 h-[0.9em] w-20 animate-pulse rounded bg-white/[0.06]" />
+        <div className="h-[28px] w-16 animate-pulse rounded bg-white/10" />
+        <div className="mt-1.5 h-[17px] w-24 animate-pulse rounded bg-white/[0.06]" />
       </div>
     </div>
   );
@@ -101,6 +161,8 @@ function SkeletonStat() {
 export default function StatStrip() {
   const [stats, setStats] = useState(null);
   const [isSample, setIsSample] = useState(false);
+  const [inView, setInView] = useState(false);
+  const panelRef = useRef(null);
 
   useEffect(() => {
     let active = true;
@@ -128,6 +190,30 @@ export default function StatStrip() {
     };
   }, []);
 
+  // Fire-once visibility trigger for the count-up. Only wired up once the real
+  // panel exists, so the skeleton never animates; if the panel is already on
+  // screen when the data lands, the observer fires immediately.
+  useEffect(() => {
+    if (stats === null || inView) return;
+    const node = panelRef.current;
+    if (!node) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [stats, inView]);
+
   // Loading: render skeletons inside the identical panel so layout never shifts.
   if (stats === null) {
     return (
@@ -142,7 +228,10 @@ export default function StatStrip() {
   }
 
   return (
-    <div className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7">
+    <div
+      ref={panelRef}
+      className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7"
+    >
       <div
         className={`grid grid-cols-2 gap-y-6 sm:grid-cols-4 sm:gap-y-0 ${isSample ? "opacity-70" : ""}`}
       >
@@ -156,20 +245,20 @@ export default function StatStrip() {
                 !isLast ? "sm:border-r sm:border-white/10" : ""
               } ${i === 0 ? "sm:pl-0" : ""}`}
             >
-              <div className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-blue-500)_0%,var(--color-blue-700)_100%)]">
+              <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-blue-500)_0%,var(--color-blue-700)_100%)]">
                 <Icon aria-hidden="true" className="h-5 w-5 text-white" />
               </div>
               <div>
                 <div
-                  className="text-[22px] font-extrabold leading-none text-white"
+                  className="text-[28px] font-extrabold leading-none text-white"
                   style={SERIF}
                 >
-                  {stat.value}
+                  <CountUp value={stat.value} active={inView} />
                   {stat.suffix && (
-                    <span className="text-[16px]">{stat.suffix}</span>
+                    <span className="text-[18px]">{stat.suffix}</span>
                   )}
                 </div>
-                <div className="mt-1.5 flex items-center gap-1.5 text-[11.5px] leading-snug text-slate-400">
+                <div className="mt-1.5 flex items-center gap-1.5 text-[13px] leading-snug text-slate-400">
                   {stat.label}
                 </div>
               </div>
