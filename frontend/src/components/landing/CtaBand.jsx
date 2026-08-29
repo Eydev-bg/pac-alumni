@@ -1,40 +1,56 @@
 import { Link } from "react-router-dom";
 import { TbArrowRight } from "react-icons/tb";
+import Reveal from "./Reveal";
 
 const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
 
 /**
- * CtaBand — full-width navy closing call-to-action, centered.
+ * CtaBand — a short dark band between Features and Contact holding the
+ * page's one focused conversion moment. Not a nav target, but it keeps a
+ * stable id so it can be linked to later.
  */
 export default function CtaBand() {
   return (
-    <section className="bg-[linear-gradient(135deg,var(--color-blue-600)_0%,var(--color-blue-700)_100%)] px-5 py-16 text-center sm:px-8 lg:px-12">
-      <div className="mx-auto max-w-3xl">
-        <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-100">
-          Join the community
-        </p>
-        <h2 className="mb-2 text-[27px] font-extrabold leading-tight text-white sm:text-[30px]" style={SERIF}>
-          Ready to reconnect with PAC?
+    <section
+      id="get-started"
+      className="relative scroll-mt-20 overflow-hidden bg-[linear-gradient(135deg,var(--color-navy-900)_0%,var(--color-navy-950)_100%)] px-5 py-16 sm:px-8 lg:px-12 lg:py-20"
+    >
+      {/* Centered glow — purely cosmetic */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 [background:radial-gradient(70%_120%_at_50%_50%,rgba(37,99,235,0.14)_0%,transparent_60%)]"
+      />
+
+      <Reveal direction="up" className="relative mx-auto max-w-2xl text-center">
+        <h2
+          className="text-[26px] font-extrabold leading-tight text-white sm:text-[30px]"
+          style={SERIF}
+        >
+          Ready to reconnect with your PAC community?
         </h2>
-        <p className="mx-auto mb-6 max-w-xl text-[13px] leading-[1.65] text-blue-100 sm:text-sm">
-          Verify your Alumni ID, create your account, and step back into the
-          Philippine Advent College community today.
+        <p className="mx-auto mt-4 max-w-lg text-[15px] leading-[1.6] text-slate-300">
+          Join thousands of Philippine Advent College graduates who are already
+          connected.
         </p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 rounded-lg bg-white px-[22px] py-2.5 text-[13px] font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white/60"
-          >
-            Register with your ID <TbArrowRight aria-hidden="true" className="h-4 w-4" />
-          </Link>
+
+        <Link
+          to="/register"
+          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 text-[14px] font-semibold text-white shadow-[0_8px_24px_-6px_rgba(37,99,235,0.6)] transition hover:scale-[1.02] hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400/60 motion-reduce:hover:scale-100"
+        >
+          Create Your Alumni Account
+          <TbArrowRight aria-hidden="true" className="h-[18px] w-[18px]" />
+        </Link>
+
+        <p className="mt-4 text-[13px] text-slate-400">
+          Already have an account?{" "}
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 rounded-[9px] border border-white/30 px-[18px] py-2.5 text-[13px] font-medium text-white transition hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/40"
+            className="font-medium text-blue-400 transition hover:text-blue-300"
           >
-            Log in
+            Sign in
           </Link>
-        </div>
-      </div>
+        </p>
+      </Reveal>
     </section>
   );
 }

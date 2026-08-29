@@ -3,6 +3,7 @@ import HeroSection from "../../components/landing/HeroSection";
 import AboutSection from "../../components/landing/AboutSection";
 import HowItWorksSection from "../../components/landing/HowItWorksSection";
 import FeaturesSection from "../../components/landing/FeaturesSection";
+import CtaBand from "../../components/landing/CtaBand";
 import ContactSection from "../../components/landing/ContactSection";
 import LandingFooter from "../../components/landing/LandingFooter";
 
@@ -10,11 +11,11 @@ import LandingFooter from "../../components/landing/LandingFooter";
  * LandingPage — public marketing home at `/`.
  *
  * Composes the landing sections in the approved order: Hero, About, How It
- * Works, Features, Contact, Footer. WhyJoinSection,
- * AnnouncementsPreview, GallerySection, CareersPreview, and CtaBand from an
- * earlier iteration are NOT rendered here (per the latest approved
- * structure) but are left in place under components/landing/ in case they're
- * wanted again later — nothing was deleted, only unlinked from this page.
+ * Works, Features, CTA Band, Contact, Footer. WhyJoinSection,
+ * AnnouncementsPreview, GallerySection, and CareersPreview from an earlier
+ * iteration are NOT rendered here (per the latest approved structure) but
+ * are left in place under components/landing/ in case they're wanted again
+ * later — nothing was deleted, only unlinked from this page.
  *
  * All dynamic sections (stats, events, stories) currently render static
  * placeholder data shaped like the future API response; wiring real data
@@ -37,7 +38,7 @@ export default function LandingPage() {
         <AboutSection />
         <HowItWorksSection />
         <FeaturesSection />
-
+        <CtaBand />
         <ContactSection />
       </main>
       <LandingFooter />
