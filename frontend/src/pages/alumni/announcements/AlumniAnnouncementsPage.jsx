@@ -142,7 +142,7 @@ function AnnouncementCard({ announcement: a, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className={`w-full text-left block bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
+      className={`w-full text-left block bg-white dark:bg-slate-800 rounded-xl border p-4 sm:p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
         a.is_read
           ? "border-slate-200 dark:border-slate-700"
           : "border-blue-300 ring-1 ring-blue-100 dark:border-blue-500/50 dark:ring-blue-500/20"
@@ -158,12 +158,12 @@ function AnnouncementCard({ announcement: a, onOpen }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {a.is_pinned && (
-              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                <HiOutlineBookmark className="w-3 h-3" /> Pinned
+              <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                <HiOutlineBookmark className="w-3 h-3 flex-shrink-0" /> Pinned
               </span>
             )}
             <h3
-              className={`text-sm truncate ${
+              className={`min-w-0 flex-1 text-sm truncate ${
                 a.is_read
                   ? "font-semibold text-slate-700 dark:text-slate-200"
                   : "font-bold text-slate-900 dark:text-white"
@@ -175,15 +175,16 @@ function AnnouncementCard({ announcement: a, onOpen }) {
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 announcement-snippet">
             {stripHtml(a.content)}
           </p>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-400">
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.7rem] text-slate-400">
             {a.posted_by && (
               <span className="flex items-center gap-1">
-                <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                <HiOutlineUser className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="break-words">{a.posted_by}</span>
               </span>
             )}
             {a.published_at && (
-              <span className="flex items-center gap-1">
-                <HiOutlineClock className="w-3.5 h-3.5" />{" "}
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <HiOutlineClock className="w-3.5 h-3.5 flex-shrink-0" />{" "}
                 {timeAgo(a.published_at)}
               </span>
             )}
@@ -228,29 +229,30 @@ function AnnouncementModal({ announcement: a, onClose }) {
             />
           )}
 
-          <div className="p-6 min-w-0">
+          <div className="p-4 sm:p-6 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-2">
               {a.is_pinned && (
-                <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                  <HiOutlineBookmark className="w-3 h-3" /> Pinned
+                <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                  <HiOutlineBookmark className="w-3 h-3 flex-shrink-0" /> Pinned
                 </span>
               )}
             </div>
             <h2
               id="announcement-modal-title"
-              className="text-xl font-bold text-slate-900 dark:text-white"
+              className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white break-words pr-8"
             >
               {a.title}
             </h2>
-            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
+            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.72rem] text-slate-400">
               {a.posted_by && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                  <HiOutlineUser className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="break-words">{a.posted_by}</span>
                 </span>
               )}
               {a.published_at && (
-                <span className="flex items-center gap-1">
-                  <HiOutlineClock className="w-3.5 h-3.5" />{" "}
+                <span className="flex items-center gap-1 whitespace-nowrap">
+                  <HiOutlineClock className="w-3.5 h-3.5 flex-shrink-0" />{" "}
                   {timeAgo(a.published_at)}
                 </span>
               )}

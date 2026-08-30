@@ -771,7 +771,7 @@ export default function ConversationThread({
                         // Spacer so grouped bubbles stay aligned with the avatar row.
                         <span className="w-7 flex-shrink-0" aria-hidden="true" />
                       ))}
-                    <div className="max-w-[75%]">
+                    <div className="max-w-[85%] sm:max-w-[75%] min-w-0">
                       {/* Quoted message (this bubble is a reply) */}
                       {m.reply_to && (
                         <div

@@ -319,7 +319,7 @@ function DirectoryCard({ alumni, onViewPicture }) {
 
   return (
     <AlumniCard className="flex flex-col">
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 sm:gap-4">
         {alumni.profile_picture ? (
           <button
             type="button"
@@ -341,10 +341,10 @@ function DirectoryCard({ alumni, onViewPicture }) {
           />
         )}
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+          <h3 className="min-w-0 text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
             {alumni.full_name}
           </h3>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1.5">
             {alumni.course?.code && (
               <Badge color="blue">{alumni.course.code}</Badge>
             )}
@@ -358,11 +358,13 @@ function DirectoryCard({ alumni, onViewPicture }) {
       <div className="mt-4 space-y-2 text-[0.8rem] text-slate-600 dark:text-slate-300">
         <div className="flex items-center gap-2">
           <HiOutlineBriefcase className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <span className="truncate">{positionLine}</span>
+          <span className="min-w-0 break-words">{positionLine}</span>
         </div>
         <div className="flex items-center gap-2">
           <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <span className="truncate">{alumni.current_location || "—"}</span>
+          <span className="min-w-0 break-words">
+            {alumni.current_location || "—"}
+          </span>
         </div>
         {alumni.employment_label && (
           <Badge color={empColor}>{alumni.employment_label}</Badge>
@@ -390,9 +392,9 @@ function DirectoryGridSkeleton() {
       {Array.from({ length: 6 }, (_, i) => (
         <div
           key={i}
-          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 animate-pulse"
+          className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-5 animate-pulse"
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div className="w-14 h-14 rounded-full bg-slate-200 dark:bg-slate-700 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="h-4 w-2/3 rounded bg-slate-200 dark:bg-slate-700" />

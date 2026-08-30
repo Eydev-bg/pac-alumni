@@ -28,7 +28,7 @@ export default function ProfileCompletion() {
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-4 sm:p-5">
         <div className="h-2 w-40 bg-slate-100 dark:bg-slate-700 rounded animate-pulse mb-3" />
         <div className="h-2.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full animate-pulse" />
       </div>
@@ -59,19 +59,21 @@ export default function ProfileCompletion() {
   const nextPercentage = total > 0 ? Math.round(((completed + 1) / total) * 100) : 100;
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-5">
+    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm dark:shadow-none p-4 sm:p-5">
       {/* ── Header row ── */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2 min-w-0">
           {is_complete ? (
             <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500" />
           ) : (
             <HiOutlineSparkles className="w-5 h-5 text-[#c8a84e]" />
           )}
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">Profile Completion</h3>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+            Profile Completion
+          </h3>
         </div>
         <span
-          className={`text-sm font-bold ${
+          className={`text-sm font-bold flex-shrink-0 ${
             is_complete
               ? "text-emerald-600 dark:text-emerald-300"
               : "text-slate-700 dark:text-slate-200"
@@ -120,11 +122,11 @@ export default function ProfileCompletion() {
               <li key={item.key}>
                 <Link
                   to={item.link}
-                  className="group flex items-center justify-between gap-3 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-[#c8a84e]/40 hover:bg-[#c8a84e]/[0.04] transition-colors"
+                  className="group flex items-center justify-between gap-2 sm:gap-3 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-[#c8a84e]/40 hover:bg-[#c8a84e]/[0.04] transition-colors"
                 >
-                  <span className="flex items-center gap-2.5 min-w-0">
+                  <span className="flex items-center gap-2.5 min-w-0 flex-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                    <span className="text-xs text-slate-600 dark:text-slate-300 truncate">
+                    <span className="min-w-0 text-xs text-slate-600 dark:text-slate-300 break-words">
                       {item.hint}
                     </span>
                   </span>

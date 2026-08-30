@@ -93,8 +93,8 @@ function WelcomeCard() {
 
   if (loading) {
     return (
-      <AlumniCard className="p-6 dark:bg-slate-800 dark:border-slate-700">
-        <div className="flex flex-col sm:flex-row gap-5 animate-pulse">
+      <AlumniCard className="p-4 sm:p-6 dark:bg-slate-800 dark:border-slate-700">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 animate-pulse">
           <div className="w-20 h-20 rounded-full bg-slate-100 flex-shrink-0 dark:bg-slate-700" />
           <div className="flex-1 space-y-3">
             <div className="h-5 w-56 bg-slate-100 rounded dark:bg-slate-700" />
@@ -110,10 +110,10 @@ function WelcomeCard() {
   const pct = completion?.percentage ?? 0;
 
   return (
-    <AlumniCard className="p-6 dark:bg-slate-800 dark:border-slate-700">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+    <AlumniCard className="p-4 sm:p-6 dark:bg-slate-800 dark:border-slate-700">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
         {/* Greeting half — avatar + text share the left 50% on desktop */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-5 flex-1 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-5 flex-1 min-w-0">
           {/* Photo */}
           {personal?.profile_picture ? (
             <img
@@ -131,7 +131,7 @@ function WelcomeCard() {
 
           {/* Greeting + welcome text */}
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-slate-800 dark:text-white">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white break-words">
               {greeting()}, {firstName}! <span aria-hidden="true">👋</span>
             </h1>
             <p className="mt-1 text-sm text-slate-500 leading-relaxed dark:text-slate-400">
@@ -159,7 +159,7 @@ function WelcomeCard() {
             <ProgressBar value={pct} className="dark:bg-slate-700" />
             <Link
               to="/alumni/profile"
-              className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+              className="mt-3 inline-flex w-full sm:w-auto items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
             >
               Continue
             </Link>
@@ -281,19 +281,23 @@ function LatestAnnouncement() {
       ) : (
         <Link to="/alumni/announcements" className="flex gap-3 group">
           <IconChip icon={HiOutlineMegaphone} color="blue" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-1 dark:text-slate-100">
               {item.title}
             </h4>
             <p className="mt-1 text-xs text-slate-500 line-clamp-2 dark:text-slate-400">
               {stripHtml(item.content)}
             </p>
-            <div className="mt-2 flex items-center gap-2 text-[0.7rem] text-slate-400 dark:text-slate-400">
-              {item.published_at && <span>{formatDate(item.published_at)}</span>}
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.7rem] text-slate-400 dark:text-slate-400">
+              {item.published_at && (
+                <span className="whitespace-nowrap">
+                  {formatDate(item.published_at)}
+                </span>
+              )}
               {item.posted_by && (
                 <>
                   <span className="text-slate-300 dark:text-slate-600">•</span>
-                  <span>{item.posted_by}</span>
+                  <span className="break-words">{item.posted_by}</span>
                 </>
               )}
             </div>
@@ -348,7 +352,7 @@ function UpcomingEvent() {
       ) : !event ? (
         <PanelEmpty icon={HiOutlineCalendarDays} text="No upcoming events" />
       ) : (
-        <Link to="/alumni/events" className="flex gap-4 group">
+        <Link to="/alumni/events" className="flex gap-3 sm:gap-4 group">
           {/* Date block */}
           <div className="flex-shrink-0 w-16 rounded-xl bg-blue-50 py-2 text-center dark:bg-blue-500/15">
             <p className="text-[0.65rem] font-bold text-blue-600 dark:text-blue-300">
@@ -358,7 +362,7 @@ function UpcomingEvent() {
               {dateParts(event.start_datetime).day}
             </p>
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h4 className="text-sm font-semibold text-slate-800 group-hover:text-blue-600 transition-colors line-clamp-2 dark:text-slate-100">
               {event.title}
             </h4>
@@ -368,7 +372,7 @@ function UpcomingEvent() {
             {event.location && (
               <p className="mt-1 flex items-center gap-1 text-xs text-slate-400 dark:text-slate-400">
                 <HiOutlineMapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span className="truncate">{event.location}</span>
+                <span className="break-words">{event.location}</span>
               </p>
             )}
             {event.going_count > 0 && (
@@ -447,7 +451,7 @@ function LatestJobs() {
                   </p>
                 </div>
                 <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400 flex-shrink-0 dark:text-slate-400">
-                  <HiOutlineMapPin className="w-3.5 h-3.5" />
+                  <HiOutlineMapPin className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="truncate max-w-[9rem]">{job.location}</span>
                 </div>
               </Link>

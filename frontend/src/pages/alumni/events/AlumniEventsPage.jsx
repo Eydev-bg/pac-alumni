@@ -245,15 +245,15 @@ function DateBadge({ iso, size = "md" }) {
 
 function PinnedBadge() {
   return (
-    <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-      <HiOutlineBookmark className="w-3 h-3" /> Pinned
+    <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+      <HiOutlineBookmark className="w-3 h-3 flex-shrink-0" /> Pinned
     </span>
   );
 }
 
 function PastBadge() {
   return (
-    <span className="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+    <span className="inline-flex items-center whitespace-nowrap text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">
       Past event
     </span>
   );
@@ -262,9 +262,9 @@ function PastBadge() {
 // Going / Interested pill toggles built from RSVP_STATUSES.
 function RsvpControl({ event: a, onRsvp }) {
   const base =
-    "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-semibold border transition-colors";
+    "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold border transition-colors";
   return (
-    <div className="flex items-center gap-2 flex-wrap">
+    <div className="flex items-center gap-x-2 gap-y-2 flex-wrap">
       {RSVP_STATUSES.map((s) => {
         const activeState = a.my_rsvp === s.value;
         const Icon = s.value === "going" ? HiOutlineHandThumbUp : HiOutlineStar;
@@ -280,11 +280,11 @@ function RsvpControl({ event: a, onRsvp }) {
               onClick={() => onRsvp(a, s.value)}
               className={`${base} ${cls}`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4 flex-shrink-0" />
               {s.label}
             </button>
             {s.value === "going" && (
-              <span className="text-xs text-slate-500 dark:text-slate-400">
+              <span className="whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
                 ({a.going_count ?? 0} going)
               </span>
             )}
@@ -300,14 +300,14 @@ function EventCard({ event: a, onOpen, onRsvp }) {
   return (
     <div
       className={cn(
-        "bg-white dark:bg-slate-800 rounded-2xl border p-6 shadow-sm dark:shadow-none transition-all hover:shadow-md dark:hover:shadow-none",
+        "bg-white dark:bg-slate-800 rounded-2xl border p-4 sm:p-6 shadow-sm dark:shadow-none transition-all hover:shadow-md dark:hover:shadow-none",
         a.is_pinned
           ? "border-amber-300 ring-1 ring-amber-100 dark:border-amber-500/50 dark:ring-amber-500/20"
           : "border-slate-200 dark:border-slate-700",
         past && "opacity-75",
       )}
     >
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-row gap-3 sm:gap-4">
         {/* LEFT: date badge */}
         <DateBadge iso={a.start_datetime} />
 
@@ -317,7 +317,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
             <div className="flex items-center gap-2 flex-wrap">
               {a.is_pinned && <PinnedBadge />}
               {past && <PastBadge />}
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+              <h3 className="min-w-0 flex-1 text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                 {a.title}
               </h3>
             </div>
@@ -325,7 +325,7 @@ function EventCard({ event: a, onOpen, onRsvp }) {
             {a.location && (
               <div className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                 <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <span className="truncate">{a.location}</span>
+                <span className="break-words">{a.location}</span>
               </div>
             )}
 
@@ -333,16 +333,19 @@ function EventCard({ event: a, onOpen, onRsvp }) {
               {stripHtml(a.content)}
             </p>
 
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
+            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.7rem] text-slate-500 dark:text-slate-400">
               {a.posted_by && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                  <HiOutlineUser className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="break-words">{a.posted_by}</span>
                 </span>
               )}
               {a.start_datetime && (
                 <span className="flex items-center gap-1">
-                  <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                  {formatDate(a.start_datetime)}
+                  <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="break-words">
+                    {formatDate(a.start_datetime)}
+                  </span>
                 </span>
               )}
             </div>
@@ -395,8 +398,8 @@ function EventModal({ event: a, onClose, onRsvp }) {
             />
           )}
 
-          <div className="p-6 min-w-0">
-            <div className="flex items-start gap-4">
+          <div className="p-4 sm:p-6 min-w-0">
+            <div className="flex items-start gap-3 sm:gap-4">
               <DateBadge iso={a.start_datetime} size="lg" />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -405,27 +408,30 @@ function EventModal({ event: a, onClose, onRsvp }) {
                 </div>
                 <h2
                   id="event-modal-title"
-                  className="text-xl font-bold text-slate-900 dark:text-white"
+                  className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white break-words pr-8"
                 >
                   {a.title}
                 </h2>
                 {a.location && (
                   <div className="mt-1 flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
                     <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                    {a.location}
+                    <span className="break-words">{a.location}</span>
                   </div>
                 )}
-                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.72rem] text-slate-400">
+                <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.72rem] text-slate-400">
                   {a.start_datetime && (
                     <span className="flex items-center gap-1">
-                      <HiOutlineCalendarDays className="w-3.5 h-3.5" />
-                      {formatDate(a.start_datetime)} &rarr;{" "}
-                      {formatDate(a.end_datetime)}
+                      <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="break-words">
+                        {formatDate(a.start_datetime)} &rarr;{" "}
+                        {formatDate(a.end_datetime)}
+                      </span>
                     </span>
                   )}
                   {a.posted_by && (
                     <span className="flex items-center gap-1">
-                      <HiOutlineUser className="w-3.5 h-3.5" /> {a.posted_by}
+                      <HiOutlineUser className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="break-words">{a.posted_by}</span>
                     </span>
                   )}
                 </div>

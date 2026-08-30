@@ -117,9 +117,9 @@ export default function AlumniNotificationsPage() {
   return (
     <div className="max-w-[900px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
             Notifications
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -128,9 +128,9 @@ export default function AlumniNotificationsPage() {
         </div>
         <button
           onClick={handleMarkAllRead}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+          className="inline-flex w-full sm:w-auto flex-shrink-0 items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
         >
-          <HiOutlineCheckCircle className="w-4 h-4" /> Mark All Read
+          <HiOutlineCheckCircle className="w-4 h-4 flex-shrink-0" /> Mark All Read
         </button>
       </div>
 
@@ -187,7 +187,7 @@ export default function AlumniNotificationsPage() {
                   <IconChip icon={style.icon} color={style.color} size="sm" />
                   <div className="flex-1 min-w-0">
                     <p
-                      className={`text-sm ${
+                      className={`text-sm break-words ${
                         !n.is_read
                           ? "font-semibold text-slate-800 dark:text-slate-100"
                           : "text-slate-500 dark:text-slate-400"
@@ -195,10 +195,10 @@ export default function AlumniNotificationsPage() {
                     >
                       {n.title}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 break-words">
                       {n.message}
                     </p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-slate-400 mt-1 whitespace-nowrap">
                       {formatDate(n.created_at)}
                     </p>
                   </div>

@@ -121,7 +121,7 @@ export default function AlumniPublicProfilePage() {
 
       {/* ══ Hero ══ */}
       <AlumniCard className="p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
           <span className="relative flex-shrink-0">
             {personal.profile_picture ? (
               <img
@@ -150,10 +150,10 @@ export default function AlumniPublicProfilePage() {
           </span>
 
           <div className="flex-1 min-w-0 text-center sm:text-left">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 break-words">
               {personal.full_name}
             </h1>
-            <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+            <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-x-1.5 gap-y-1.5">
               {academic.course_code && (
                 <Badge color="blue">{academic.course_code}</Badge>
               )}
@@ -169,14 +169,14 @@ export default function AlumniPublicProfilePage() {
             {location?.current_location && (
               <p className="mt-2 flex items-center justify-center sm:justify-start gap-1.5 text-sm text-slate-500 dark:text-slate-400">
                 <HiOutlineMapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                {location.current_location}
+                <span className="break-words">{location.current_location}</span>
               </p>
             )}
 
             <button
               onClick={handleSendMessage}
               disabled={messaging}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60"
+              className="mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-60"
             >
               {messaging ? (
                 <>
@@ -185,7 +185,7 @@ export default function AlumniPublicProfilePage() {
                 </>
               ) : (
                 <>
-                  <HiOutlineChatBubbleLeftRight className="w-4 h-4" />
+                  <HiOutlineChatBubbleLeftRight className="w-4 h-4 flex-shrink-0" />
                   Send Message
                 </>
               )}
@@ -299,7 +299,7 @@ function InfoRow({ icon: Icon, label, value }) {
       <div className="w-9 h-9 rounded-lg bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-slate-400" />
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-[0.7rem] font-medium text-slate-400 uppercase tracking-wide">
           {label}
         </p>

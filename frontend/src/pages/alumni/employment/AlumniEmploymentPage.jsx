@@ -177,7 +177,7 @@ export default function AlumniEmploymentPage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -266,7 +266,7 @@ export default function AlumniEmploymentPage() {
       {/* ━━━━ Current Job Card ━━━━ */}
       {isEmployed && current_job && (
         <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-500/10 dark:to-teal-500/10 rounded-2xl border border-emerald-200/60 dark:border-emerald-500/25 p-5 sm:p-6">
-          <div className="flex items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
               <HiOutlineBuildingOffice2 className="w-6 h-6 text-emerald-600 dark:text-emerald-300" />
             </div>
@@ -274,32 +274,32 @@ export default function AlumniEmploymentPage() {
               <p className="text-[0.68rem] text-emerald-600 dark:text-emerald-300 font-semibold uppercase tracking-wider mb-0.5">
                 Current Position
               </p>
-              <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100">
+              <h3 className="text-lg font-bold text-emerald-900 dark:text-emerald-100 break-words">
                 {current_job.job_title}
               </h3>
-              <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mt-0.5">
+              <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium mt-0.5 break-words">
                 {current_job.company_name}
               </p>
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-md">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] text-emerald-600 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded-md">
                   {(() => {
                     const tc = typeConfig[current_job.employment_type];
                     const TypeIcon = tc?.icon || HiOutlineMapPin;
                     return (
                       <>
-                        <TypeIcon className="w-3.5 h-3.5" />{" "}
+                        <TypeIcon className="w-3.5 h-3.5 flex-shrink-0" />{" "}
                         {current_job.employment_type_label}
                       </>
                     );
                   })()}
                 </span>
                 <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300">
-                  <HiOutlineBriefcase className="w-3.5 h-3.5" />
-                  {current_job.industry}
+                  <HiOutlineBriefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="break-words">{current_job.industry}</span>
                 </span>
                 {current_job.start_date && (
-                  <span className="inline-flex items-center gap-1 text-[0.72rem] text-emerald-600 dark:text-emerald-300">
-                    <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.72rem] text-emerald-600 dark:text-emerald-300">
+                    <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                     Since {formatDateOnly(current_job.start_date)}
                   </span>
                 )}
@@ -311,8 +311,8 @@ export default function AlumniEmploymentPage() {
 
       {/* ━━━━ Update Form ━━━━ */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none overflow-hidden">
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-[#1a2e5a]/[0.07] dark:bg-[#1a2e5a]/[0.15] flex items-center justify-center">
               <HiOutlinePencilSquare className="w-[18px] h-[18px] text-[#1a2e5a] dark:text-blue-400" />
             </div>
@@ -328,7 +328,7 @@ export default function AlumniEmploymentPage() {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[0.75rem] font-semibold text-white bg-[#1a2e5a] hover:bg-[#243a6e] rounded-xl transition-colors shadow-sm"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 px-4 py-2 text-[0.75rem] font-semibold text-white bg-[#1a2e5a] hover:bg-[#243a6e] rounded-xl transition-colors shadow-sm"
             >
               <HiOutlinePencilSquare className="w-4 h-4" />
               Update Status
@@ -349,14 +349,14 @@ export default function AlumniEmploymentPage() {
               <div
                 role="group"
                 aria-labelledby="employment-status-label"
-                className="grid grid-cols-2 gap-3"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
               >
                 <button
                   type="button"
                   onClick={() =>
                     setFormData({ ...formData, employment_status: "employed" })
                   }
-                  className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                  className={`relative flex w-full min-w-0 items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "employed"
                       ? "border-emerald-400 bg-emerald-50 shadow-sm dark:shadow-none dark:border-emerald-500 dark:bg-emerald-500/15"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
@@ -421,7 +421,7 @@ export default function AlumniEmploymentPage() {
                       start_date: "",
                     })
                   }
-                  className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                  className={`relative flex w-full min-w-0 items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
                     formData.employment_status === "unemployed"
                       ? "border-amber-300 bg-amber-50 shadow-sm dark:shadow-none dark:border-amber-500 dark:bg-amber-500/15"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-500 dark:hover:bg-slate-700"
@@ -679,7 +679,7 @@ export default function AlumniEmploymentPage() {
             )}
 
             {/* Buttons */}
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
               <button
                 type="submit"
                 disabled={
@@ -691,7 +691,7 @@ export default function AlumniEmploymentPage() {
                       !formData.industry ||
                       !formData.employment_type))
                 }
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[0.78rem] font-semibold text-white bg-[#1a2e5a] hover:bg-[#243a6e] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-5 py-2.5 text-[0.78rem] font-semibold text-white bg-[#1a2e5a] hover:bg-[#243a6e] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {submitting ? (
                   <>
@@ -709,7 +709,7 @@ export default function AlumniEmploymentPage() {
                 type="button"
                 onClick={cancelForm}
                 disabled={submitting}
-                className="inline-flex items-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors disabled:opacity-60"
+                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2.5 text-[0.78rem] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors disabled:opacity-60"
               >
                 Cancel
               </button>
@@ -758,7 +758,7 @@ export default function AlumniEmploymentPage() {
                   key={rec.id}
                   className="px-5 sm:px-6 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors"
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
                         rec.is_current
@@ -772,7 +772,7 @@ export default function AlumniEmploymentPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
+                        <h4 className="min-w-0 text-[0.82rem] font-bold text-slate-800 dark:text-slate-100 break-words">
                           {rec.job_title}
                         </h4>
                         {rec.is_current && (
@@ -781,21 +781,21 @@ export default function AlumniEmploymentPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium mt-0.5">
+                      <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium mt-0.5 break-words">
                         {rec.company_name}
                       </p>
-                      <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                        <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
-                          <TypeIcon className="w-3.5 h-3.5" />
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5">
+                        <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.7rem] text-slate-500 dark:text-slate-400">
+                          <TypeIcon className="w-3.5 h-3.5 flex-shrink-0" />
                           {rec.employment_type_label}
                         </span>
                         <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
-                          <HiOutlineBriefcase className="w-3.5 h-3.5" />
-                          {rec.industry}
+                          <HiOutlineBriefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="break-words">{rec.industry}</span>
                         </span>
                         {rec.start_date && (
-                          <span className="inline-flex items-center gap-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
-                            <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.7rem] text-slate-500 dark:text-slate-400">
+                            <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                             {formatDateOnly(rec.start_date)}
                             {rec.end_date ? (
                               <>

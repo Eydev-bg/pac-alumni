@@ -162,24 +162,24 @@ export default function EmploymentSection({ onSaved }) {
             <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200/60 dark:border-emerald-500/20 p-4 mb-4">
               <div className="flex items-start gap-3">
                 <IconChip icon={HiOutlineBuildingOffice2} color="green" />
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="text-[0.65rem] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
                     Current Position
                   </p>
-                  <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+                  <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200 break-words">
                     {currentJob.job_title}
                   </h4>
-                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium break-words">
                     {currentJob.company_name}
                   </p>
-                  <div className="flex flex-wrap items-center gap-3 mt-1.5 text-[0.7rem] text-emerald-600 dark:text-emerald-400">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1.5 text-[0.7rem] text-emerald-600 dark:text-emerald-400">
                     <span className="inline-flex items-center gap-1">
-                      <HiOutlineBriefcase className="w-3.5 h-3.5" />
-                      {currentJob.industry}
+                      <HiOutlineBriefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                      <span className="break-words">{currentJob.industry}</span>
                     </span>
                     {currentJob.start_date && (
-                      <span className="inline-flex items-center gap-1">
-                        <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                      <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                        <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                         Since {formatDateOnly(currentJob.start_date)}
                       </span>
                     )}
@@ -193,9 +193,9 @@ export default function EmploymentSection({ onSaved }) {
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-1.5 px-4 py-2 text-[0.75rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
+              className="inline-flex w-full sm:w-auto items-center justify-center gap-1.5 px-4 py-2 text-[0.75rem] font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-sm"
             >
-              <HiOutlinePencilSquare className="w-4 h-4" />
+              <HiOutlinePencilSquare className="w-4 h-4 flex-shrink-0" />
               Update Employment Status
             </button>
           )}
@@ -220,7 +220,7 @@ export default function EmploymentSection({ onSaved }) {
                 <div
                   role="group"
                   aria-labelledby="emp-status-label"
-                  className="grid grid-cols-2 gap-3"
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                 >
                   <StatusChoice
                     active={formData.employment_status === "employed"}
@@ -436,7 +436,7 @@ export default function EmploymentSection({ onSaved }) {
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <button
                   type="submit"
                   disabled={
@@ -448,7 +448,7 @@ export default function EmploymentSection({ onSaved }) {
                         !formData.industry ||
                         !formData.employment_type))
                   }
-                  className={btnPrimary}
+                  className={`${btnPrimary} w-full sm:w-auto`}
                 >
                   {submitting ? (
                     <>
@@ -466,7 +466,7 @@ export default function EmploymentSection({ onSaved }) {
                   type="button"
                   onClick={cancelForm}
                   disabled={submitting}
-                  className={btnGhost}
+                  className={`${btnGhost} w-full sm:w-auto`}
                 >
                   Cancel
                 </button>
@@ -494,28 +494,28 @@ export default function EmploymentSection({ onSaved }) {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h5 className="text-[0.82rem] font-bold text-slate-800 dark:text-slate-100">
+                          <h5 className="min-w-0 text-[0.82rem] font-bold text-slate-800 dark:text-slate-100 break-words">
                             {rec.job_title}
                           </h5>
                           {rec.is_current && (
                             <Badge color="green">Current</Badge>
                           )}
                         </div>
-                        <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium">
+                        <p className="text-[0.78rem] text-slate-600 dark:text-slate-300 font-medium break-words">
                           {rec.company_name}
                         </p>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
-                          <span className="inline-flex items-center gap-1">
-                            <TypeIcon className="w-3.5 h-3.5" />
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-1 text-[0.7rem] text-slate-500 dark:text-slate-400">
+                          <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                            <TypeIcon className="w-3.5 h-3.5 flex-shrink-0" />
                             {rec.employment_type_label}
                           </span>
                           <span className="inline-flex items-center gap-1">
-                            <HiOutlineBriefcase className="w-3.5 h-3.5" />
-                            {rec.industry}
+                            <HiOutlineBriefcase className="w-3.5 h-3.5 flex-shrink-0" />
+                            <span className="break-words">{rec.industry}</span>
                           </span>
                           {rec.start_date && (
-                            <span className="inline-flex items-center gap-1">
-                              <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                            <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                              <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                               {formatDateOnly(rec.start_date)}
                               {rec.end_date ? (
                                 <>

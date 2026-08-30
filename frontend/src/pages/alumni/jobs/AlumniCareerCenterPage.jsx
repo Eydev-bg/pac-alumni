@@ -336,25 +336,47 @@ function PosterAttribution({ job }) {
 }
 
 function JobCard({ job, showOwnerActions, onEdit, onDelete }) {
+  const ownerActions = showOwnerActions && (
+    <>
+      <button
+        onClick={onEdit}
+        title="Edit"
+        aria-label={`Edit ${job.job_position}`}
+        className="p-2 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
+      >
+        <HiOutlinePencilSquare className="w-4 h-4" />
+      </button>
+      <button
+        onClick={onDelete}
+        title="Delete"
+        aria-label={`Delete ${job.job_position}`}
+        className="p-2 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+      >
+        <HiOutlineTrash className="w-4 h-4" />
+      </button>
+    </>
+  );
+
   return (
     <div
-      className={`bg-white dark:bg-slate-800 rounded-xl border p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
+      className={`bg-white dark:bg-slate-800 rounded-xl border p-4 sm:p-5 transition-all hover:shadow-sm dark:hover:shadow-none ${
         job.is_pinned
           ? "border-amber-300 ring-1 ring-amber-100 dark:border-amber-500/50 dark:ring-amber-500/20"
           : "border-slate-200 dark:border-slate-700"
       }`}
     >
-      <div className="flex items-start gap-4">
+      {/* Top row: logo + title/company. Actions stay inline from sm: up. */}
+      <div className="flex items-start gap-3 sm:gap-4">
         <CompanyLogo logo={job.company_logo} name={job.company_name} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {job.is_pinned && (
-              <span className="inline-flex items-center gap-1 text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
-                <HiOutlineBookmark className="w-3 h-3" /> Pinned
+              <span className="inline-flex items-center gap-1 whitespace-nowrap text-[0.6rem] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300">
+                <HiOutlineBookmark className="w-3 h-3 flex-shrink-0" /> Pinned
               </span>
             )}
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+            <h3 className="min-w-0 flex-1 text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
               {job.job_position}
             </h3>
           </div>
@@ -363,58 +385,54 @@ function JobCard({ job, showOwnerActions, onEdit, onDelete }) {
           </p>
 
           <PosterAttribution job={job} />
-
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.75rem] text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1">
-              <HiOutlineMapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              {job.location}
-            </span>
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium">
-              {job.employment_type_label}
-            </span>
-            {job.salary && (
-              <span className="flex items-center gap-1">
-                <HiOutlineBanknotes className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                {job.salary}
-              </span>
-            )}
-            <span className="flex items-center gap-1">
-              <HiOutlineClock className="w-3.5 h-3.5" />
-              {job.application_deadline
-                ? `Deadline: ${formatDate(job.application_deadline)}`
-                : "Open until filled"}
-            </span>
-          </div>
         </div>
 
-        <div className="flex-shrink-0 self-center flex items-center gap-1">
-          {showOwnerActions && (
-            <>
-              <button
-                onClick={onEdit}
-                title="Edit"
-                aria-label={`Edit ${job.job_position}`}
-                className="p-2 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/15 transition-colors"
-              >
-                <HiOutlinePencilSquare className="w-4 h-4" />
-              </button>
-              <button
-                onClick={onDelete}
-                title="Delete"
-                aria-label={`Delete ${job.job_position}`}
-                className="p-2 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-              >
-                <HiOutlineTrash className="w-4 h-4" />
-              </button>
-            </>
-          )}
+        <div className="hidden sm:flex flex-shrink-0 self-center items-center gap-1">
+          {ownerActions}
           <Link
             to={`/alumni/careers/${job.id}`}
-            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors whitespace-nowrap"
           >
             View Details
           </Link>
         </div>
+      </div>
+
+      {/* Metadata: full width on mobile so it wraps cleanly; on sm: it keeps
+          the original indent under the title so the desktop look is unchanged. */}
+      <div className="mt-2.5 sm:pl-16 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[0.75rem] text-slate-500 dark:text-slate-400">
+        <span className="flex items-center gap-1">
+          <HiOutlineMapPin className="w-3.5 h-3.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+          <span className="break-words">{job.location}</span>
+        </span>
+        <span className="inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium">
+          {job.employment_type_label}
+        </span>
+        {job.salary && (
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            <HiOutlineBanknotes className="w-3.5 h-3.5 flex-shrink-0 text-emerald-600 dark:text-emerald-400" />
+            {job.salary}
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          <HiOutlineClock className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="break-words">
+            {job.application_deadline
+              ? `Deadline: ${formatDate(job.application_deadline)}`
+              : "Open until filled"}
+          </span>
+        </span>
+      </div>
+
+      {/* Mobile-only: actions get their own row, CTA pushed to the right. */}
+      <div className="mt-3 flex sm:hidden items-center gap-1">
+        {ownerActions}
+        <Link
+          to={`/alumni/careers/${job.id}`}
+          className="ml-auto px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors whitespace-nowrap"
+        >
+          View Details
+        </Link>
       </div>
     </div>
   );

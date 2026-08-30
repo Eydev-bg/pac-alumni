@@ -130,25 +130,25 @@ export default function AlumniInboxPage() {
   return (
     <div className="max-w-6xl mx-auto">
       {/* ━━━━ Header ━━━━ */}
-      <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-white bg-[#2563eb]">
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-11 h-11 flex-shrink-0 rounded-2xl flex items-center justify-center text-white bg-[#2563eb]">
             <HiOutlineChatBubbleLeftRight className="w-6 h-6" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">
               Messages
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400 break-words">
               Connect with fellow PAC alumni
             </p>
           </div>
         </div>
         <button
           onClick={() => setShowCompose(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 bg-[#2563eb]"
+          className="inline-flex flex-shrink-0 items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-opacity hover:opacity-90 bg-[#2563eb]"
         >
-          <HiOutlinePencilSquare className="w-4 h-4" />
+          <HiOutlinePencilSquare className="w-4 h-4 flex-shrink-0" />
           <span className="hidden sm:inline">New Message</span>
         </button>
       </div>
@@ -392,7 +392,7 @@ function NewMessageModal({ onClose, onStarted }) {
                       className="w-full flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left disabled:opacity-50"
                     >
                       <Avatar src={r.profile_picture} name={r.name} size="sm" />
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-slate-800 dark:text-slate-100 truncate">
                           {r.name}
                         </p>

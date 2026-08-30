@@ -21,11 +21,14 @@ export default function SectionHeader({
 }) {
   return (
     <div
-      className={cn("flex items-center justify-between gap-3 mb-4", className)}
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-x-3 gap-y-2 mb-4",
+        className,
+      )}
       {...rest}
     >
       {typeof title === "string" ? (
-        <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+        <h3 className="min-w-0 text-base font-semibold text-slate-800 dark:text-slate-100">
           {title}
         </h3>
       ) : (

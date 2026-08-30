@@ -114,16 +114,16 @@ function CompletionBody({ data }) {
               <button
                 type="button"
                 onClick={() => target && scrollToSection(target)}
-                className="group w-full flex items-center justify-between gap-3 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/40 dark:hover:bg-blue-500/10 transition-colors text-left"
+                className="group w-full flex items-center justify-between gap-2 sm:gap-3 p-2.5 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/40 dark:hover:bg-blue-500/10 transition-colors text-left"
               >
-                <span className="flex items-center gap-2.5 min-w-0">
+                <span className="flex items-center gap-2.5 min-w-0 flex-1">
                   {item.done ? (
                     <HiOutlineCheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                   ) : (
                     <span className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600 flex-shrink-0" />
                   )}
                   <span
-                    className={`text-xs truncate ${item.done ? "text-slate-400" : "text-slate-600 dark:text-slate-300 font-medium"}`}
+                    className={`min-w-0 text-xs break-words ${item.done ? "text-slate-400" : "text-slate-600 dark:text-slate-300 font-medium"}`}
                   >
                     {item.done ? item.label : item.hint}
                   </span>

@@ -27,7 +27,7 @@ export default function AlumniSettingsPage() {
     <div className="max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100">
           Settings
         </h1>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
@@ -37,7 +37,10 @@ export default function AlumniSettingsPage() {
 
       {/* Tabs — underline-style active indicator (matches admin settings) */}
       <div className="mb-6 border-b border-slate-200 dark:border-slate-700">
-        <nav className="flex gap-1" aria-label="Settings tabs">
+        <nav
+          className="flex gap-1 overflow-x-auto"
+          aria-label="Settings tabs"
+        >
           {TABS.map((t) => {
             const active = t.key === tab;
             return (

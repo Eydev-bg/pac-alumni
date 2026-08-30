@@ -233,7 +233,7 @@ export default function AlumniProfilePage() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
           <SkeletonCard variant="form" count={1} />
         </div>
       </div>
@@ -273,7 +273,7 @@ export default function AlumniProfilePage() {
           the Personal Information card immediately below. Completion checklist
           items for photo / contact / location all scroll here. */}
       <AlumniCard id="section-personal" className="scroll-mt-20 p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
           {/* Photo + upload/remove overlay */}
           <div className="relative group flex-shrink-0">
             {personal.profile_picture ? (
@@ -342,23 +342,23 @@ export default function AlumniProfilePage() {
 
           {/* Name + badges */}
           <div className="flex-1 text-center sm:text-left min-w-0">
-            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 truncate">
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 break-words">
               {personal.full_name}
             </h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 break-all">
               {personal.email}
             </p>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-2 mt-3">
               <Badge color="blue" size="md">
-                <HiOutlineIdentification className="w-3.5 h-3.5" />
+                <HiOutlineIdentification className="w-3.5 h-3.5 flex-shrink-0" />
                 {academic.alumni_id || "No ID"}
               </Badge>
               <Badge color="slate" size="md">
-                <HiOutlineAcademicCap className="w-3.5 h-3.5" />
+                <HiOutlineAcademicCap className="w-3.5 h-3.5 flex-shrink-0" />
                 {academic.course_code || "N/A"}
               </Badge>
               <Badge color="purple" size="md">
-                <HiOutlineCalendarDays className="w-3.5 h-3.5" />
+                <HiOutlineCalendarDays className="w-3.5 h-3.5 flex-shrink-0" />
                 Batch {academic.graduation_year}
               </Badge>
             </div>
@@ -375,7 +375,7 @@ export default function AlumniProfilePage() {
               <button
                 onClick={handleRemovePicture}
                 disabled={removingPicture}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 text-[0.78rem] font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="inline-flex flex-1 sm:flex-none items-center justify-center gap-2 px-4 py-2 text-[0.78rem] font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
               >
                 {removingPicture ? (
                   <>
@@ -392,7 +392,7 @@ export default function AlumniProfilePage() {
               <button
                 onClick={() => setShowRemoveConfirm(false)}
                 disabled={removingPicture}
-                className={btnGhost}
+                className={`${btnGhost} flex-1 sm:flex-none`}
               >
                 Cancel
               </button>
@@ -481,10 +481,10 @@ export default function AlumniProfilePage() {
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3 border border-slate-100 dark:border-slate-700">
               <div className="flex items-start gap-2.5">
                 <HiOutlineShieldCheck className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
-                <div>
+                <div className="min-w-0">
                   <p className="text-[0.72rem] font-medium text-slate-600 dark:text-slate-300">
                     Email:{" "}
-                    <span className="text-slate-800 dark:text-slate-100">
+                    <span className="text-slate-800 dark:text-slate-100 break-all">
                       {personal.email}
                     </span>
                   </p>
@@ -495,11 +495,11 @@ export default function AlumniProfilePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className={btnPrimary}
+                className={`${btnPrimary} w-full sm:w-auto`}
               >
                 {saving ? (
                   <>
@@ -516,7 +516,7 @@ export default function AlumniProfilePage() {
               <button
                 onClick={handleCancel}
                 disabled={saving}
-                className={btnGhost}
+                className={`${btnGhost} w-full sm:w-auto`}
               >
                 Cancel
               </button>

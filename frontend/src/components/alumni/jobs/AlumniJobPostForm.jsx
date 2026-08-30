@@ -87,9 +87,9 @@ function normalizeLink(link) {
 
 function SectionCard({ icon: Icon, title, children }) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 sm:p-6">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-4">
-        <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+        <Icon className="w-4 h-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
         <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider">
           {title}
         </h2>

@@ -23,7 +23,7 @@ export default function AlumniCard({
     <Component
       className={cn(
         "bg-white dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-sm dark:shadow-none",
-        padding && "p-5",
+        padding && "p-4 sm:p-5",
         className,
       )}
       {...rest}

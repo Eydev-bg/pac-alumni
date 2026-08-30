@@ -52,8 +52,8 @@ export default function DirectoryVisibilitySection({ initial }) {
   return (
     <AlumniCard>
       <SectionHeader title="Directory Visibility" />
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 min-w-0">
+      <div className="flex items-start justify-between gap-3 sm:gap-4">
+        <div className="flex flex-1 items-start gap-3 min-w-0">
           <IconChip icon={HiOutlineUserGroup} color="blue" size="md" />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">

@@ -38,16 +38,18 @@ export default function StatusChoice({
       type="button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      className={`relative flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${toneCls}`}
+      className={`relative flex w-full min-w-0 items-center gap-3 p-4 rounded-xl border-2 transition-all ${toneCls}`}
     >
       <span
-        className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}
+        className={`w-10 h-10 flex-shrink-0 rounded-xl flex items-center justify-center ${iconBg}`}
       >
         <Icon className="w-5 h-5" />
       </span>
-      <span className="text-left">
-        <span className={`block text-sm font-bold ${titleCls}`}>{title}</span>
-        <span className="block text-[0.68rem] text-slate-400">
+      <span className="min-w-0 flex-1 text-left">
+        <span className={`block text-sm font-bold break-words ${titleCls}`}>
+          {title}
+        </span>
+        <span className="block text-[0.68rem] text-slate-400 break-words">
           {disabled && disabledNote ? disabledNote : subtitle}
         </span>
       </span>
