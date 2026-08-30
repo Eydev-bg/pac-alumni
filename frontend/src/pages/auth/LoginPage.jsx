@@ -224,7 +224,8 @@ export default function LoginPage() {
             className="mt-20 text-[38px] font-extrabold leading-[1.15] text-white"
             style={SERIF}
           >
-            Welcome Back, Alumni!
+            <span className="text-white">Welcome Back, </span>
+            <span className="text-blue-400">Alumni!</span>
           </h1>
           <p className="mt-5 max-w-[430px] text-[15.5px] leading-[1.65] text-slate-300">
             Stay connected with your fellow alumni, explore opportunities, and
