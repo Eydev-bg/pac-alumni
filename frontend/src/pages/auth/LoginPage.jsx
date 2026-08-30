@@ -8,6 +8,50 @@ import {
   HiOutlineEye,
   HiOutlineEyeSlash,
 } from "react-icons/hi2";
+import {
+  TbUsersGroup,
+  TbBriefcase,
+  TbCalendarEvent,
+  TbLock,
+  TbUserPlus,
+  TbShieldCheck,
+  TbSchool,
+  TbCertificate,
+  TbMessageCircle,
+  TbAddressBook,
+} from "react-icons/tb";
+
+const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
+
+// Left-panel value props — marketing copy only, no links. Mirrors the
+// landing page's feature language so the two surfaces read as one product.
+const HIGHLIGHTS = [
+  {
+    icon: TbUsersGroup,
+    title: "Alumni Network",
+    desc: "Reconnect with classmates and build meaningful professional relationships.",
+  },
+  {
+    icon: TbBriefcase,
+    title: "Career Opportunities",
+    desc: "Discover job openings and advance your professional journey.",
+  },
+  {
+    icon: TbCalendarEvent,
+    title: "Events & Updates",
+    desc: "Stay informed about alumni events, announcements, and college news.",
+  },
+];
+
+/** Faint dot-matrix block used in two corners of the navy panel. */
+function DotGrid({ className }) {
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none absolute [background-image:radial-gradient(rgba(147,197,253,0.28)_1.5px,transparent_1.5px)] [background-size:15px_15px] ${className}`}
+    />
+  );
+}
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -71,245 +115,357 @@ export default function LoginPage() {
     }
   };
 
+  const fieldClass =
+    "w-full rounded-[10px] border border-slate-200 bg-white py-3.5 pl-12 text-[15px] text-slate-800 placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
+
   return (
-    <div className="h-screen w-screen overflow-hidden relative flex items-center justify-center">
-      {/* ━━━━ Background Image + Dark Overlay ━━━━ */}
-      <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/campus-bg.jpg')" }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/45 via-blue-600/25 to-blue-800/55" />
-      </div>
+    <div className="flex h-svh overflow-hidden">
+      {/* ━━━━━━━━ LEFT — navy branding panel (lg+ only) ━━━━━━━━ */}
+      <div className="relative hidden overflow-hidden bg-[var(--color-navy-950)] lg:flex lg:w-[45%] lg:flex-col">
+        {/* Depth wash + decorative layers, all beneath the content column */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 [background:radial-gradient(75%_60%_at_35%_15%,rgba(37,99,235,0.16)_0%,transparent_60%)]"
+        />
+        <DotGrid className="right-8 top-10 h-24 w-28" />
+        <DotGrid className="bottom-28 left-8 h-20 w-24" />
 
-      {/* ━━━━ Split Card ━━━━ */}
-      <div className="relative z-10 w-full max-w-[880px] px-4 sm:px-5">
-        <div className="flex overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
-          {/* LEFT — form column */}
-          <div className="w-full md:w-1/2 bg-white px-7 py-6">
-            {/* ── Brand (logo + name) ── */}
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src="/pac-logo.jpg"
-                alt="Philippine Advent College Seal"
-                className="w-[60px] h-[60px] rounded-full object-cover border-[3px] border-blue-500 shadow-[0_0_0_4px_rgba(37,99,235,0.35),0_6px_20px_rgba(0,0,0,0.3)] bg-white shrink-0"
-              />
-              <div className="min-w-0">
-                <h1
-                  className="text-slate-800 text-[0.95rem] font-extrabold leading-tight"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-                >
-                  Philippine Advent College
-                </h1>
-                <span className="text-blue-600 text-[0.6rem] font-bold tracking-wide uppercase">
-                  Alumni Login
-                </span>
-              </div>
-            </div>
+        {/* ── Floating accent icons ──
+            Watermark-faint glyphs that drift behind the brand block and
+            heading. Staggered durations/delays keep them out of lockstep so
+            the motion reads as ambient rather than mechanical. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute left-6 right-6 top-6 z-0 h-[280px]"
+        >
+          <style>{`
+            @keyframes floatIcon {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-12px); }
+            }
+            @media (prefers-reduced-motion: reduce) {
+              @keyframes floatIcon { 0%, 100% { transform: translateY(0); } }
+            }
+          `}</style>
+          <TbSchool
+            className="absolute right-12 top-8 h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 4s ease-in-out infinite" }}
+          />
+          <TbCertificate
+            className="absolute right-32 top-24 h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 5s ease-in-out infinite 0.5s" }}
+          />
+          <TbMessageCircle
+            className="absolute left-[45%] top-16 h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 4.5s ease-in-out infinite 1s" }}
+          />
+        </div>
 
-            <h2 className="text-[1.1rem] font-bold text-slate-800 mb-0.5">
-              Welcome, Alumni!
-            </h2>
-            <p className="text-[0.75rem] text-slate-400 mb-3">
-              Sign in to your account
-            </p>
+        {/* ── Floating accent icons (lower cluster) ──
+            Same floatIcon keyframes declared above. Held clear of the
+            copyright line, with timings offset from the upper cluster so the
+            two groups never fall into step. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-20 left-6 right-6 z-0 h-[200px]"
+        >
+          <TbBriefcase
+            className="absolute bottom-4 left-8 h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 5.5s ease-in-out infinite 0.3s" }}
+          />
+          <TbAddressBook
+            className="absolute bottom-20 left-24 h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 4.2s ease-in-out infinite 0.8s" }}
+          />
+          <TbCalendarEvent
+            className="absolute bottom-12 left-[42%] h-8 w-8 text-blue-400 opacity-[0.12] motion-reduce:animate-none"
+            style={{ animation: "floatIcon 4.8s ease-in-out infinite 1.5s" }}
+          />
+        </div>
 
-            {/* Error */}
-            {error && (
-              <div className="mb-3 p-2 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-                <svg
-                  className="w-3.5 h-3.5 text-red-500 shrink-0"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-[0.72rem] text-red-600">{error}</p>
-              </div>
-            )}
+        {/* ── Illustration ──
+            Absolutely mounted on the panel so it never participates in the
+            flex layout — it can be full-bleed at the bottom without ever
+            pushing the copy off a short viewport. The source PNG carries an
+            opaque near-white interior (furniture, walls) that would read as
+            bright grey blobs on navy, so it is dropped back to a low opacity
+            that lets the panel read through it. */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 flex justify-end" aria-hidden="true">
+          <img
+            src="/illustrations/Login-rafiki.png"
+            alt=""
+            className="mr-[-20px] w-full max-w-[520px] select-none object-contain opacity-[0.40]"
+          />
+        </div>
 
-            {needsVerification && (
-              <div className="mb-3">
-                {resent ? (
-                  <p className="text-[0.72rem] text-emerald-600">
-                    If that email is registered and not yet verified, a new
-                    verification link has been sent.
-                  </p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleResendVerification}
-                    disabled={resending}
-                    className="text-[0.72rem] font-semibold text-blue-600 hover:text-blue-700 hover:underline disabled:opacity-50"
-                  >
-                    {resending ? "Sending…" : "Resend verification email"}
-                  </button>
-                )}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              {/* Email */}
-              <div className="mb-3">
-                <label className="block text-[0.72rem] font-semibold text-slate-600 mb-1">
-                  Email
-                </label>
-                <div className="relative">
-                  <HiOutlineEnvelope className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) =>
-                      setForm({ ...form, email: e.target.value })
-                    }
-                    required
-                    autoComplete="email"
-                    placeholder="Email"
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div className="mb-3.5">
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[0.72rem] font-semibold text-slate-600">
-                    Password
-                  </label>
-                  <a
-                    href="/forgot-password"
-                    className="text-[0.68rem] font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
-                <div className="relative">
-                  <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(e) =>
-                      setForm({ ...form, password: e.target.value })
-                    }
-                    required
-                    autoComplete="current-password"
-                    placeholder="Enter your password"
-                    className="w-full pl-9 pr-10 py-2 border border-slate-300 rounded-lg text-[0.8rem] text-slate-800 placeholder:text-slate-400 bg-white/70 outline-none transition-all duration-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15 focus:bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? (
-                      <HiOutlineEyeSlash className="w-4 h-4" />
-                    ) : (
-                      <HiOutlineEye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 bg-blue-600 text-white text-[0.85rem] font-bold tracking-wide rounded-lg shadow-[0_4px_14px_rgba(37,99,235,0.3)] transition-all duration-200 hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(37,99,235,0.4)] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
-                      <circle
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        fill="none"
-                        opacity="0.25"
-                      />
-                      <path
-                        fill="currentColor"
-                        opacity="0.85"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
-                    </svg>
-                    Signing in…
-                  </>
-                ) : (
-                  "Log In"
-                )}
-              </button>
-            </form>
-
-            {/* Dev-only credentials hint — removed from production builds */}
-            {import.meta.env.DEV && (
-              <div className="mt-3 p-2.5 bg-amber-50 border border-dashed border-amber-300 rounded-lg">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-[0.62rem] font-bold uppercase tracking-wide text-amber-700">
-                    Dev — Seeded Admin
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setForm(DEV_CREDENTIALS)}
-                    className="text-[0.62rem] font-semibold text-amber-700 hover:text-amber-900 hover:underline"
-                  >
-                    Autofill
-                  </button>
-                </div>
-                <p className="text-[0.68rem] text-amber-800/90 font-mono leading-relaxed break-all">
-                  {DEV_CREDENTIALS.email}
-                  <br />
-                  {DEV_CREDENTIALS.password}
-                </p>
-              </div>
-            )}
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 my-3">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-[0.68rem] text-slate-400">or</span>
-              <div className="flex-1 h-px bg-slate-200" />
-            </div>
-
-            {/* Sign up */}
-            <p className="text-center text-[0.78rem] text-slate-500">
-              Don't have an account?{" "}
-              <a
-                href="/register"
-                className="font-bold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
-              >
-                Sign Up
-              </a>
-            </p>
-          </div>
-
-          {/* RIGHT — illustration panel (desktop only) */}
-          <div className="hidden md:flex md:w-1/2 flex-col items-center justify-center rounded-r-2xl bg-white px-8 py-10">
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col px-12 py-10 xl:px-14">
+          {/* ── Brand ── */}
+          <div className="flex items-center gap-4">
             <img
-              src="/Login-rafiki.png"
-              alt="Alumni signing in"
-              className="w-full max-w-[320px] h-auto object-contain"
+              src="/pac-logo.jpg"
+              alt="Philippine Advent College Seal"
+              className="h-[72px] w-[72px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-[var(--color-navy-900)] object-cover"
             />
-            <p className="mt-4 text-center text-[0.8rem] text-slate-500 max-w-[260px]">
-              Welcome back to the PAC Alumni community. Sign in to stay
-              connected.
-            </p>
+            <div className="min-w-0">
+              <p
+                className="text-[26px] font-bold leading-tight text-white"
+                style={SERIF}
+              >
+                Philippine Advent College
+              </p>
+              <p className="mt-1 text-[12px] font-medium uppercase tracking-[0.1em] text-slate-300">
+                Alumni Tracking System
+              </p>
+            </div>
           </div>
+
+          {/* ── Welcome ── */}
+          <h1
+            className="mt-20 text-[38px] font-extrabold leading-[1.15] text-white"
+            style={SERIF}
+          >
+            Welcome Back, Alumni!
+          </h1>
+          <p className="mt-5 max-w-[430px] text-[15.5px] leading-[1.65] text-slate-300">
+            Stay connected with your fellow alumni, explore opportunities, and
+            be part of the PAC legacy.
+          </p>
+
+          {/* ── Feature highlights ── */}
+          <ul className="mt-10 space-y-7">
+            {HIGHLIGHTS.map(({ icon: Icon, title, desc }) => (
+              <li key={title} className="flex items-start gap-4">
+                <span className="flex h-14 w-14 flex-none items-center justify-center rounded-2xl bg-blue-600/25 text-white">
+                  <Icon aria-hidden="true" className="h-6 w-6" />
+                </span>
+                <span className="block max-w-[300px] pt-0.5">
+                  <span className="block text-[15px] font-semibold text-white">
+                    {title}
+                  </span>
+                  <span className="mt-1 block text-[13px] leading-[1.55] text-slate-400">
+                    {desc}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          {/* ── Copyright ── */}
+          <p className="relative z-10 mt-auto pt-6 text-[13px] text-slate-400">
+            © {new Date().getFullYear()} Philippine Advent College. All rights
+            reserved.
+          </p>
         </div>
       </div>
 
-      {/* ━━━━ Footer ━━━━ */}
-      <p className="absolute bottom-3 left-0 right-0 text-center text-[0.62rem] text-white/50 z-10 tracking-wide">
-        © {new Date().getFullYear()} Philippine Advent College. All rights
-        reserved.
-      </p>
+      {/* ━━━━━━━━ RIGHT — form panel ━━━━━━━━ */}
+      <div className="flex w-full flex-col items-center justify-start overflow-y-auto bg-white px-6 py-10 pt-12 sm:px-10 lg:w-[55%] lg:px-16 lg:pl-20 lg:pt-16 xl:px-20 xl:pl-24">
+        <div className="w-full max-w-[470px]">
+          {/* ── Header ── */}
+          <h2
+            style={SERIF}
+            className="text-[32px] font-bold leading-tight text-[var(--color-navy-900)]"
+          >
+            Sign In
+          </h2>
+          <p className="mt-2 text-[14.5px] text-slate-400">
+            Enter your credentials to access your account
+          </p>
+
+          {/* Error */}
+          {error && (
+            <div className="mt-6 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 p-3">
+              <svg
+                className="w-4 h-4 text-red-500 shrink-0 mt-0.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <p className="text-[13px] text-red-600 leading-[1.5]">{error}</p>
+            </div>
+          )}
+
+          {needsVerification && (
+            <div className="mt-4 text-[13px]">
+              {resent ? (
+                <p className="text-emerald-600">
+                  If that email is registered and not yet verified, a new
+                  verification link has been sent.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="font-semibold text-blue-600 hover:text-blue-700 hover:underline disabled:opacity-50"
+                >
+                  {resending ? "Sending…" : "Resend verification email"}
+                </button>
+              )}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-8">
+            {/* Email */}
+            <div>
+              <label className="mb-2 block text-[14px] font-bold text-slate-800">
+                Email Address
+              </label>
+              <div className="relative">
+                <HiOutlineEnvelope className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                  autoComplete="email"
+                  placeholder="Enter your email address"
+                  className={`${fieldClass} pr-4`}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="mt-5">
+              <label className="mb-2 block text-[14px] font-bold text-slate-800">
+                Password
+              </label>
+              <div className="relative">
+                <HiOutlineLockClosed className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={(e) =>
+                    setForm({ ...form, password: e.target.value })
+                  }
+                  required
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  className={`${fieldClass} pr-12`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <HiOutlineEyeSlash className="h-5 w-5" />
+                  ) : (
+                    <HiOutlineEye className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
+
+              <div className="mt-2.5 text-right">
+                <a
+                  href="/forgot-password"
+                  className="text-[13px] font-medium text-blue-600 transition hover:text-blue-700"
+                >
+                  Forgot password?
+                </a>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-[10px] bg-blue-600 py-4 text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,99,235,0.28)] transition-all duration-200 hover:bg-blue-500 hover:shadow-[0_6px_20px_rgba(37,99,235,0.38)] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      fill="none"
+                      opacity="0.25"
+                    />
+                    <path
+                      fill="currentColor"
+                      opacity="0.85"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    />
+                  </svg>
+                  Signing in…
+                </>
+              ) : (
+                <>
+                  <TbLock aria-hidden="true" className="h-5 w-5" />
+                  Log In
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Dev-only credentials hint — removed from production builds */}
+          {import.meta.env.DEV && (
+            <div className="mt-4 p-3 bg-amber-50 border border-dashed border-amber-300 rounded-xl">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                  Dev — Seeded Admin
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setForm(DEV_CREDENTIALS)}
+                  className="text-[10px] font-semibold text-amber-700 hover:text-amber-900 hover:underline"
+                >
+                  Autofill
+                </button>
+              </div>
+              <p className="text-[11px] text-amber-800/90 font-mono leading-relaxed break-all">
+                {DEV_CREDENTIALS.email}
+                <br />
+                {DEV_CREDENTIALS.password}
+              </p>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div className="my-6 flex items-center gap-4">
+            <div className="h-px flex-1 bg-slate-200" />
+            <span className="text-[13px] text-slate-400">or</span>
+            <div className="h-px flex-1 bg-slate-200" />
+          </div>
+
+          {/* Sign up */}
+          <p className="flex items-center justify-center gap-2 rounded-[10px] bg-slate-50 py-3.5 text-center text-[14px] text-slate-600">
+            <TbUserPlus
+              aria-hidden="true"
+              className="h-[18px] w-[18px] flex-none text-slate-500"
+            />
+            <span>
+              Don't have an account?{" "}
+              <a
+                href="/register"
+                className="font-bold text-blue-600 transition hover:text-blue-700 hover:underline"
+              >
+                Sign Up
+              </a>
+            </span>
+          </p>
+
+          {/* Trust line */}
+          <p className="mt-12 flex items-center justify-center gap-2">
+            <TbShieldCheck
+              aria-hidden="true"
+              className="h-[18px] w-[18px] flex-none text-emerald-500"
+            />
+            <span className="text-[13px] text-slate-500">
+              Secure access to your PAC Alumni account
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
