@@ -14,7 +14,75 @@ import Alert from "../../../ui/Alert";
 import {
   HiOutlineUser,
   HiOutlineLockClosed,
+  HiOutlineEye,
+  HiOutlineEyeSlash,
 } from "react-icons/hi2";
+
+// Field classes mirror the shared Input's tone="dark" so the password inputs
+// sit flush with the profile fields above. Rendered locally (rather than via
+// Input) so the toggle button can be anchored to the input box alone, without
+// the label or the error message stretching it.
+const FIELD_BASE =
+  "w-full px-3 py-2 pr-10 border rounded-xl text-sm transition-colors focus:outline-none focus:ring-2 text-slate-800 placeholder:text-slate-400 bg-slate-50 focus:ring-blue-500/40 focus:bg-white dark:bg-white/[0.06] dark:text-slate-200 dark:placeholder:text-slate-500 dark:focus:ring-gold-500/40 dark:focus:border-gold-500/30 dark:focus:bg-transparent";
+
+/**
+ * PasswordField — password input with a show/hide eye toggle.
+ * Laravel validation errors arrive as `string[]`; the first message is shown.
+ */
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  error,
+  placeholder,
+  autoComplete,
+  show,
+  onToggleShow,
+}) {
+  const message = Array.isArray(error) ? error[0] : error;
+
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          name={id}
+          type={show ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+          aria-invalid={message ? true : undefined}
+          className={`${FIELD_BASE} ${
+            message
+              ? "border-red-300 dark:border-red-400/50"
+              : "border-slate-300 dark:border-white/[0.08]"
+          }`}
+        />
+        <button
+          type="button"
+          onClick={onToggleShow}
+          aria-label={show ? "Hide password" : "Show password"}
+          className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+        >
+          {show ? (
+            <HiOutlineEyeSlash className="w-5 h-5" />
+          ) : (
+            <HiOutlineEye className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+      {message && <p className="text-xs text-red-500 mt-1">{message}</p>}
+    </div>
+  );
+}
 
 /**
  * AccountSettingsPage — lets the logged-in admin update their own
@@ -40,6 +108,11 @@ export default function AccountSettingsPage() {
     password: "",
     password_confirmation: "",
   });
+  const [showPassword, setShowPassword] = useState({
+    current_password: false,
+    password: false,
+    password_confirmation: false,
+  });
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordErrors, setPasswordErrors] = useState({});
   const [passwordSuccess, setPasswordSuccess] = useState(false);
@@ -56,6 +129,9 @@ export default function AccountSettingsPage() {
     setPasswordErrors((prev) => ({ ...prev, [field]: undefined }));
     setPasswordSuccess(false);
   };
+
+  const toggleShowPassword = (field) =>
+    setShowPassword((prev) => ({ ...prev, [field]: !prev[field] }));
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -242,10 +318,9 @@ export default function AccountSettingsPage() {
         )}
 
         <div className="mb-4">
-          <Input
-            tone="dark"
+          <PasswordField
+            id="current_password"
             label="Current Password"
-            type="password"
             value={passwordForm.current_password}
             onChange={(e) =>
               handlePasswordChange("current_password", e.target.value)
@@ -253,24 +328,26 @@ export default function AccountSettingsPage() {
             placeholder="••••••••"
             autoComplete="current-password"
             error={passwordErrors.current_password}
+            show={showPassword.current_password}
+            onToggleShow={() => toggleShowPassword("current_password")}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <Input
-            tone="dark"
+          <PasswordField
+            id="password"
             label="New Password"
-            type="password"
             value={passwordForm.password}
             onChange={(e) => handlePasswordChange("password", e.target.value)}
             placeholder="At least 8 characters"
             autoComplete="new-password"
             error={passwordErrors.password}
+            show={showPassword.password}
+            onToggleShow={() => toggleShowPassword("password")}
           />
-          <Input
-            tone="dark"
+          <PasswordField
+            id="password_confirmation"
             label="Confirm New Password"
-            type="password"
             value={passwordForm.password_confirmation}
             onChange={(e) =>
               handlePasswordChange("password_confirmation", e.target.value)
@@ -278,6 +355,8 @@ export default function AccountSettingsPage() {
             placeholder="Re-enter new password"
             autoComplete="new-password"
             error={passwordErrors.password_confirmation}
+            show={showPassword.password_confirmation}
+            onToggleShow={() => toggleShowPassword("password_confirmation")}
           />
         </div>
 
