@@ -117,11 +117,20 @@ export default function LandingFooter() {
           </div>
         </div>
 
-        <div className="mt-10 border-t border-white/10 pt-5 text-center">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 border-t border-white/10 pt-5 text-center">
           <span className="text-[12px] text-[#7286a8]">
             © {new Date().getFullYear()} Philippine Advent College. All rights
             reserved.
           </span>
+          <span aria-hidden="true" className="text-[12px] text-[#48587a]">
+            ·
+          </span>
+          <Link
+            to="/terms-of-use"
+            className="text-[12px] text-[#7286a8] transition hover:text-blue-300"
+          >
+            Terms of Use
+          </Link>
         </div>
       </div>
     </footer>

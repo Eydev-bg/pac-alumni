@@ -17,6 +17,7 @@ import AlumniLayout from "../components/layout/AlumniLayout";
 
 // ─── Public pages ────────────────────────────────────────
 const LandingPage = lazy(() => import("../pages/public/LandingPage"));
+const TermsOfUsePage = lazy(() => import("../pages/public/TermsOfUsePage"));
 const MaintenancePage = lazy(() => import("../pages/MaintenancePage"));
 
 // ─── Auth pages ──────────────────────────────────────────
@@ -136,6 +137,7 @@ export default function AppRouter() {
       <Routes>
         {/* ─── Public: Landing page + Maintenance (no auth/guard) ── */}
         <Route path="/" element={<LandingPage />} />
+        <Route path="/terms-of-use" element={<TermsOfUsePage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
 
         {/* ─── Guest Routes ──────────────────────────── */}
