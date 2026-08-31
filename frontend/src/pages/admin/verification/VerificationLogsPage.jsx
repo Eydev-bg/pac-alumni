@@ -1,7 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/pages/admin/verification/VerificationLogsPage.jsx
 //  STYLE: Notification feed — grouped by date, latest on top
-//  FEATURE: Expandable rejection reason per item
+//  FEATURE: Expandable rejection reason per item; repeat failed attempts by
+//           the same person collapse into a single countable row
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useCallback, useMemo } from "react";
@@ -55,6 +56,53 @@ function formatTime(dateStr) {
     minute: "2-digit",
     hour12: true,
   });
+}
+
+// ─── Entry Builder ──────────────────────────────────────
+// Collapses repeated rejected attempts by the same person (name + email,
+// case- and whitespace-insensitive) within one date group into a single entry.
+// Verified logs are never grouped — each stays its own entry. Entries come
+// back newest-first, ordered by their latest attempt.
+function buildEntries(items) {
+  const entries = [];
+  const byPerson = new Map();
+
+  items.forEach((log) => {
+    if (log.status === "verified") {
+      entries.push({
+        key: "log-" + log.id,
+        latest: log,
+        attempts: [log],
+        count: 1,
+      });
+      return;
+    }
+
+    const signature =
+      (log.name_input || "").toLowerCase().trim() +
+      "|" +
+      (log.email_input || "").toLowerCase().trim();
+
+    let entry = byPerson.get(signature);
+    if (!entry) {
+      entry = { key: "grp-" + signature, latest: log, attempts: [], count: 0 };
+      byPerson.set(signature, entry);
+      entries.push(entry);
+    }
+    entry.attempts.push(log);
+  });
+
+  byPerson.forEach((entry) => {
+    entry.attempts.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at),
+    );
+    entry.latest = entry.attempts[0];
+    entry.count = entry.attempts.length;
+  });
+
+  return entries.sort(
+    (a, b) => new Date(b.latest.created_at) - new Date(a.latest.created_at),
+  );
 }
 
 // ─── Feed Item Component ────────────────────────────────
@@ -160,6 +208,110 @@ function FeedItem({ log }) {
   );
 }
 
+// ─── Grouped Rejection Component ────────────────────────
+// Rendered only when a person has more than one failed attempt in the same
+// day; a single attempt still renders through FeedItem, unchanged.
+function GroupedFeedItem({ entry }) {
+  const [expanded, setExpanded] = useState(false);
+  const latest = entry.latest;
+
+  return (
+    <div className="group relative">
+      {/* Main Row */}
+      <div
+        className="flex items-start gap-3 px-4 sm:px-5 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03] cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        {/* Status Icon */}
+        <div className="flex-shrink-0 mt-0.5">
+          <div className="w-8 h-8 rounded-full bg-red-500/15 flex items-center justify-center">
+            <HiOutlineXCircle className="w-4.5 h-4.5 text-red-400" />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              {latest.name_input}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">
+              Rejected
+            </span>
+            <span className="bg-amber-500/15 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded">
+              {entry.count} attempts
+            </span>
+          </div>
+
+          {/* Meta Info — the alumni ID and IP differ per attempt, so they live
+              in the expanded sub-rows instead of here. */}
+          <div className="flex items-center gap-3 mt-1 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+              <HiOutlineEnvelope className="w-3 h-3" />
+              {latest.email_input}
+            </span>
+            {latest.graduation_year_input && (
+              <span className="text-[11px] text-slate-500">
+                Batch {latest.graduation_year_input}
+              </span>
+            )}
+          </div>
+
+          {/* Latest Rejection Reason Preview (collapsed) */}
+          {latest.rejection_reason && !expanded && (
+            <div className="mt-1.5 flex items-center gap-1">
+              <span className="text-[11px] text-red-400/70 truncate max-w-[300px]">
+                {latest.rejection_reason}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Time + Chevron */}
+        <div className="flex-shrink-0 flex items-center gap-1.5">
+          <span className="text-[11px] text-slate-500 font-medium">
+            {formatTime(latest.created_at)}
+          </span>
+          <HiOutlineChevronDown
+            className={`w-3.5 h-3.5 text-red-400/50 transition-transform ${
+              expanded ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+      </div>
+
+      {/* Expanded — one sub-row per attempt */}
+      {expanded && (
+        <div className="mx-4 sm:mx-5 ml-[60px] sm:ml-[68px] mb-3 pl-3 border-l-2 border-red-500/20 space-y-2">
+          {entry.attempts.map((attempt) => (
+            <div
+              key={attempt.id}
+              className="bg-red-500/[0.06] border border-red-500/10 rounded-xl px-4 py-2.5"
+            >
+              <div className="flex items-center gap-3 flex-wrap">
+                <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
+                  {formatTime(attempt.created_at)}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+                  <HiOutlineIdentification className="w-3 h-3" />
+                  {attempt.alumni_id_input}
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] text-slate-500">
+                  <HiOutlineGlobeAlt className="w-3 h-3" />
+                  {attempt.ip_address}
+                </span>
+              </div>
+              <p className="text-[12px] text-red-700 dark:text-red-300 leading-relaxed mt-1">
+                {attempt.rejection_reason}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page Component ────────────────────────────────
 export default function VerificationLogsPage() {
   const toast = useToast();
@@ -220,9 +372,11 @@ export default function VerificationLogsPage() {
       }
     });
 
-    return Object.values(groups).sort((a, b) =>
-      b.dateKey.localeCompare(a.dateKey),
-    );
+    // Repeat failed attempts by the same person collapse within their day;
+    // the per-day verified/rejected counts still reflect raw attempts.
+    return Object.values(groups)
+      .map((group) => ({ ...group, entries: buildEntries(group.items) }))
+      .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   }, [logs]);
 
   return (
@@ -318,9 +472,13 @@ export default function VerificationLogsPage() {
 
                 {/* Feed Items */}
                 <div className="divide-y divide-slate-100 dark:divide-white/[0.04]">
-                  {group.items.map((log) => (
-                    <FeedItem key={log.id} log={log} />
-                  ))}
+                  {group.entries.map((entry) =>
+                    entry.count > 1 ? (
+                      <GroupedFeedItem key={entry.key} entry={entry} />
+                    ) : (
+                      <FeedItem key={entry.key} log={entry.latest} />
+                    ),
+                  )}
                 </div>
               </Card>
             ))}
