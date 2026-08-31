@@ -59,6 +59,10 @@ export default function GraduateImportPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [departmentCheck, setDepartmentCheck] = useState({
+    loading: false,
+    hasDepartment: true,
+  });
   const pollRef = useRef(null);
 
   const stopPolling = () => {
@@ -70,6 +74,42 @@ export default function GraduateImportPage() {
 
   // Stop polling if the user navigates away mid-import.
   useEffect(() => stopPolling, []);
+
+  // A department must exist for the selected level before graduates can be
+  // imported into it — the server fails the whole batch otherwise, so check up
+  // front and warn before the admin bothers uploading a file. College is
+  // exempt: its rows resolve a department from the course code per row, which
+  // the import already validates on its own.
+  useEffect(() => {
+    if (!educationLevel || educationLevel === "college") {
+      setDepartmentCheck({ loading: false, hasDepartment: true });
+      return;
+    }
+
+    let cancelled = false;
+    setDepartmentCheck({ loading: true, hasDepartment: true });
+
+    adminApi
+      .getAllDepartments({ education_level: educationLevel })
+      .then((res) => {
+        if (cancelled) return;
+        setDepartmentCheck({
+          loading: false,
+          hasDepartment: (res.data.data || []).length > 0,
+        });
+      })
+      .catch(() => {
+        // The check itself failed — don't block the admin over it; the server
+        // still refuses the import if no department exists.
+        if (!cancelled) {
+          setDepartmentCheck({ loading: false, hasDepartment: true });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [educationLevel]);
 
   const startPolling = (batchId) => {
     stopPolling();
@@ -154,6 +194,13 @@ export default function GraduateImportPage() {
   };
 
   const isProcessing = result && !FINAL_STATUSES.includes(result.status);
+  const selectedLevelLabel = EDUCATION_LEVELS.find(
+    (l) => l.value === educationLevel,
+  )?.label;
+  const missingDepartment =
+    !!educationLevel &&
+    !departmentCheck.loading &&
+    !departmentCheck.hasDepartment;
   const sectionLabel =
     "block text-sm font-semibold text-blue-600 dark:text-gold-500 mb-3 uppercase tracking-wider text-[11px]";
 
@@ -294,7 +341,34 @@ export default function GraduateImportPage() {
                   </button>
                 ))}
               </div>
+
+              {departmentCheck.loading && (
+                <p className="text-xs text-slate-500 mt-2.5">
+                  Checking departments for this level…
+                </p>
+              )}
             </div>
+
+            {/* No department for this level — the import would be rejected. */}
+            {missingDepartment && (
+              <Alert
+                variant="error"
+                title={`No department found for ${selectedLevelLabel}`}
+                className="mb-6"
+                action={
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => navigate("/admin/departments")}
+                  >
+                    Manage Departments
+                  </Button>
+                }
+              >
+                Please create a department first before importing graduates for
+                this education level.
+              </Alert>
+            )}
 
             {/* File Drop Zone */}
             <div className="mb-6">
@@ -443,7 +517,13 @@ export default function GraduateImportPage() {
             {/* Upload Button */}
             <Button
               onClick={handleUpload}
-              disabled={!file || !educationLevel || uploading}
+              disabled={
+                !file ||
+                !educationLevel ||
+                uploading ||
+                departmentCheck.loading ||
+                missingDepartment
+              }
               loading={uploading}
               className="w-full py-3"
             >

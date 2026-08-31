@@ -120,6 +120,20 @@ class GraduateImportService
             // collections instead of querying the database on every row.
             $reference = $this->preloadReferenceData();
 
+            // ─── Non-college needs a department to import into ──
+            // Non-college rows resolve their department solely from the
+            // education level. With no active department for that level every
+            // row would be inserted with department_id = null, so fail the
+            // whole batch up front rather than rejecting each row in turn.
+            if ($educationLevel !== 'college' && !$reference['activeDeptByLevel']->has($educationLevel)) {
+                $batch->update([
+                    'status' => ImportStatus::FAILED,
+                    'error_details' => ["No active department exists for {$batch->education_level->label()}. Please create a department for this education level before importing."],
+                    'completed_at' => now(),
+                ]);
+                return;
+            }
+
             // ─── Preload duplicate-detection keys once ──────────
             // Existing alumni-id and name+year keys are loaded up front (scoped
             // to the values present in this file) and then kept in memory. The
@@ -210,6 +224,13 @@ class GraduateImportService
                     $dept = $reference['activeDeptByLevel']->get($educationLevel);
                     if ($dept) {
                         $departmentId = $dept->id;
+                    } else {
+                        // Backstop for the preflight above: a graduate with no
+                        // department belongs to nothing and drops out of every
+                        // department-scoped report, so reject the row instead.
+                        $errors[] = "Row {$rowNum}: No active department exists for this education level. Please create one first in Departments management.";
+                        $errorCount++;
+                        continue;
                     }
                 }
 
