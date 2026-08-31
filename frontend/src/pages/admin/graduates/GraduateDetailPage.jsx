@@ -116,6 +116,10 @@ export default function GraduateDetailPage() {
   const actionBtn =
     "inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-xl transition-colors border";
 
+  // Matches the <dt> labels in Graduate Details below.
+  const fieldLabel =
+    "text-[10px] font-semibold text-slate-500 uppercase tracking-wider";
+
   return (
     <>
       <div className="max-w-[1100px] mx-auto">
@@ -231,32 +235,49 @@ export default function GraduateDetailPage() {
                       key={r.id}
                       className={`p-3 rounded-xl ${r.is_current ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06]"}`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className={fieldLabel}>Position</p>
                           <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
                             {r.job_title}
                           </p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          <p className={`${fieldLabel} mt-2`}>Company</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
                             {r.company_name}
                           </p>
-                          <p className="text-xs text-slate-500 mt-1">
-                            {r.industry}
-                            {r.employment_type
-                              ? ` · ${r.employment_type.replace("_", "-")}`
-                              : ""}
-                          </p>
+                          {(r.industry || r.employment_type) && (
+                            <>
+                              <p className={`${fieldLabel} mt-2`}>
+                                {[
+                                  r.industry && "Industry",
+                                  r.employment_type && "Type",
+                                ]
+                                  .filter(Boolean)
+                                  .join(" · ")}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {r.industry}
+                                {r.employment_type
+                                  ? `${r.industry ? " · " : ""}${r.employment_type.replace("_", "-")}`
+                                  : ""}
+                              </p>
+                            </>
+                          )}
                         </div>
                         {r.is_current && (
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                          <span className="flex-shrink-0 text-[10px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
                             Current
                           </span>
                         )}
                       </div>
                       {(r.start_date || r.end_date) && (
-                        <p className="text-xs text-slate-500 mt-2">
-                          {r.start_date || "?"} -{" "}
-                          {r.is_current ? "Present" : r.end_date || "?"}
-                        </p>
+                        <>
+                          <p className={`${fieldLabel} mt-2`}>Duration</p>
+                          <p className="text-xs text-slate-500">
+                            {r.start_date || "?"} -{" "}
+                            {r.is_current ? "Present" : r.end_date || "?"}
+                          </p>
+                        </>
                       )}
                     </div>
                   ))}
