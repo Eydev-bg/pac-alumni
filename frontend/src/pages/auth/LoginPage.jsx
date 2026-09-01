@@ -121,7 +121,7 @@ export default function LoginPage() {
   return (
     <div className="flex h-svh overflow-hidden">
       {/* ━━━━━━━━ LEFT — navy branding panel (lg+ only) ━━━━━━━━ */}
-      <div className="relative hidden overflow-hidden bg-[var(--color-navy-950)] lg:flex lg:w-[45%] lg:flex-col">
+      <div className="relative hidden overflow-hidden bg-[var(--color-navy-950)] lg:flex lg:w-[58%] lg:flex-col">
         {/* Depth wash + decorative layers, all beneath the content column */}
         <div
           aria-hidden="true"
@@ -260,7 +260,7 @@ export default function LoginPage() {
       </div>
 
       {/* ━━━━━━━━ RIGHT — form panel ━━━━━━━━ */}
-      <div className="flex w-full flex-col items-center justify-start overflow-y-auto bg-white px-6 py-10 pt-12 sm:px-10 lg:w-[55%] lg:px-16 lg:pl-20 lg:pt-16 xl:px-20 xl:pl-24">
+      <div className="flex w-full flex-col items-center justify-start overflow-y-auto bg-white px-6 py-10 pt-12 sm:px-10 lg:w-[42%] lg:px-10 lg:pl-12 lg:pt-16 xl:px-14 xl:pl-16">
         <div className="w-full max-w-[470px]">
           {/* ── Header ── */}
           <h2

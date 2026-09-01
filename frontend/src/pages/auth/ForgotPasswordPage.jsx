@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
       <style>{RHYTHM_CSS}</style>
 
       {/* ━━━━━━━━ LEFT — navy branding panel (lg+ only) ━━━━━━━━ */}
-      <div className="relative hidden overflow-hidden bg-[var(--color-navy-950)] lg:flex lg:w-[50%] lg:flex-col">
+      <div className="relative hidden overflow-hidden bg-[var(--color-navy-950)] lg:flex lg:w-[58%] lg:flex-col">
         {/* Depth wash + decorative layers, all beneath the content column */}
         <div
           aria-hidden="true"
@@ -259,7 +259,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       {/* ━━━━━━━━ RIGHT — form panel ━━━━━━━━ */}
-      <div className="flex w-full flex-col items-center bg-white px-6 py-10 sm:px-10 lg:w-[50%] lg:justify-center lg:px-14 xl:px-20">
+      <div className="flex w-full flex-col items-center bg-white px-6 py-10 sm:px-10 lg:w-[42%] lg:justify-center lg:px-10 xl:px-12">
         <div className="w-full max-w-[490px]">
           {sent ? (
             /* ━━━━ Success State ━━━━ */
