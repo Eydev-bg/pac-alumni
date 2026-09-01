@@ -12,12 +12,21 @@ export default function StatusChoice({
   disabled = false,
   disabledNote,
 }) {
+  // Dark-mode active fills are OPAQUE on purpose. Each hex is the exact
+  // composite of the old `dark:bg-<hue>-500/10` over the AlumniCard surface
+  // (`dark:bg-slate-800` = #1e293b), so the rendered colour is unchanged — but
+  // because the fill no longer carries alpha, the translucent same-hue layers
+  // painted on top of it (the `dark:border-<hue>-500/50` border, which sits over
+  // the background under the default `background-clip: border-box`, and the
+  // `dark:bg-<hue>-500/20` icon chip) no longer double up against it. That
+  // doubled alpha is what showed as a faint seam across the card in dark mode.
+  // Light mode already used opaque fills (bg-emerald-50 / bg-amber-50).
   const toneCls = disabled
     ? "border-slate-200 bg-slate-50 cursor-not-allowed opacity-50 dark:border-slate-700 dark:bg-slate-800/50"
     : active
       ? tone === "emerald"
-        ? "border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-emerald-500/10"
-        : "border-amber-300 bg-amber-50 dark:border-amber-500/50 dark:bg-amber-500/10"
+        ? "border-emerald-400 bg-emerald-50 dark:border-emerald-500/50 dark:bg-[#1d3742]"
+        : "border-amber-300 bg-amber-50 dark:border-amber-500/50 dark:bg-[#343536]"
       : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:border-slate-500 dark:hover:bg-slate-700";
   const iconBg = disabled
     ? "bg-slate-100 text-slate-300 dark:bg-slate-700 dark:text-slate-500"

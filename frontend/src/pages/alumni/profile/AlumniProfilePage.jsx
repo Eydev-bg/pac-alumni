@@ -365,9 +365,13 @@ export default function AlumniProfilePage() {
           </div>
         </div>
 
-        {/* Inline remove-picture confirmation (replaces the browser confirm). */}
+        {/* Inline remove-picture confirmation (replaces the browser confirm).
+            The dark fill is opaque (#332c3c = red-500/10 composited over the
+            AlumniCard surface dark:bg-slate-800) so the translucent same-hue
+            border no longer doubles up against a translucent background and
+            leaves a seam. Same colour as before, single alpha layer. */}
         {showRemoveConfirm && (
-          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-red-500/10 px-4 py-3">
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl border border-red-200 dark:border-red-500/20 bg-red-50 dark:bg-[#332c3c] px-4 py-3">
             <p className="flex-1 text-sm font-medium text-red-700 dark:text-red-300 text-center sm:text-left">
               Remove your profile picture?
             </p>
