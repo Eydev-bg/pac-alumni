@@ -12,6 +12,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
@@ -36,6 +37,7 @@ import {
   HiOutlineCalendarDays,
   HiOutlineClipboardDocumentCheck,
   HiOutlineCamera,
+  HiOutlineEye,
   HiOutlineTrash,
   HiOutlineCheckCircle,
   HiOutlineExclamationTriangle,
@@ -57,6 +59,10 @@ import {
   btnPrimary,
   btnGhost,
 } from "./styles";
+
+// Matches Tailwind's lg breakpoint. Below it there is no hover, so the photo
+// overlay is unreachable and a tap-triggered action sheet takes its place.
+const DESKTOP_QUERY = "(min-width: 1024px)";
 
 // ═══════════════════════════════════════════════════════════
 //  PAGE
@@ -82,7 +88,37 @@ export default function AlumniProfilePage() {
   const [removingPicture, setRemovingPicture] = useState(false);
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [showPhotoSheet, setShowPhotoSheet] = useState(false);
   const fileInputRef = useRef(null);
+
+  const [isDesktop, setIsDesktop] = useState(
+    () =>
+      typeof window !== "undefined" && window.matchMedia(DESKTOP_QUERY).matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_QUERY);
+    const onChange = (e) => {
+      setIsDesktop(e.matches);
+      if (e.matches) setShowPhotoSheet(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Same treatment ImageLightbox gives itself: ESC closes, body scroll locks.
+  useEffect(() => {
+    if (!showPhotoSheet) return undefined;
+    const onKey = (e) => {
+      if (e.key === "Escape") setShowPhotoSheet(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [showPhotoSheet]);
 
   // Bumped whenever any section saves, so the completion card re-fetches.
   const [reloadSignal, setReloadSignal] = useState(0);
@@ -215,6 +251,23 @@ export default function AlumniProfilePage() {
     }
   };
 
+  // On mobile, tapping the picture opens an action sheet (View / Remove)
+  // because there is no hover overlay on touch devices. With no picture there
+  // is nothing to view or remove, so we jump straight to the file picker. On
+  // desktop the tap keeps its original behavior (open the lightbox), since the
+  // hover controls already cover upload/remove there.
+  const handleAvatarTap = () => {
+    if (profile?.personal?.profile_picture) {
+      if (isDesktop) {
+        setLightboxSrc(storageUrl(profile.personal.profile_picture));
+      } else {
+        setShowPhotoSheet(true);
+      }
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
   const handleRemovePicture = async () => {
     setRemovingPicture(true);
     try {
@@ -280,21 +333,26 @@ export default function AlumniProfilePage() {
               <img
                 src={storageUrl(personal.profile_picture)}
                 alt={personal.full_name}
-                onClick={() =>
-                  setLightboxSrc(storageUrl(personal.profile_picture))
-                }
+                onClick={handleAvatarTap}
                 title="Click to view full size"
                 className="w-24 h-24 rounded-full object-cover border border-slate-200 dark:border-slate-700 cursor-pointer"
               />
             ) : (
-              <Avatar
-                name={personal.full_name}
-                size="xl"
-                className="w-24 h-24 rounded-full text-2xl"
-              />
+              <button
+                type="button"
+                onClick={handleAvatarTap}
+                aria-label="Add a profile picture"
+                className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              >
+                <Avatar
+                  name={personal.full_name}
+                  size="xl"
+                  className="w-24 h-24 rounded-full text-2xl"
+                />
+              </button>
             )}
 
-            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity hidden lg:flex items-center justify-center gap-2 pointer-events-none">
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPicture}
@@ -602,6 +660,63 @@ export default function AlumniProfilePage() {
 
       {/* ══ E) Profile Completion ══ */}
       <CompletionSection reloadSignal={reloadSignal} />
+
+      {/* Mobile-only photo action sheet. Hand-rolled rather than built on the
+          shared Modal: Modal hard-centers its panel in a flex wrapper and its
+          base classes include `relative`, which `cn` (a plain join, no
+          tailwind-merge) cannot drop — so a `fixed bottom-0` panelClassName
+          loses the cascade and the sheet would render centered. */}
+      {showPhotoSheet &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[90] flex items-end justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Profile picture options"
+          >
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={() => setShowPhotoSheet(false)}
+              aria-hidden="true"
+            />
+            <div className="relative w-full rounded-t-2xl bg-white p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-2xl dark:bg-slate-800">
+              <div className="flex flex-col">
+                {/* grab handle */}
+                <div className="mx-auto mb-2 mt-1 h-1.5 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPhotoSheet(false);
+                    setLightboxSrc(storageUrl(personal.profile_picture));
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/[0.06]"
+                >
+                  <HiOutlineEye className="h-5 w-5 flex-shrink-0 text-slate-500 dark:text-slate-400" />
+                  View Profile Picture
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPhotoSheet(false);
+                    setShowRemoveConfirm(true);
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+                >
+                  <HiOutlineTrash className="h-5 w-5 flex-shrink-0" />
+                  Remove Profile Picture
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowPhotoSheet(false)}
+                  className="mt-1 rounded-xl px-4 py-3.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/[0.06]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       {/* Full-size profile picture viewer */}
       {lightboxSrc && (
