@@ -1,4 +1,12 @@
-import { useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { HiOutlineCheck, HiOutlineChevronDown } from "react-icons/hi2";
 import { cn } from "../../../utils/formatters";
 
@@ -38,7 +46,35 @@ export default function Select({
   const [highlight, setHighlight] = useState(-1);
   const wrapperRef = useRef(null);
   const triggerRef = useRef(null);
+  const menuRef = useRef(null);
   const listboxId = useId();
+
+  // The menu is portaled to <body> so it never shares a paint layer with the
+  // card it sits in — some mobile GPUs (ARM Mali) smear the content beneath an
+  // absolutely-positioned overlay that lives inside the same layer. Position
+  // is therefore measured off the trigger and applied as `position: fixed`.
+  const [menuRect, setMenuRect] = useState(null);
+
+  const updateMenuPosition = useCallback(() => {
+    const el = triggerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    setMenuRect({
+      left: r.left,
+      top: r.bottom + 4, // 4px gap, mirrors the old mt-1
+      width: r.width,
+      bottomSpace: window.innerHeight - r.bottom,
+      topSpace: r.top,
+      triggerTop: r.top,
+      triggerHeight: r.height,
+    });
+  }, []);
+
+  // Flip above the trigger when the menu would not fit below it.
+  const flipUp =
+    !!menuRect &&
+    menuRect.bottomSpace < 280 &&
+    menuRect.topSpace > menuRect.bottomSpace;
 
   const selected = options.find((o) => o.value === value) || null;
 
@@ -47,7 +83,11 @@ export default function Select({
     if (!open) return undefined;
 
     const onMouseDown = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+      // The menu is portaled, so it is not inside wrapperRef — check both, or a
+      // click on an option would count as "outside" and close before commit.
+      const insideWrapper = wrapperRef.current?.contains(e.target);
+      const insideMenu = menuRef.current?.contains(e.target);
+      if (!insideWrapper && !insideMenu) {
         setOpen(false);
       }
     };
@@ -66,11 +106,27 @@ export default function Select({
     };
   }, [open]);
 
+  // Track the trigger while the menu is open: capture-phase scroll catches
+  // nested scroll containers (modal bodies, the form card), not just the window.
+  useLayoutEffect(() => {
+    if (!open) return undefined;
+    updateMenuPosition();
+    const onScroll = () => updateMenuPosition();
+    const onResize = () => updateMenuPosition();
+    window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [open, updateMenuPosition]);
+
   // When opening, highlight the currently selected option (or first).
   const openMenu = () => {
     if (disabled) return;
     const idx = options.findIndex((o) => o.value === value);
     setHighlight(idx >= 0 ? idx : 0);
+    updateMenuPosition();
     setOpen(true);
   };
 
@@ -161,44 +217,57 @@ export default function Select({
       />
 
       {/* ─── Menu ─── */}
-      {open && (
-        <ul
-          role="listbox"
-          id={listboxId}
-          className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-50 max-h-64 overflow-y-auto transform-gpu will-change-transform"
-        >
-          {options.length === 0 && (
-            <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
-          )}
-          {options.map((option, idx) => {
-            const isSelected = option.value === value;
-            const isHighlighted = idx === highlight;
-            return (
-              <li key={option.value} role="option" aria-selected={isSelected}>
-                <button
-                  type="button"
-                  onClick={() => commit(option)}
-                  onMouseEnter={() => setHighlight(idx)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 text-sm flex items-start justify-between gap-2",
-                    "whitespace-normal break-words min-h-[2.25rem]",
-                    isSelected
-                      ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium"
-                      : isHighlighted
-                        ? "bg-slate-50 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
-                        : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700",
-                  )}
-                >
-                  <span>{option.label}</span>
-                  {isSelected && (
-                    <HiOutlineCheck className="w-4 h-4 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      {open &&
+        menuRect &&
+        createPortal(
+          <ul
+            ref={menuRef}
+            role="listbox"
+            id={listboxId}
+            style={{
+              position: "fixed",
+              left: menuRect.left,
+              top: flipUp ? undefined : menuRect.top,
+              bottom: flipUp
+                ? window.innerHeight - menuRect.triggerTop + 4
+                : undefined,
+              width: menuRect.width,
+            }}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-[95] max-h-64 overflow-y-auto"
+          >
+            {options.length === 0 && (
+              <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
+            )}
+            {options.map((option, idx) => {
+              const isSelected = option.value === value;
+              const isHighlighted = idx === highlight;
+              return (
+                <li key={option.value} role="option" aria-selected={isSelected}>
+                  <button
+                    type="button"
+                    onClick={() => commit(option)}
+                    onMouseEnter={() => setHighlight(idx)}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-sm flex items-start justify-between gap-2",
+                      "whitespace-normal break-words min-h-[2.25rem]",
+                      isSelected
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium"
+                        : isHighlighted
+                          ? "bg-slate-50 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
+                          : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700",
+                    )}
+                  >
+                    <span>{option.label}</span>
+                    {isSelected && (
+                      <HiOutlineCheck className="w-4 h-4 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>,
+          document.body,
+        )}
     </div>
   );
 }
