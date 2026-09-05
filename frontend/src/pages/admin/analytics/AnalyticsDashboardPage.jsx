@@ -47,7 +47,6 @@ export default function AnalyticsDashboardPage() {
   const [activeReport, setActiveReport] = useState(null); // { title, exportFn }
   const [departments, setDepartments] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [years, setYears] = useState([]);
   const dropdownRef = useRef(null);
 
   // Load dropdown data once, for the modal filters
@@ -55,9 +54,8 @@ export default function AnalyticsDashboardPage() {
     Promise.all([
       adminApi.getAllDepartments(),
       adminApi.getAllCourses(),
-      adminApi.getGraduationYears({ education_level: "college" }),
     ])
-      .then(([deptRes, courseRes, yearRes]) => {
+      .then(([deptRes, courseRes]) => {
         const collegeDepts = (deptRes.data.data || []).filter(
           (d) => !d.education_level || d.education_level === "college",
         );
@@ -69,7 +67,6 @@ export default function AnalyticsDashboardPage() {
         );
         setDepartments(collegeDepts);
         setCourses(collegeCourses);
-        setYears(yearRes.data.data || []);
       })
       .catch((err) => {
         toast.error(
@@ -211,7 +208,6 @@ export default function AnalyticsDashboardPage() {
         exportFn={activeReport?.exportFn}
         departments={activeReport?.departments || []}
         courses={activeReport?.courses || []}
-        years={years}
       />
     </>
   );

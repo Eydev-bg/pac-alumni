@@ -6,12 +6,13 @@
 //  Triggers blob download.
 // ═══════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../../../ui/Modal";
 import Select from "../../../ui/Select";
 import Button from "../../../ui/Button";
 import Alert from "../../../ui/Alert";
 import { cn } from "../../../utils/formatters";
+import adminApi from "../../../api/adminApi";
 import { HiOutlineArrowDownTray } from "react-icons/hi2";
 
 const FORMATS = [
@@ -27,7 +28,6 @@ export default function ReportExportModal({
   exportFn,
   departments,
   courses,
-  years,
 }) {
   const [format, setFormat] = useState("xlsx");
   const [deptId, setDeptId] = useState("");
@@ -35,10 +35,37 @@ export default function ReportExportModal({
   const [batchYear, setBatchYear] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [years, setYears] = useState([]);
 
   const filteredCourses = deptId
     ? courses.filter((c) => String(c.department_id) === String(deptId))
     : [];
+
+  // Batch-year options depend on the dept/course chosen inside this modal, so
+  // only years that actually have graduates in that scope are offered. Exports
+  // here are college-only, matching the college-scoped department/course lists.
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const params = { education_level: "college" };
+    if (deptId) params.department_id = deptId;
+    if (courseId) params.course_id = courseId;
+
+    adminApi
+      .getGraduationYears(params)
+      .then((res) => {
+        const nextYears = res.data.data || [];
+        setYears(nextYears);
+        // Clear a now-invalid selected year when the scope narrows.
+        setBatchYear((prev) =>
+          prev && !nextYears.map(String).includes(String(prev)) ? "" : prev,
+        );
+      })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Failed to load export year filter:", err);
+      });
+  }, [isOpen, deptId, courseId]);
 
   const handleExport = async () => {
     if (!exportFn) return;
