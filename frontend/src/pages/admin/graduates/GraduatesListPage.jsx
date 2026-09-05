@@ -140,10 +140,6 @@ export default function GraduatesListPage() {
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
       .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses filter:", err); });
-    adminApi
-      .getGraduationYears()
-      .then((res) => setYears(res.data.data))
-      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years filter:", err); });
   }, []);
 
   const selectedDept = departments.find(
@@ -165,6 +161,30 @@ export default function GraduatesListPage() {
       ? selectedCourse?.is_board_program
       : filteredCourses.some((c) => c.is_board_program));
   const showEmpFilter = isCollegeDept;
+
+  // Year options are dependent on the selected department/course so the
+  // dropdown only offers years that actually have graduates in that scope.
+  useEffect(() => {
+    const params = {};
+    if (deptFilter) params.department_id = deptFilter;
+    // Course only narrows years for college departments (non-college has no courses).
+    if (courseFilter && isCollegeDept) params.course_id = courseFilter;
+
+    adminApi
+      .getGraduationYears(params)
+      .then((res) => {
+        const nextYears = res.data.data;
+        setYears(nextYears);
+        // If the currently-selected year is no longer valid for this scope, clear it.
+        setYearFilter((prev) =>
+          prev && !nextYears.map(String).includes(String(prev)) ? "" : prev,
+        );
+      })
+      .catch((err) => {
+        if (import.meta.env.DEV)
+          console.error("Failed to load graduation years filter:", err);
+      });
+  }, [deptFilter, courseFilter, isCollegeDept]);
 
   useEffect(() => {
     if (!isCollegeDept) {

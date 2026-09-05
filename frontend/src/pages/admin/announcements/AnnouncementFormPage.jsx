@@ -136,7 +136,7 @@ export default function AnnouncementFormPage() {
       .then((res) => setCourses(res.data.data))
       .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load courses selector:", err); });
     adminApi
-      .getGraduationYears("college")
+      .getGraduationYears({ education_level: "college" })
       .then((res) => setYears(res.data.data))
       .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years selector:", err); });
   }, []);

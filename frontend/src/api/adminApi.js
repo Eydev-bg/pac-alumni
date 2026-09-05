@@ -46,7 +46,7 @@ const adminApi = {
   updateGraduate: (id, data) => api.put(`/admin/graduates/${id}`, data),
   deleteGraduate: (id) => api.delete(`/admin/graduates/${id}`),
   batchUpdateGraduates: (ids, data) => api.patch('/admin/graduates/batch-update', { ids, data }),
-  getGraduationYears: (level = '') => api.get('/admin/graduates/years', { params: { education_level: level } }),
+  getGraduationYears: (params = {}) => api.get('/admin/graduates/years', { params }),
   importGraduates: (formData) => api.post('/admin/graduates/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   getImportHistory: (params = {}) => api.get('/admin/graduates/import-history', { params }),
   getImportDetail: (id) => api.get(`/admin/graduates/import-history/${id}`),

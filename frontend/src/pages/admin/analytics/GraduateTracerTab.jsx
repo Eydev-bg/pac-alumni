@@ -60,7 +60,7 @@ export default function GraduateTracerTab() {
     Promise.all([
       adminApi.getAllDepartments(),
       adminApi.getAllCourses(),
-      adminApi.getGraduationYears("college"),
+      adminApi.getGraduationYears({ education_level: "college" }),
     ])
       .then(([deptRes, courseRes, yearRes]) => {
         const collegeDepts = (deptRes.data.data || []).filter(

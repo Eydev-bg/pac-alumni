@@ -55,7 +55,7 @@ export default function LevelAnalyticsTab({ level, label, fetchFn }) {
 
   useEffect(() => {
     adminApi
-      .getGraduationYears(level)
+      .getGraduationYears({ education_level: level })
       .then((res) => setYears(res.data.data || []))
       .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load graduation years filter:", err); });
   }, [level]);
