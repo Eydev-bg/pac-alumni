@@ -215,7 +215,9 @@ class GraduateController extends Controller
     public function graduationYears(Request $request): JsonResponse
     {
         $years = $this->graduateService->getGraduationYears(
-            $request->string('education_level')->toString() ?: null
+            $request->string('education_level')->toString() ?: null,
+            $request->integer('department_id') ?: null,
+            $request->integer('course_id') ?: null,
         );
 
         return $this->success($years, 'Graduation years retrieved.');

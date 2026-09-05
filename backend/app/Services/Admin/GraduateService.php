@@ -198,8 +198,8 @@ class GraduateService
     /**
      * Get available graduation years for filter dropdown.
      */
-    public function getGraduationYears(?string $level = null): array
+    public function getGraduationYears(?string $level = null, ?int $departmentId = null, ?int $courseId = null): array
     {
-        return $this->graduateRepo->getGraduationYears($level);
+        return $this->graduateRepo->getGraduationYears($level, $departmentId, $courseId);
     }
 }

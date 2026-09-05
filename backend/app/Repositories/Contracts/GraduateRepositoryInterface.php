@@ -47,5 +47,5 @@ interface GraduateRepositoryInterface
 
     public function batchUpdate(array $ids, array $data): int;
 
-    public function getGraduationYears(?string $level = null): array;
+    public function getGraduationYears(?string $level = null, ?int $departmentId = null, ?int $courseId = null): array;
 }

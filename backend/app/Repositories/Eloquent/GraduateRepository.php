@@ -117,10 +117,13 @@ class GraduateRepository implements GraduateRepositoryInterface
         return $this->model->whereIn('id', $ids)->update($data);
     }
 
-    public function getGraduationYears(?string $level = null): array
+    public function getGraduationYears(?string $level = null, ?int $departmentId = null, ?int $courseId = null): array
     {
         return $this->model->newQuery()
             ->when($level, fn($q) => $q->byLevel($level))
+            ->byDepartment($departmentId)
+            ->byCourse($courseId)
+            ->whereNotNull('graduation_year')
             ->distinct()
             ->orderBy('graduation_year', 'desc')
             ->pluck('graduation_year')
