@@ -233,7 +233,7 @@ export default function Select({
                 : undefined,
               width: menuRect.width,
             }}
-            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-[95] max-h-64 overflow-y-auto"
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-none py-1 z-[95] max-h-64 overflow-y-auto"
           >
             {options.length === 0 && (
               <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
@@ -251,7 +251,7 @@ export default function Select({
                       "w-full text-left px-3 py-2 text-sm flex items-start justify-between gap-2",
                       "whitespace-normal break-words min-h-[2.25rem]",
                       isSelected
-                        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 font-medium"
+                        ? "bg-blue-50 text-blue-700 dark:bg-[#223659] dark:text-blue-300 font-medium"
                         : isHighlighted
                           ? "bg-slate-50 text-slate-700 dark:bg-slate-700 dark:text-slate-200"
                           : "text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700",

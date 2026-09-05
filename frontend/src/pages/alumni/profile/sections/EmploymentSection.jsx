@@ -159,7 +159,7 @@ export default function EmploymentSection({ onSaved }) {
         <>
           {/* Current position highlight */}
           {isEmployed && currentJob && (
-            <div className="bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200/60 dark:border-emerald-500/20 p-4 mb-4">
+            <div className="bg-emerald-50 dark:bg-[#1a3843] rounded-xl border border-emerald-200/60 dark:border-[#15524f] p-4 mb-4">
               <div className="flex items-start gap-3">
                 <IconChip icon={HiOutlineBuildingOffice2} color="green" />
                 <div className="min-w-0 flex-1">
@@ -373,7 +373,7 @@ export default function EmploymentSection({ onSaved }) {
                               }
                               className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-all text-center ${
                                 selected
-                                  ? "border-blue-500 bg-blue-50 shadow-sm dark:shadow-none dark:border-blue-400 dark:bg-blue-500/15"
+                                  ? "border-blue-500 bg-blue-50 shadow-sm dark:shadow-none dark:border-blue-400 dark:bg-[#223659]"
                                   : "border-slate-200 hover:border-slate-300 bg-white dark:border-slate-600 dark:hover:border-slate-500 dark:bg-slate-900"
                               }`}
                             >
@@ -425,7 +425,7 @@ export default function EmploymentSection({ onSaved }) {
               )}
 
               {formData.employment_status && (
-                <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl px-4 py-3 border border-blue-100 dark:border-blue-500/20">
+                <div className="bg-blue-50 dark:bg-[#203250] rounded-xl px-4 py-3 border border-blue-100 dark:border-[#254271]">
                   <div className="flex items-start gap-2.5">
                     <HiOutlineBellAlert className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                     <p className="text-[0.72rem] text-blue-700 dark:text-blue-300 leading-relaxed">
