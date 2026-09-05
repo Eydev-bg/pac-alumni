@@ -7,7 +7,7 @@ const SERIF = { fontFamily: "'Playfair Display', Georgia, serif" };
 // Source: philadventcollege.edu.ph "About Us" / CHED institution profile —
 // double-check against the college's current official listing before launch.
 const ADDRESS = "Ramon Magsaysay, Sindangan, Zamboanga del Norte, 7112";
-const PHONE = "  (63+) 9357768845";
+const PHONE = "  (63+) 9399185586";
 const EMAIL = "philippineadventcollege@gmail.com";
 const MAP_QUERY = encodeURIComponent(`Philippine Advent College, ${ADDRESS}`);
 
