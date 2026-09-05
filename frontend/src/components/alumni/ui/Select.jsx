@@ -165,7 +165,7 @@ export default function Select({
         <ul
           role="listbox"
           id={listboxId}
-          className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-50 max-h-64 overflow-y-auto"
+          className="absolute left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-slate-900/50 py-1 z-50 max-h-64 overflow-y-auto transform-gpu will-change-transform"
         >
           {options.length === 0 && (
             <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
