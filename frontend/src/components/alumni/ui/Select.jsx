@@ -10,6 +10,11 @@ import { createPortal } from "react-dom";
 import { HiOutlineCheck, HiOutlineChevronDown } from "react-icons/hi2";
 import { cn } from "../../../utils/formatters";
 
+// Viewport safe zones for the portaled menu (px).
+const VIEWPORT_MARGIN = 8; // keep this far from any screen edge
+const HEADER_SAFE = 64; // don't draw under the top app header
+const BOTTOM_SAFE = 72; // don't draw under the bottom nav bar
+
 /**
  * Select — accessible, mobile-safe custom dropdown replacing native <select>.
  *
@@ -59,22 +64,42 @@ export default function Select({
     const el = triggerRef.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Horizontal clamp: keep the menu fully on-screen.
+    const width = r.width;
+    let left = r.left;
+    if (left + width > vw - VIEWPORT_MARGIN) left = vw - VIEWPORT_MARGIN - width;
+    if (left < VIEWPORT_MARGIN) left = VIEWPORT_MARGIN;
+
+    // Vertical space available below vs above the trigger, minus the safe zones.
+    const spaceBelow = vh - BOTTOM_SAFE - (r.bottom + 4);
+    const spaceAbove = r.top - 4 - HEADER_SAFE;
+
     setMenuRect({
-      left: r.left,
+      left,
+      width,
       top: r.bottom + 4, // 4px gap, mirrors the old mt-1
-      width: r.width,
-      bottomSpace: window.innerHeight - r.bottom,
-      topSpace: r.top,
-      triggerTop: r.top,
-      triggerHeight: r.height,
+      bottom: vh - r.top + 4, // used when flipping up
+      spaceBelow,
+      spaceAbove,
     });
   }, []);
 
-  // Flip above the trigger when the menu would not fit below it.
+  // Flip above the trigger only when below is cramped and above has more room.
   const flipUp =
     !!menuRect &&
-    menuRect.bottomSpace < 280 &&
-    menuRect.topSpace > menuRect.bottomSpace;
+    menuRect.spaceBelow < 200 &&
+    menuRect.spaceAbove > menuRect.spaceBelow;
+
+  // Cap the menu to the chosen side's safe space (256px = the previous cap).
+  const menuMaxHeight = !menuRect
+    ? undefined
+    : Math.max(
+        120, // never smaller than this; below it, internal scroll handles overflow
+        Math.min(256, flipUp ? menuRect.spaceAbove : menuRect.spaceBelow),
+      );
 
   const selected = options.find((o) => o.value === value) || null;
 
@@ -106,20 +131,32 @@ export default function Select({
     };
   }, [open]);
 
-  // Track the trigger while the menu is open: capture-phase scroll catches
-  // nested scroll containers (modal bodies, the form card), not just the window.
+  // Position is measured once, before paint, when the menu opens — it is never
+  // recomputed while open (see the scroll handler below), so it cannot drift.
   useLayoutEffect(() => {
-    if (!open) return undefined;
+    if (!open) return;
     updateMenuPosition();
-    const onScroll = () => updateMenuPosition();
-    const onResize = () => updateMenuPosition();
-    window.addEventListener("scroll", onScroll, true);
+  }, [open, updateMenuPosition]);
+
+  // Scrolling or resizing while open closes the menu (the standard, jank-free
+  // behavior) rather than chasing the trigger frame by frame.
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const onScroll = (e) => {
+      // Ignore scrolling inside the menu's own option list.
+      if (menuRef.current && menuRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    const onResize = () => setOpen(false);
+
+    window.addEventListener("scroll", onScroll, true); // capture: catch nested scrolls
     window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("scroll", onScroll, true);
       window.removeEventListener("resize", onResize);
     };
-  }, [open, updateMenuPosition]);
+  }, [open]);
 
   // When opening, highlight the currently selected option (or first).
   const openMenu = () => {
@@ -228,12 +265,11 @@ export default function Select({
               position: "fixed",
               left: menuRect.left,
               top: flipUp ? undefined : menuRect.top,
-              bottom: flipUp
-                ? window.innerHeight - menuRect.triggerTop + 4
-                : undefined,
+              bottom: flipUp ? menuRect.bottom : undefined,
               width: menuRect.width,
+              maxHeight: menuMaxHeight,
             }}
-            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-none py-1 z-[95] max-h-64 overflow-y-auto"
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg dark:shadow-none py-1 z-[95] overflow-y-auto"
           >
             {options.length === 0 && (
               <li className="px-3 py-2 text-sm text-slate-400 select-none">No options</li>
