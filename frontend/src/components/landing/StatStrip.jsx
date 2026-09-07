@@ -217,7 +217,7 @@ export default function StatStrip() {
   // Loading: render skeletons inside the identical panel so layout never shifts.
   if (stats === null) {
     return (
-      <div className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7">
+      <div className="rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7">
         <div className="grid grid-cols-2 gap-y-6 sm:grid-cols-4 sm:gap-y-0">
           {[0, 1, 2, 3].map((i) => (
             <SkeletonStat key={i} />
@@ -230,7 +230,7 @@ export default function StatStrip() {
   return (
     <div
       ref={panelRef}
-      className="mt-10 rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7"
+      className="rounded-2xl border border-white/10 bg-[var(--color-navy-900)]/60 p-6 sm:p-7"
     >
       <div
         className={`grid grid-cols-2 gap-y-6 sm:grid-cols-4 sm:gap-y-0 ${isSample ? "opacity-70" : ""}`}

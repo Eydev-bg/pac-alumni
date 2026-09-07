@@ -65,13 +65,13 @@
 /* Light mode: clean light grey. Dark mode: deep navy. */
 html,
 body {
-    background-color: #f5f7fb;
+  background-color: #f5f7fb;
 }
 /* `.dark` sits on <html>, so paint <html> as well as body — otherwise iOS
    Safari's rubber-band/overscroll area shows the light grey underneath. */
 html.dark,
 .dark body {
-    background-color: var(--color-navy-950);
+  background-color: var(--color-navy-950);
 }
 
 /*
@@ -81,6 +81,10 @@ html.dark,
  * `animation-play-state` on hover/focus. Suppressed under reduced motion.
  */
 @keyframes toastProgress {
-    from { transform: scaleX(1); }
-    to { transform: scaleX(0); }
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
