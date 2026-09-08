@@ -34,12 +34,17 @@ class ConversationResource extends JsonResource
                     return null;
                 }
 
+                // Same stripping as MessageResource — an unsent message must
+                // not leak its text through the inbox preview either.
+                $isUnsent = $this->latestMessage->unsent_at !== null;
+
                 return [
-                    'content'         => $this->latestMessage->content,
+                    'content'         => $isUnsent ? null : $this->latestMessage->content,
+                    'is_unsent'       => $isUnsent,
                     // Lets the inbox show "📷 Photo" / "📄 PDF" for an
                     // attachment-only message, which has no text to preview.
                     // Already a column on messages — no extra query.
-                    'attachment_type' => $this->latestMessage->attachment_type, // 'image' | 'pdf' | null
+                    'attachment_type' => $isUnsent ? null : $this->latestMessage->attachment_type, // 'image' | 'pdf' | null
                     'is_mine'         => (int) $this->latestMessage->sender_id === (int) $authUserId,
                     'created_at'      => $this->latestMessage->created_at?->toISOString(),
                 ];

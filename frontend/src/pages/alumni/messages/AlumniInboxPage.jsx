@@ -179,7 +179,12 @@ export default function AlumniInboxPage() {
                       const prefix = c.last_message.is_mine ? "You: " : "";
                       let body = c.last_message.content;
                       if (!body) {
-                        if (c.last_message.attachment_type === "image")
+                        // An unsent message ships no content or attachment_type
+                        // at all — check it before the attachment fallbacks, or
+                        // it would read as a bare "Attachment".
+                        if (c.last_message.is_unsent)
+                          body = "This message was unsent.";
+                        else if (c.last_message.attachment_type === "image")
                           body = "📷 Photo";
                         else if (c.last_message.attachment_type === "pdf")
                           body = "📄 PDF";

@@ -11,6 +11,7 @@ import { useAuth } from "../../../hooks/useAuth";
 import useVisibilityPolling from "../../../hooks/useVisibilityPolling";
 import { useRealtimeMessages } from "../../../hooks/useRealtimeMessages";
 import { useRealtimeReadReceipts } from "../../../hooks/useRealtimeReadReceipts";
+import { useRealtimeMessageUnsent } from "../../../hooks/useRealtimeMessageUnsent";
 import { useConversationTyping } from "../../../hooks/useConversationTyping";
 import { getEcho } from "../../../config/echo";
 import { isRecentlyActive, storageUrl } from "../../../utils/formatters";
@@ -19,12 +20,18 @@ import { isRecentlyActive, storageUrl } from "../../../utils/formatters";
 import { Avatar } from "../../../components/alumni/ui";
 import ImageLightbox from "../../../components/alumni/ui/ImageLightbox";
 import {
+  MessageActionSheet,
+  ConfirmUnsendDialog,
+} from "./MessageActions";
+import {
   HiOutlineArrowLeft,
   HiOutlinePaperAirplane,
   HiOutlineUserCircle,
   HiOutlineArrowUturnLeft,
   HiOutlinePaperClip,
   HiOutlineDocument,
+  HiOutlineEllipsisHorizontal,
+  HiOutlineNoSymbol,
   HiXMark,
 } from "react-icons/hi2";
 
@@ -278,6 +285,15 @@ function firstValidationError(err) {
   return null;
 }
 
+/**
+ * The unsent form of a message: the placeholder renders off `is_unsent`, and
+ * the text/attachment are dropped locally so nothing lingers in memory that
+ * the server has already stripped.
+ */
+function asUnsent(m) {
+  return { ...m, is_unsent: true, content: null, attachment: null };
+}
+
 /** "Read • 2:14 PM" label for a read own-message; null while unread. */
 function readLabel(m) {
   if (!m.is_read || !m.read_at) return null;
@@ -329,6 +345,9 @@ export default function ConversationThread({
   const [error, setError] = useState("");
   const [replyingTo, setReplyingTo] = useState(null); // the message being replied to, or null
   const [revealedReplyId, setRevealedReplyId] = useState(null); // mobile: bubble whose reply btn is shown
+  const [actionsFor, setActionsFor] = useState(null); // message whose delete menu is open
+  const [confirmUnsendFor, setConfirmUnsendFor] = useState(null); // message pending unsend confirmation
+  const [unsending, setUnsending] = useState(false); // unsend request in flight
   const [attachment, setAttachment] = useState(null); // the File picked, not yet sent
   const [attachmentPreview, setAttachmentPreview] = useState(null); // object URL for image preview, or null for pdf
   const [converting, setConverting] = useState(false); // HEIC → JPEG transcode in flight
@@ -482,6 +501,18 @@ export default function ConversationThread({
         ids.has(m.id) ? { ...m, is_read: true, read_at: payload.read_at } : m,
       ),
     );
+  });
+
+  // Real-time: the other participant unsent a message — swap their bubble for
+  // the placeholder immediately. Our own unsends are already applied
+  // optimistically in handleUnsend, and re-applying is harmless/idempotent.
+  useRealtimeMessageUnsent(conversationId, (payload) => {
+    const id = payload?.message_id;
+    if (!id) return;
+    setMessages((prev) => prev.map((m) => (m.id === id ? asUnsent(m) : m)));
+    // The menu can't stay open over a bubble that just became a placeholder.
+    setActionsFor((cur) => (cur?.id === id ? null : cur));
+    setConfirmUnsendFor((cur) => (cur?.id === id ? null : cur));
   });
 
   // useRealtimeMessages and useRealtimeReadReceipts both listen on the same
@@ -746,6 +777,93 @@ export default function ConversationThread({
     setRevealedReplyId((cur) => (cur === message.id ? null : message.id));
   };
 
+  // ─── Delete: "remove for you" and "unsend for everyone" ──────────────
+  // Long-press is the mobile entry point into the same menu the desktop "…"
+  // button opens. The timer is cancelled by a lift or any finger movement, so
+  // a scroll gesture never fires it.
+  const longPressTimerRef = useRef(null);
+
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const startLongPress = (message) => {
+    if (message._status) return; // only saved messages
+    cancelLongPress();
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTimerRef.current = null;
+      setRevealedReplyId(null);
+      setActionsFor(message);
+    }, 450);
+  };
+
+  // Clear a pending long-press timer if the thread unmounts mid-press.
+  useEffect(() => cancelLongPress, []);
+
+  /** Hide a message from this user's thread only. Optimistic, with rollback. */
+  const handleRemoveForMe = async (message) => {
+    setActionsFor(null);
+    setRevealedReplyId(null);
+
+    const prevMessages = messages;
+    const prevPending = pending;
+    setMessages((cur) => cur.filter((m) => m.id !== message.id));
+    setPending((cur) => cur.filter((m) => m.id !== message.id));
+    setError("");
+
+    try {
+      await alumniApi.deleteMessage(conversationId, message.id, "self");
+      // The thread's own copy is already correct; refresh the inbox list so a
+      // hidden last message stops driving this conversation's preview/badge.
+      onActivityRef.current?.();
+    } catch (err) {
+      setMessages(prevMessages);
+      setPending(prevPending);
+      setError(
+        firstValidationError(err) ||
+          err?.response?.data?.message ||
+          "Couldn't remove that message. Please try again.",
+      );
+    }
+  };
+
+  /** Unsend for both participants. Own messages only — backend returns 403. */
+  const handleUnsend = async (message) => {
+    const prevMessages = messages;
+    setUnsending(true);
+    setMessages((cur) => cur.map((m) => (m.id === message.id ? asUnsent(m) : m)));
+    setError("");
+
+    try {
+      const res = await alumniApi.deleteMessage(
+        conversationId,
+        message.id,
+        "everyone",
+      );
+      // Reconcile with the server's stripped copy rather than trusting the
+      // optimistic guess.
+      const saved = res.data?.data;
+      if (saved?.id) {
+        setMessages((cur) => cur.map((m) => (m.id === saved.id ? saved : m)));
+      }
+      onActivityRef.current?.();
+    } catch (err) {
+      setMessages(prevMessages);
+      setError(
+        firstValidationError(err) ||
+          err?.response?.data?.message ||
+          "Couldn't unsend that message. Please try again.",
+      );
+    } finally {
+      setUnsending(false);
+      setConfirmUnsendFor(null);
+      setRevealedReplyId(null);
+    }
+  };
+
   // Pending (optimistic) bubbles always render after the confirmed messages.
   const allMessages = [...messages, ...pending];
 
@@ -833,6 +951,10 @@ export default function ConversationThread({
         ref={scrollContainerRef}
         onScroll={() => {
           if (revealedReplyId) setRevealedReplyId(null);
+          // A scroll started before the press timer fired is a scroll, not a
+          // long-press — and an open menu shouldn't survive one either.
+          cancelLongPress();
+          if (actionsFor) setActionsFor(null);
           handleScroll();
         }}
         className="flex-1 min-h-0 overflow-y-auto px-4 py-5 space-y-3 bg-slate-50 dark:bg-slate-900"
@@ -943,15 +1065,39 @@ export default function ConversationThread({
                       >
                         <div
                           onClick={() => toggleReplyReveal(m)}
+                          onTouchStart={() => startLongPress(m)}
+                          onTouchEnd={cancelLongPress}
+                          onTouchMove={cancelLongPress}
+                          onTouchCancel={cancelLongPress}
+                          onContextMenu={(e) => {
+                            // Desktop right-click opens the same menu; also
+                            // suppresses the OS menu that a long-press would
+                            // otherwise raise on some mobile browsers.
+                            if (m._status) return;
+                            e.preventDefault();
+                            setActionsFor(m);
+                          }}
                           className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:anywhere] select-none md:select-auto cursor-pointer md:cursor-default ${
-                            own
-                              ? "bg-blue-600 text-white rounded-br-md"
-                              : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
+                            m.is_unsent
+                              ? "bg-transparent text-slate-400 dark:text-slate-500 border border-dashed border-slate-300 dark:border-slate-600"
+                              : own
+                                ? "bg-blue-600 text-white rounded-br-md"
+                                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-md"
                           } ${m._status === "sending" ? "opacity-70" : ""}`}
                         >
+                          {/* Unsent: the server sends no content or attachment
+                              for these, only the flag — so the placeholder is
+                              all there is to draw. */}
+                          {m.is_unsent && (
+                            <span className="flex items-center gap-1.5 italic">
+                              <HiOutlineNoSymbol className="w-3.5 h-3.5 flex-shrink-0" />
+                              This message was unsent.
+                            </span>
+                          )}
                           {/* Attachment first, then the text (which may be null on
                               an attachment-only message). */}
-                          {m.attachment &&
+                          {!m.is_unsent &&
+                            m.attachment &&
                             m.attachment.type === "image" &&
                             (() => {
                               // A pending bubble's url is a local blob: — use it
@@ -972,7 +1118,8 @@ export default function ConversationThread({
                                 />
                               );
                             })()}
-                          {m.attachment &&
+                          {!m.is_unsent &&
+                            m.attachment &&
                             m.attachment.type === "pdf" &&
                             (() => {
                               // We only build object URLs for images, so a pending
@@ -1035,31 +1182,57 @@ export default function ConversationThread({
                                 </a>
                               );
                             })()}
-                          {m.content && <MessageText text={m.content} own={own} />}
+                          {!m.is_unsent && m.content && (
+                            <MessageText text={m.content} own={own} />
+                          )}
                         </div>
 
-                        {/* Reply button — only for real (saved) messages, not pending/failed */}
+                        {/* Reply + delete actions — only for real (saved)
+                            messages, not pending/failed. Same reveal rules as
+                            before: hover on desktop, tap-to-reveal on mobile.
+                            An unsent placeholder can't be replied to (matching
+                            Messenger) but can still be removed for you. */}
                         {!m._status && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setReplyingTo(m);
-                              setRevealedReplyId(null);
-                            }}
-                            title="Reply"
-                            aria-label="Reply to this message"
-                            className={`flex-shrink-0 p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus:opacity-100 ${
+                          <span
+                            className={`flex-shrink-0 flex items-center gap-0.5 transition-opacity md:opacity-0 md:group-hover/bubble:opacity-100 md:focus-within:opacity-100 ${
                               revealedReplyId === m.id
                                 ? "opacity-100"
                                 : "opacity-0 pointer-events-none md:pointer-events-auto"
                             }`}
                           >
-                            <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
-                          </button>
+                            {!m.is_unsent && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReplyingTo(m);
+                                  setRevealedReplyId(null);
+                                }}
+                                title="Reply"
+                                aria-label="Reply to this message"
+                                className="p-1.5 rounded-full text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                              >
+                                <HiOutlineArrowUturnLeft className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActionsFor(m);
+                                setRevealedReplyId(null);
+                              }}
+                              title="More options"
+                              aria-label="Message options"
+                              aria-haspopup="dialog"
+                              className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-colors"
+                            >
+                              <HiOutlineEllipsisHorizontal className="w-4 h-4" />
+                            </button>
+                          </span>
                         )}
                       </div>
 
                       {own &&
+                        !m.is_unsent &&
                         (m._status === "sending" ||
                           m._status === "failed" ||
                           isLastOverall) && (
@@ -1215,6 +1388,28 @@ export default function ConversationThread({
           src={lightboxSrc}
           alt="Image attachment"
           onClose={() => setLightboxSrc(null)}
+        />
+      )}
+
+      {/* Delete menu. "Unsend" is offered only on the viewer's own messages
+          that aren't already unsent — the backend enforces the same rule. */}
+      {actionsFor && (
+        <MessageActionSheet
+          canUnsend={isOwnMessage(actionsFor) && !actionsFor.is_unsent}
+          onRemoveForMe={() => handleRemoveForMe(actionsFor)}
+          onUnsend={() => {
+            setConfirmUnsendFor(actionsFor);
+            setActionsFor(null);
+          }}
+          onClose={() => setActionsFor(null)}
+        />
+      )}
+
+      {confirmUnsendFor && (
+        <ConfirmUnsendDialog
+          busy={unsending}
+          onConfirm={() => handleUnsend(confirmUnsendFor)}
+          onCancel={() => setConfirmUnsendFor(null)}
         />
       )}
     </div>

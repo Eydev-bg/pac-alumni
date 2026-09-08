@@ -140,6 +140,11 @@ Route::prefix('alumni')->middleware(['auth:api', 'account.status', 'role:alumni'
     // Rate limited: max 20 messages per hour per user (spam prevention).
     Route::post('/conversations/{id}/messages', [MessageController::class, 'sendMessage'])
         ->whereNumber('id')->middleware('throttle:20,60')->name('alumni.conversations.send');
+    // ?scope=self (hide from my view) | everyone (unsend, own messages only).
+    // Both ids are scoped to a conversation the caller participates in — see
+    // MessageService::deleteMessage().
+    Route::delete('/conversations/{id}/messages/{messageId}', [MessageController::class, 'deleteMessage'])
+        ->whereNumber('id')->whereNumber('messageId')->name('alumni.conversations.messages.delete');
 
     // ─── Settings (Security + Appearance) ─────────────────
     Route::prefix('settings')->group(function () {

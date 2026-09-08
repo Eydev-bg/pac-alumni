@@ -135,6 +135,19 @@ const alumniApi = {
     });
   },
 
+  /**
+   * Delete one message.
+   * @param {'self'|'everyone'} scope  'self' hides it from my view only;
+   *   'everyone' unsends it for both sides (own messages only — the backend
+   *   returns 403 otherwise).
+   */
+  deleteMessage(conversationId, messageId, scope) {
+    return api.delete(
+      `/alumni/conversations/${conversationId}/messages/${messageId}`,
+      { params: { scope } },
+    );
+  },
+
   getMessagesUnreadCount() {
     return api.get('/alumni/messages/unread-count');
   },

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Alumni;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Alumni\DeleteMessageRequest;
 use App\Http\Requests\Alumni\SendMessageRequest;
 use App\Http\Requests\Alumni\StartConversationRequest;
 use App\Http\Resources\Alumni\ConversationResource;
@@ -93,6 +94,25 @@ class MessageController extends Controller
         );
 
         return $this->created(new MessageResource($message), 'Message sent.');
+    }
+
+    /**
+     * DELETE /api/alumni/conversations/{id}/messages/{messageId}?scope=self|everyone
+     */
+    public function deleteMessage(DeleteMessageRequest $request, int $id, int $messageId): JsonResponse
+    {
+        $user = auth('api')->user();
+        $scope = $request->validated('scope');
+
+        $message = $this->messageService->deleteMessage($user, $id, $messageId, $scope);
+
+        // "Remove for you" leaves nothing to render — the bubble is simply gone
+        // for this user. An unsend returns the stripped message so the caller
+        // can swap in the placeholder from the server's own copy.
+        return $this->success(
+            $scope === 'everyone' ? new MessageResource($message) : null,
+            $scope === 'everyone' ? 'Message unsent.' : 'Message removed.'
+        );
     }
 
     /**

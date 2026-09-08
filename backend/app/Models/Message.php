@@ -8,8 +8,10 @@ namespace App\Models;
 
 use App\Events\MessageSent;
 use App\Services\StorageService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
@@ -23,6 +25,7 @@ class Message extends Model
         'attachment_name',
         'attachment_size',
         'is_read',
+        'unsent_at',
     ];
 
     protected static function booted(): void
@@ -40,8 +43,9 @@ class Message extends Model
     protected function casts(): array
     {
         return [
-            'is_read' => 'boolean',
-            'read_at' => 'datetime',
+            'is_read'   => 'boolean',
+            'read_at'   => 'datetime',
+            'unsent_at' => 'datetime',
         ];
     }
 
@@ -54,6 +58,29 @@ class Message extends Model
         $raw = $this->getRawOriginal('attachment_path');
 
         return $raw ? StorageService::url($raw) : null;
+    }
+
+    /** True once the sender has unsent this message for everyone. */
+    public function getIsUnsentAttribute(): bool
+    {
+        return $this->unsent_at !== null;
+    }
+
+    /** Per-user "remove for you" rows — see MessageDelete. */
+    public function deletes(): HasMany
+    {
+        return $this->hasMany(MessageDelete::class);
+    }
+
+    // ─── Scopes ──────────────────────────────────────────────
+    /**
+     * Messages the given user has NOT hidden from their own view. Unsent
+     * messages deliberately survive this filter — they still render, as the
+     * "This message was unsent." placeholder.
+     */
+    public function scopeVisibleTo(Builder $query, int $userId): Builder
+    {
+        return $query->whereDoesntHave('deletes', fn ($q) => $q->where('user_id', $userId));
     }
 
     public function conversation(): BelongsTo

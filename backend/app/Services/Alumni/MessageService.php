@@ -4,8 +4,10 @@ namespace App\Services\Alumni;
 
 use App\Enums\UserRole;
 use App\Events\MessagesRead;
+use App\Events\MessageUnsent;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\MessageDelete;
 use App\Models\User;
 use App\Services\StorageService;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,9 +32,13 @@ class MessageService
                 'participantTwo.alumniProfile.graduate.course',
                 'latestMessage',
             ])
+            // A message the user unsent-for-everyone or removed for themselves
+            // must not keep an unread badge lit for a bubble they can't see.
             ->withCount(['messages as unread_count' => fn($q) => $q
                 ->where('is_read', false)
-                ->where('sender_id', '!=', $user->id)])
+                ->where('sender_id', '!=', $user->id)
+                ->whereNull('unsent_at')
+                ->visibleTo($user->id)])
             // Surface threads with activity first; brand-new (empty) threads fall
             // back to their creation time.
             ->orderByRaw('COALESCE(last_message_at, created_at) DESC')
@@ -113,6 +119,8 @@ class MessageService
             $unreadIds = Message::where('conversation_id', $conversation->id)
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
+                ->whereNull('unsent_at')
+                ->visibleTo($user->id)
                 ->pluck('id');
 
             if ($unreadIds->isNotEmpty()) {
@@ -131,6 +139,9 @@ class MessageService
         }
 
         $query = Message::where('conversation_id', $conversation->id)
+            // Messages this user has "removed for you" drop out of their thread
+            // entirely; the other participant's copy is unaffected.
+            ->visibleTo($user->id)
             ->with(['sender', 'replyTo.sender'])
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc');
@@ -212,6 +223,82 @@ class MessageService
     }
 
     /**
+     * Delete a message, Messenger-style, in one of two scopes:
+     *
+     *   'self'     — hide it from THIS user's thread only. Allowed on any
+     *                message in a conversation they participate in, including
+     *                the other person's, at any age. The other participant is
+     *                unaffected.
+     *   'everyone' — unsend for both sides. Own messages ONLY (enforced here,
+     *                not just in the UI), with no time limit, matching current
+     *                Messenger. Strips the text, deletes the stored attachment
+     *                file, and broadcasts MessageUnsent so the other
+     *                participant's open thread updates live.
+     *
+     * @throws \Exception 404 if the conversation or message isn't theirs,
+     *                    403 if unsending someone else's message.
+     */
+    public function deleteMessage(User $user, int $conversationId, int $messageId, string $scope): Message
+    {
+        // Scopes the lookup to a conversation the user actually participates in,
+        // so message ids from someone else's thread resolve to a 404.
+        $conversation = $this->authorizedConversation($user, $conversationId);
+
+        $message = Message::where('conversation_id', $conversation->id)
+            ->find($messageId);
+
+        if (!$message) {
+            throw \App\Exceptions\DomainException::notFound('Message not found.');
+        }
+
+        if ($scope === 'self') {
+            // Idempotent: removing twice is a no-op rather than a unique-key error.
+            MessageDelete::firstOrCreate([
+                'message_id' => $message->id,
+                'user_id'    => $user->id,
+            ]);
+
+            return $message;
+        }
+
+        // scope === 'everyone'
+        if ((int) $message->sender_id !== (int) $user->id) {
+            throw \App\Exceptions\DomainException::forbidden('You can only unsend your own messages.');
+        }
+
+        // Already unsent — return as-is rather than re-broadcasting.
+        if ($message->unsent_at !== null) {
+            return $message;
+        }
+
+        // Drop the stored file before clearing the path, or it would be
+        // orphaned in storage with nothing left pointing at it.
+        $attachmentPath = $message->getRawOriginal('attachment_path');
+        if ($attachmentPath) {
+            StorageService::delete($attachmentPath);
+        }
+
+        $unsentAt = now();
+
+        $message->update([
+            'content'         => null,
+            'attachment_path' => null,
+            'attachment_type' => null,
+            'attachment_name' => null,
+            'attachment_size' => null,
+            'unsent_at'       => $unsentAt,
+        ]);
+
+        broadcast(new MessageUnsent(
+            conversationId: $conversation->id,
+            messageId: $message->id,
+            unsentAt: $unsentAt,
+        ));
+
+        return $message->fresh();
+    }
+
+    /**
      * Total unread messages across all of the user's conversations.
      */
     public function unreadCount(User $user): int
@@ -220,6 +307,8 @@ class MessageService
             ->whereHas('conversation', fn($q) => $q->forUser($user->id))
             ->where('sender_id', '!=', $user->id)
             ->where('is_read', false)
+            ->whereNull('unsent_at')
+            ->visibleTo($user->id)
             ->count();
     }
 
