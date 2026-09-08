@@ -199,6 +199,85 @@ async function convertHeicToJpeg(file) {
   });
 }
 
+// Phone camera photos are 6-12 MB once decoded to JPEG — slow to upload on
+// mobile data, and big enough to trip a shared host's PHP upload limit before
+// any validation runs. Every image is therefore downscaled and re-encoded
+// before it leaves the browser.
+const MAX_IMAGE_DIMENSION = 1920; // long edge, in px
+const TARGET_IMAGE_MB = 2;
+const IMAGE_QUALITY = 0.8;
+const COMPRESSIBLE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+/**
+ * Is this something we can safely re-encode? PDFs and anything unrecognised
+ * pass through untouched. Falls back to the extension for the Android case
+ * where `file.type` is empty.
+ */
+function isCompressibleImage(file) {
+  const type = (file?.type || "").toLowerCase();
+  if (COMPRESSIBLE_IMAGE_TYPES.includes(type)) return true;
+  return type === "" && /\.(jpe?g|png|webp)$/i.test(file?.name || "");
+}
+
+/**
+ * Downscale to MAX_IMAGE_DIMENSION on the long edge and re-encode until the
+ * result is under TARGET_IMAGE_MB. The source format is preserved so a PNG
+ * keeps its transparency rather than turning into a black-backed JPEG.
+ * browser-image-compression is imported lazily to keep it out of the main
+ * bundle, matching the heic2any import above.
+ */
+async function compressImage(file) {
+  if (!isCompressibleImage(file)) return file;
+  const { default: imageCompression } = await import("browser-image-compression");
+  const compressed = await imageCompression(file, {
+    maxSizeMB: TARGET_IMAGE_MB,
+    maxWidthOrHeight: MAX_IMAGE_DIMENSION,
+    initialQuality: IMAGE_QUALITY,
+    useWebWorker: true,
+    fileType: file.type || undefined,
+  });
+  // Small or already-optimised images can come back larger than they went in
+  // — keep whichever is actually smaller.
+  if (compressed.size >= file.size) return file;
+  return new File([compressed], file.name, {
+    type: compressed.type || file.type,
+    lastModified: file.lastModified,
+  });
+}
+
+/**
+ * The full pre-upload pipeline: HEIC/HEIF to JPEG first (nothing can draw a
+ * HEIC to a canvas, so it has to be transcoded before it can be compressed),
+ * then downscale + compress. Compression is an optimisation rather than a
+ * gate: if it fails the uncompressed file is returned and the size check in
+ * handleFilePick decides its fate.
+ */
+async function prepareFileForUpload(file) {
+  const converted = await convertHeicToJpeg(file);
+  try {
+    return await compressImage(converted);
+  } catch (err) {
+    console.warn("Image compression failed; using the uncompressed file.", err);
+    return converted;
+  }
+}
+
+/**
+ * Laravel answers a failed rule with 422 and { message, errors: { field: [...] } }.
+ * The top-level message is a generic "Validation failed.", so the per-field
+ * message is the one actually worth showing the user.
+ */
+function firstValidationError(err) {
+  if (err?.response?.status !== 422) return null;
+  const errors = err.response?.data?.errors;
+  if (!errors || typeof errors !== "object") return null;
+  for (const messages of Object.values(errors)) {
+    if (Array.isArray(messages) && messages.length) return messages[0];
+    if (typeof messages === "string" && messages) return messages;
+  }
+  return null;
+}
+
 /** "Read • 2:14 PM" label for a read own-message; null while unread. */
 function readLabel(m) {
   if (!m.is_read || !m.read_at) return null;
@@ -516,16 +595,19 @@ export default function ConversationThread({
 
     setError("");
 
-    // HEIC/HEIF first: everything below (validation, preview, upload) then
-    // works on a plain JPEG that browsers and the backend both accept.
+    // Prepare the file before anything else looks at it: HEIC/HEIF becomes
+    // JPEG, then every image is downscaled and re-encoded. Everything below
+    // (validation, preview, upload) therefore works on the FINAL file, whose
+    // type and size both differ from what was picked. PDFs pass straight
+    // through.
     let picked = file;
-    if (isHeicFile(file)) {
+    if (isHeicFile(file) || isCompressibleImage(file)) {
       setConverting(true);
       try {
-        picked = await convertHeicToJpeg(file);
+        picked = await prepareFileForUpload(file);
       } catch {
         setError(
-          "That HEIC photo couldn't be converted. Try saving it as a JPG and attaching it again."
+          "That photo couldn't be prepared for upload. Try saving it as a JPG and attaching it again."
         );
         return;
       } finally {
@@ -534,8 +616,8 @@ export default function ConversationThread({
     }
 
     // Mirrors the backend's `mimes:` + `max:10240` rules so an invalid pick is
-    // rejected before a pointless upload. Checked against the CONVERTED file —
-    // a JPEG's type and size both differ from the HEIC original.
+    // rejected before a pointless upload. Checked against the PREPARED file,
+    // since conversion and compression both change its type and size.
     if (!ALLOWED_ATTACHMENT_TYPES.includes(picked.type)) {
       setError("Only images (JPG, PNG, WEBP, HEIC) and PDF files are allowed.");
       return;
@@ -644,8 +726,12 @@ export default function ConversationThread({
           "You're sending messages too quickly. Please try again later.",
         );
       } else {
+        // A 422 carries the useful detail in `errors`; the top-level
+        // message is only ever a generic "Validation failed.".
         setError(
-          err?.response?.data?.message || "Failed to send. Please try again.",
+          firstValidationError(err) ||
+            err?.response?.data?.message ||
+            "Failed to send. Please try again.",
         );
       }
     } finally {
