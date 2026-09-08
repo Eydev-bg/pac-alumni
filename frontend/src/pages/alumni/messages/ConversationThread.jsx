@@ -160,6 +160,45 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+/**
+ * HEIC/HEIF detection. `file.type` alone is not enough: on many Android
+ * browsers it comes back as "" for a .heic pick, so the extension is checked
+ * too.
+ */
+const HEIC_EXTENSION_RE = /\.(heic|heif)$/i;
+function isHeicFile(file) {
+  const type = (file?.type || "").toLowerCase();
+  return (
+    type === "image/heic" ||
+    type === "image/heif" ||
+    HEIC_EXTENSION_RE.test(file?.name || "")
+  );
+}
+
+/**
+ * Browsers can't render HEIC in an <img>, so iPhone/Samsung photos are
+ * transcoded to JPEG in the browser before upload — the message bubble then
+ * shows a normal image instead of just a filename. Non-HEIC picks are
+ * returned untouched. heic2any is imported lazily because it ships a large
+ * libheif build that only this rare path needs.
+ */
+async function convertHeicToJpeg(file) {
+  if (!isHeicFile(file)) return file;
+  const { default: heic2any } = await import("heic2any");
+  const converted = await heic2any({
+    blob: file,
+    toType: "image/jpeg",
+    quality: 0.9,
+  });
+  // heic2any returns an array for multi-image HEICs; take the first frame.
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  const name = `${(file.name || "photo").replace(HEIC_EXTENSION_RE, "")}.jpg`;
+  return new File([blob], name, {
+    type: "image/jpeg",
+    lastModified: file.lastModified,
+  });
+}
+
 /** "Read • 2:14 PM" label for a read own-message; null while unread. */
 function readLabel(m) {
   if (!m.is_read || !m.read_at) return null;
@@ -213,6 +252,7 @@ export default function ConversationThread({
   const [revealedReplyId, setRevealedReplyId] = useState(null); // mobile: bubble whose reply btn is shown
   const [attachment, setAttachment] = useState(null); // the File picked, not yet sent
   const [attachmentPreview, setAttachmentPreview] = useState(null); // object URL for image preview, or null for pdf
+  const [converting, setConverting] = useState(false); // HEIC → JPEG transcode in flight
   const [lightboxSrc, setLightboxSrc] = useState(null); // open image attachment full screen
   // Cursor pagination — the thread loads the newest page first, then walks
   // backwards through history as the user scrolls up.
@@ -468,28 +508,47 @@ export default function ConversationThread({
     };
   }, [attachmentPreview]);
 
-  const handleFilePick = (e) => {
+  const handleFilePick = async (e) => {
     const file = e.target.files?.[0];
     // Reset the input so re-picking the same file still fires onChange.
     e.target.value = "";
     if (!file) return;
 
+    setError("");
+
+    // HEIC/HEIF first: everything below (validation, preview, upload) then
+    // works on a plain JPEG that browsers and the backend both accept.
+    let picked = file;
+    if (isHeicFile(file)) {
+      setConverting(true);
+      try {
+        picked = await convertHeicToJpeg(file);
+      } catch {
+        setError(
+          "That HEIC photo couldn't be converted. Try saving it as a JPG and attaching it again."
+        );
+        return;
+      } finally {
+        setConverting(false);
+      }
+    }
+
     // Mirrors the backend's `mimes:` + `max:10240` rules so an invalid pick is
-    // rejected before a pointless upload.
-    if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
+    // rejected before a pointless upload. Checked against the CONVERTED file —
+    // a JPEG's type and size both differ from the HEIC original.
+    if (!ALLOWED_ATTACHMENT_TYPES.includes(picked.type)) {
       setError("Only images (JPG, PNG, WEBP, HEIC) and PDF files are allowed.");
       return;
     }
-    if (file.size > MAX_ATTACHMENT_BYTES) {
+    if (picked.size > MAX_ATTACHMENT_BYTES) {
       setError("The file must not be larger than 10 MB.");
       return;
     }
 
-    setError("");
-    setAttachment(file);
+    setAttachment(picked);
     // Image → build an object URL for the preview. PDF → no thumbnail.
-    if (file.type.startsWith("image/")) {
-      setAttachmentPreview(URL.createObjectURL(file));
+    if (picked.type.startsWith("image/")) {
+      setAttachmentPreview(URL.createObjectURL(picked));
     } else {
       setAttachmentPreview(null);
     }
@@ -505,7 +564,7 @@ export default function ConversationThread({
     e.preventDefault();
     const text = content.trim();
     // A message needs text, an attachment, or both.
-    if ((!text && !attachment) || sending) return;
+    if ((!text && !attachment) || sending || converting) return;
 
     const tempId = `temp-${Date.now()}`;
     const fileToSend = attachment;
@@ -976,6 +1035,14 @@ export default function ConversationThread({
             </button>
           </div>
         )}
+        {converting && (
+          <div className="flex items-center gap-3 mb-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+            <span className="w-4 h-4 flex-shrink-0 rounded-full border-2 border-slate-300 dark:border-slate-500 border-t-blue-600 animate-spin" />
+            <p className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              Converting image…
+            </p>
+          </div>
+        )}
         {attachment && (
           <div className="flex items-center gap-3 mb-2 px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
             {attachmentPreview ? (
@@ -1020,7 +1087,7 @@ export default function ConversationThread({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            disabled={sending || !!attachment}
+            disabled={sending || converting || !!attachment}
             title={
               attachment ? "One attachment at a time" : "Attach image or PDF"
             }
@@ -1045,7 +1112,7 @@ export default function ConversationThread({
           />
           <button
             type="submit"
-            disabled={(!content.trim() && !attachment) || sending}
+            disabled={(!content.trim() && !attachment) || sending || converting}
             className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-white bg-blue-600 transition-opacity disabled:opacity-40"
             aria-label="Send"
           >
