@@ -13,6 +13,7 @@ import ConfirmDialog from "../../../components/common/ConfirmDialog";
 import EditGraduateModal from "./EditGraduateModal";
 import { useToast } from "../../../hooks/useToast";
 import Card from "../../../ui/Card";
+import Button from "../../../ui/Button";
 import {
   HiOutlineArrowLeft,
   HiOutlinePencilSquare,
@@ -21,6 +22,7 @@ import {
   HiOutlineAcademicCap,
   HiOutlineBriefcase,
   HiOutlineArrowTopRightOnSquare,
+  HiOutlineArrowDownTray,
 } from "react-icons/hi2";
 
 export default function GraduateDetailPage() {
@@ -34,6 +36,7 @@ export default function GraduateDetailPage() {
   const [showEdit, setShowEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [idCardLoading, setIdCardLoading] = useState(false);
 
   const fetchGraduate = async () => {
     try {
@@ -71,6 +74,35 @@ export default function GraduateDetailPage() {
       toast.error(err.response?.data?.message || "Failed to delete.");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleDownloadIdCard = async () => {
+    setIdCardLoading(true);
+    try {
+      const res = await adminApi.downloadGraduateIdCard(id);
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `alumni-id-${graduate.alumni_id_number || id}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      // The request asks for a blob, so a JSON error body ({success, message})
+      // arrives as a Blob too — read it back to surface the real message.
+      let message = "Failed to generate ID card. Please try again.";
+      const data = err.response?.data;
+      if (data instanceof Blob) {
+        try {
+          message = JSON.parse(await data.text()).message || message;
+        } catch {
+          // Non-JSON body — keep the generic message.
+        }
+      }
+      toast.error(message);
+    } finally {
+      setIdCardLoading(false);
     }
   };
 
@@ -353,7 +385,17 @@ export default function GraduateDetailPage() {
             <h2 className="text-sm font-semibold text-blue-600 dark:text-gold-500 uppercase tracking-wider">
               Graduate Details
             </h2>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap justify-end gap-2">
+              {isCollege && (
+                <Button
+                  variant="secondary"
+                  icon={HiOutlineArrowDownTray}
+                  loading={idCardLoading}
+                  onClick={handleDownloadIdCard}
+                >
+                  Download ID Card
+                </Button>
+              )}
               <button
                 onClick={() => setShowEdit(true)}
                 className={`${actionBtn} text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-white/[0.06] border-slate-200 dark:border-white/[0.08] hover:bg-slate-100 dark:hover:bg-white/[0.1]`}

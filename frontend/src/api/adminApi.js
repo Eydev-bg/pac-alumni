@@ -55,6 +55,8 @@ const adminApi = {
   getTrashedGraduates: (params = {}) => api.get('/admin/graduates/trashed', { params }),
   restoreGraduate: (id) => api.post(`/admin/graduates/${id}/restore`),
   forceDeleteGraduate: (id) => api.delete(`/admin/graduates/${id}/force`),
+  // ─── Alumni ID card (PDF blob) ─────────────────────────
+  downloadGraduateIdCard: (id) => api.get(`/admin/graduates/${id}/id-card`, { responseType: 'blob' }),
 
   // ─── Phase 4: Verification & Registration ─────────────
   getRegistrationSettings: () => api.get('/admin/registration/settings'),
