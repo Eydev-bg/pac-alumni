@@ -139,16 +139,32 @@ class Graduate extends Model
         return $courseId ? $query->where('course_id', $courseId) : $query;
     }
 
+    /**
+     * Case-insensitive search across name, Alumni ID, and full-name patterns.
+     *
+     * PostgreSQL's LIKE is case-sensitive, so pgsql uses native ILIKE. Other
+     * drivers (SQLite in tests, MySQL locally) lower-case both sides, which
+     * is case-insensitive regardless of column collation.
+     */
     public function scopeSearch($query, ?string $search)
     {
         if (empty($search)) return $query;
+
+        $isPgsql = $query->getConnection()->getDriverName() === 'pgsql';
+        $term = '%' . ($isPgsql ? $search : mb_strtolower($search)) . '%';
+
+        // Fixed column expressions only — the user's term is always bound.
+        $match = fn(string $expr) => $isPgsql
+            ? "{$expr} ILIKE ?"
+            : "LOWER({$expr}) LIKE ?";
+
         return $query->where(
             fn($q) => $q
-                ->where('first_name', 'LIKE', "%{$search}%")
-                ->orWhere('last_name', 'LIKE', "%{$search}%")
-                ->orWhere('alumni_id_number', 'LIKE', "%{$search}%")
-                ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
-                ->orWhereRaw("CONCAT(first_name, ' ', middle_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                ->whereRaw($match('first_name'), [$term])
+                ->orWhereRaw($match('last_name'), [$term])
+                ->orWhereRaw($match('alumni_id_number'), [$term])
+                ->orWhereRaw($match("CONCAT(first_name, ' ', last_name)"), [$term])
+                ->orWhereRaw($match("CONCAT(first_name, ' ', middle_name, ' ', last_name)"), [$term])
         );
     }
 
