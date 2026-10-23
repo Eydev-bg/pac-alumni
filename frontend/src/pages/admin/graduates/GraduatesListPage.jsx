@@ -53,7 +53,7 @@ function GraduateCard({ graduate }) {
       to={`/admin/graduates/${graduate.id}`}
       className="group flex flex-col items-center text-center p-4 rounded-2xl border border-transparent hover:border-gold-500/20 hover:bg-slate-50 dark:hover:bg-white/[0.05] hover:shadow-lg hover:shadow-gold-500/5 transition-all duration-300 cursor-pointer"
     >
-      <div className="relative w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-slate-200 dark:border-white/[0.08] group-hover:border-gold-500/30 transition-colors duration-300 bg-slate-100 dark:bg-navy-800/60 flex-shrink-0">
+      <div className="relative w-20 h-20 rounded-xl mb-3 overflow-hidden border-2 border-slate-200 dark:border-white/[0.08] group-hover:border-gold-500/30 transition-colors duration-300 bg-slate-100 dark:bg-navy-800/60 flex-shrink-0">
         {hasProfilePic ? (
           <img
             src={storageUrl(graduate.profile_picture)}
