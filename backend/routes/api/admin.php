@@ -117,6 +117,9 @@ Route::prefix('admin')
         Route::delete('/graduates/{id}/force', [GraduateController::class, 'forceDelete'])
             ->whereNumber('id')->name('graduates.force-delete');
 
+        Route::get('/graduates/{id}/id-card', [GraduateController::class, 'downloadIdCard'])
+            ->whereNumber('id')->name('graduates.id-card');
+
         Route::apiResource('graduates', GraduateController::class)
             ->only(['index', 'show', 'update', 'destroy'])
             ->names('graduates');

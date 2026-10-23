@@ -9,11 +9,13 @@ use App\Http\Requests\Admin\UpdateGraduateRequest;
 use App\Http\Resources\Admin\GraduateResource;
 use App\Http\Resources\Admin\ImportBatchResource;
 use App\Models\ImportBatch;
+use App\Services\Admin\AlumniIdCardService;
 use App\Services\Admin\GraduateImportService;
 use App\Services\Admin\GraduateService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class GraduateController extends Controller
 {
@@ -22,6 +24,7 @@ class GraduateController extends Controller
     public function __construct(
         protected GraduateService $graduateService,
         protected GraduateImportService $importService,
+        protected AlumniIdCardService $idCardService,
     ) {}
 
     /**
@@ -81,6 +84,24 @@ class GraduateController extends Controller
         $this->graduateService->delete($graduate);
 
         return $this->success(null, 'Graduate record deleted successfully.');
+    }
+
+    /**
+     * GET /api/admin/graduates/{id}/id-card
+     *
+     * Streams the printable Alumni ID card PDF. DomainException (404 / 422
+     * when the graduate has no Alumni ID) bubbles to the global handler.
+     */
+    public function downloadIdCard(int $id): Response
+    {
+        $card = $this->idCardService->generateForGraduate($id);
+
+        $safeId = preg_replace('/[^A-Za-z0-9\-]/', '', $card['alumni_id_number']);
+
+        return response($card['pdf'], 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="alumni-id-' . $safeId . '.pdf"',
+        ]);
     }
 
     /**
