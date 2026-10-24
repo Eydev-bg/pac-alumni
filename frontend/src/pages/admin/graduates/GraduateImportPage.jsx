@@ -14,6 +14,7 @@ import {
   HiOutlineExclamationTriangle,
   HiOutlineClipboardDocumentList,
   HiOutlineDocumentArrowDown,
+  HiOutlineAcademicCap,
 } from "react-icons/hi2";
 
 // Shown once automatically; the admin can reopen it any time via
@@ -21,10 +22,10 @@ import {
 const IMPORT_GUIDE_SEEN_KEY = "pac_import_guide_seen";
 
 const EDUCATION_LEVELS = [
-  { value: "elementary", label: "Elementary" },
-  { value: "jhs", label: "Junior High School (JHS)" },
-  { value: "shs", label: "Senior High School (SHS)" },
-  { value: "college", label: "College" },
+  { value: "elementary", label: "Elementary", description: "Grade 6 completers" },
+  { value: "jhs", label: "Junior High School (JHS)", description: "Grade 10 completers" },
+  { value: "shs", label: "Senior High School (SHS)", description: "Grade 12 graduates" },
+  { value: "college", label: "College", description: "Degree graduates, grouped by course" },
 ];
 
 const ALLOWED_EXTENSIONS = ["xlsx", "xls", "csv"];
@@ -272,6 +273,13 @@ export default function GraduateImportPage() {
     setError("");
   };
 
+  // Back to step 1 — the next level starts with no file or error carried over.
+  const changeLevel = () => {
+    setEducationLevel("");
+    setFile(null);
+    setError("");
+  };
+
   const isProcessing = result && !FINAL_STATUSES.includes(result.status);
   const selectedLevelLabel = EDUCATION_LEVELS.find(
     (l) => l.value === educationLevel,
@@ -409,222 +417,256 @@ export default function GraduateImportPage() {
               }
             />
             <Card>
-              {/* Education Level */}
-              <div className="mb-6">
-                <label className={sectionLabel}>Education Level *</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {EDUCATION_LEVELS.map((level) => (
-                    <button
-                      key={level.value}
-                      onClick={() => setEducationLevel(level.value)}
-                      className={`p-3 rounded-xl border text-sm font-medium text-center transition-all ${
-                        educationLevel === level.value
-                          ? "border-blue-500 dark:border-gold-500 bg-blue-500/10 dark:bg-gold-500/10 text-blue-600 dark:text-gold-500 shadow-lg shadow-blue-500/10 dark:shadow-gold-500/10"
-                          : "border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/[0.15] hover:text-slate-700 dark:hover:text-slate-300"
-                      }`}
-                    >
-                      {level.label}
-                    </button>
-                  ))}
-                </div>
-
-                {departmentCheck.loading && (
-                  <p className="text-xs text-slate-500 mt-2.5">
-                    Checking departments for this level…
+              {!educationLevel ? (
+                /* Step 1 — pick the education level to import */
+                <div>
+                  <label className={sectionLabel}>Step 1 · Choose Education Level *</label>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 -mt-1 mb-4">
+                    Select which graduates you are importing. The upload form for
+                    that level appears next.
                   </p>
-                )}
-              </div>
-
-              {/* No department for this level — the import would be rejected. */}
-              {missingDepartment && (
-                <Alert
-                  variant="error"
-                  title={`No department found for ${selectedLevelLabel}`}
-                  className="mb-6"
-                  action={
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {EDUCATION_LEVELS.map((level) => (
+                      <button
+                        key={level.value}
+                        onClick={() => setEducationLevel(level.value)}
+                        className="group flex items-center gap-4 p-5 rounded-xl border text-left transition-all border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.04] hover:border-blue-500 dark:hover:border-gold-500 hover:bg-blue-500/10 dark:hover:bg-gold-500/10 hover:shadow-lg hover:shadow-blue-500/10 dark:hover:shadow-gold-500/10"
+                      >
+                        <div className="w-11 h-11 rounded-xl bg-blue-500/10 dark:bg-gold-500/10 border border-blue-500/20 dark:border-gold-500/20 flex items-center justify-center flex-shrink-0">
+                          <HiOutlineAcademicCap className="w-6 h-6 text-blue-600 dark:text-gold-500" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-gold-500 transition-colors">
+                            {level.label}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {level.description}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <>
+                {/* Step 2 — upload form for the chosen level */}
+                <div className="mb-6">
+                  <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border border-blue-500/30 dark:border-gold-500/30 bg-blue-500/5 dark:bg-gold-500/5">
+                    <p className="text-sm text-slate-600 dark:text-slate-300">
+                      Importing:{" "}
+                      <span className="font-semibold text-blue-600 dark:text-gold-500">
+                        {selectedLevelLabel}
+                      </span>
+                    </p>
                     <Button
                       size="sm"
                       variant="secondary"
-                      onClick={() => navigate("/admin/departments")}
+                      onClick={changeLevel}
+                      disabled={uploading}
                     >
-                      Manage Departments
+                      Change level
                     </Button>
-                  }
-                >
-                  Please create a department first before importing graduates
-                  for this education level.
-                </Alert>
-              )}
-
-              {/* File Drop Zone */}
-              <div className="mb-6">
-                <label className={sectionLabel}>Graduate List File *</label>
-                <div
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOver(true);
-                  }}
-                  onDragLeave={() => setDragOver(false)}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
-                    dragOver
-                      ? "border-blue-500 dark:border-gold-500 bg-blue-500/10 dark:bg-gold-500/10"
-                      : file
-                        ? "border-emerald-500/40 bg-emerald-500/5"
-                        : "border-slate-300 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.02] hover:border-slate-400 dark:hover:border-white/[0.2] hover:bg-slate-100 dark:hover:bg-white/[0.04]"
-                  }`}
-                >
-                  {file ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-                        <HiOutlineDocumentText className="w-6 h-6 text-emerald-400" />
-                      </div>
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                          {file.name}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          {(file.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setFile(null);
-                        }}
-                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors ml-2"
-                      >
-                        <HiOutlineXMark className="w-5 h-5" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mx-auto mb-4">
-                        <HiOutlineArrowUpTray className="w-7 h-7 text-gold-500" />
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-                        Drag and drop your Excel file here, or click to browse
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1.5">
-                        Supports .xlsx, .xls, .csv (max {MAX_FILE_SIZE_MB}MB)
-                      </p>
-                    </>
-                  )}
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={(e) =>
-                    e.target.files[0] && handleFileSelect(e.target.files[0])
-                  }
-                  className="hidden"
-                />
-              </div>
-
-              {/* Required Format Info */}
-              <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-xl p-4 mb-6">
-                <p className={sectionLabel}>Required Excel Columns:</p>
-                <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
-                  <p>
-                    •{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      first_name
-                    </span>{" "}
-                    - First name
-                  </p>
-                  <p>
-                    •{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      last_name
-                    </span>{" "}
-                    - Last name
-                  </p>
-                  <p>
-                    •{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      graduation_year
-                    </span>{" "}
-                    - Year graduated
-                  </p>
-                  <p>
-                    •{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      middle_name
-                    </span>{" "}
-                    - Middle name (optional)
-                  </p>
-                  <p>
-                    •{" "}
-                    <span className="font-semibold text-slate-700 dark:text-slate-200">
-                      suffix
-                    </span>{" "}
-                    - Jr, Sr, III (optional)
-                  </p>
-                  {educationLevel === "college" && (
-                    <>
-                      <p>
-                        •{" "}
-                        <span className="font-semibold text-blue-600 dark:text-gold-500">
-                          course_code
-                        </span>{" "}
-                        - Course code e.g., BSIT, BSCS, BSN (required for
-                        college)
-                      </p>
-                      <p>
-                        •{" "}
-                        <span className="font-semibold text-emerald-400">
-                          alumni_id
-                        </span>{" "}
-                        - Existing Alumni ID (optional - leave blank to
-                        auto-generate)
-                      </p>
-                    </>
-                  )}
-                </div>
-
-                {educationLevel === "college" && (
-                  <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/15 rounded-lg">
-                    <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
-                      Alumni ID Auto-Generation
-                    </p>
-                    <p className="text-xs text-emerald-700 dark:text-emerald-300/80 leading-relaxed">
-                      If the <span className="font-semibold">alumni_id</span>{" "}
-                      column is filled, the system will use the existing ID (for
-                      old graduates). If left blank, the system will
-                      automatically generate an Alumni ID in the format{" "}
-                      <span className="font-mono font-semibold">
-                        PAC-[YEAR]-[0001]
-                      </span>
-                      .
-                    </p>
                   </div>
+
+                  {departmentCheck.loading && (
+                    <p className="text-xs text-slate-500 mt-2.5">
+                      Checking departments for this level…
+                    </p>
+                  )}
+                </div>
+
+                {/* No department for this level — the import would be rejected. */}
+                {missingDepartment && (
+                  <Alert
+                    variant="error"
+                    title={`No department found for ${selectedLevelLabel}`}
+                    className="mb-6"
+                    action={
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => navigate("/admin/departments")}
+                      >
+                        Manage Departments
+                      </Button>
+                    }
+                  >
+                    Please create a department first before importing graduates
+                    for this education level.
+                  </Alert>
                 )}
-              </div>
 
-              {/* Error */}
-              {error && (
-                <Alert variant="error" className="mb-4">
-                  {error}
-                </Alert>
+                {/* File Drop Zone */}
+                <div className="mb-6">
+                  <label className={sectionLabel}>Graduate List File *</label>
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOver(true);
+                    }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+                      dragOver
+                        ? "border-blue-500 dark:border-gold-500 bg-blue-500/10 dark:bg-gold-500/10"
+                        : file
+                          ? "border-emerald-500/40 bg-emerald-500/5"
+                          : "border-slate-300 dark:border-white/[0.12] bg-slate-50 dark:bg-white/[0.02] hover:border-slate-400 dark:hover:border-white/[0.2] hover:bg-slate-100 dark:hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    {file ? (
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                          <HiOutlineDocumentText className="w-6 h-6 text-emerald-400" />
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            {file.name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {(file.size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFile(null);
+                          }}
+                          className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors ml-2"
+                        >
+                          <HiOutlineXMark className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="w-16 h-16 rounded-2xl bg-gold-500/10 border border-gold-500/20 flex items-center justify-center mx-auto mb-4">
+                          <HiOutlineArrowUpTray className="w-7 h-7 text-gold-500" />
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+                          Drag and drop your Excel file here, or click to browse
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1.5">
+                          Supports .xlsx, .xls, .csv (max {MAX_FILE_SIZE_MB}MB)
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={(e) =>
+                      e.target.files[0] && handleFileSelect(e.target.files[0])
+                    }
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Required Format Info */}
+                <div className="bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] rounded-xl p-4 mb-6">
+                  <p className={sectionLabel}>Required Excel Columns:</p>
+                  <div className="text-sm text-slate-500 dark:text-slate-400 space-y-1.5">
+                    <p>
+                      •{" "}
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        first_name
+                      </span>{" "}
+                      - First name
+                    </p>
+                    <p>
+                      •{" "}
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        last_name
+                      </span>{" "}
+                      - Last name
+                    </p>
+                    <p>
+                      •{" "}
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        graduation_year
+                      </span>{" "}
+                      - Year graduated
+                    </p>
+                    <p>
+                      •{" "}
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        middle_name
+                      </span>{" "}
+                      - Middle name (optional)
+                    </p>
+                    <p>
+                      •{" "}
+                      <span className="font-semibold text-slate-700 dark:text-slate-200">
+                        suffix
+                      </span>{" "}
+                      - Jr, Sr, III (optional)
+                    </p>
+                    {educationLevel === "college" && (
+                      <>
+                        <p>
+                          •{" "}
+                          <span className="font-semibold text-blue-600 dark:text-gold-500">
+                            course_code
+                          </span>{" "}
+                          - Course code e.g., BSIT, BSCS, BSN (required for
+                          college)
+                        </p>
+                        <p>
+                          •{" "}
+                          <span className="font-semibold text-emerald-400">
+                            alumni_id
+                          </span>{" "}
+                          - Existing Alumni ID (optional - leave blank to
+                          auto-generate)
+                        </p>
+                      </>
+                    )}
+                  </div>
+
+                  {educationLevel === "college" && (
+                    <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/15 rounded-lg">
+                      <p className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider mb-1">
+                        Alumni ID Auto-Generation
+                      </p>
+                      <p className="text-xs text-emerald-700 dark:text-emerald-300/80 leading-relaxed">
+                        If the <span className="font-semibold">alumni_id</span>{" "}
+                        column is filled, the system will use the existing ID (for
+                        old graduates). If left blank, the system will
+                        automatically generate an Alumni ID in the format{" "}
+                        <span className="font-mono font-semibold">
+                          PAC-[YEAR]-[0001]
+                        </span>
+                        .
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Error */}
+                {error && (
+                  <Alert variant="error" className="mb-4">
+                    {error}
+                  </Alert>
+                )}
+
+                {/* Upload Button */}
+                <Button
+                  onClick={handleUpload}
+                  disabled={
+                    !file ||
+                    !educationLevel ||
+                    uploading ||
+                    departmentCheck.loading ||
+                    missingDepartment
+                  }
+                  loading={uploading}
+                  className="w-full py-3"
+                >
+                  {uploading ? "Importing..." : "Upload & Import"}
+                </Button>
+                </>
               )}
-
-              {/* Upload Button */}
-              <Button
-                onClick={handleUpload}
-                disabled={
-                  !file ||
-                  !educationLevel ||
-                  uploading ||
-                  departmentCheck.loading ||
-                  missingDepartment
-                }
-                loading={uploading}
-                className="w-full py-3"
-              >
-                {uploading ? "Importing..." : "Upload & Import"}
-              </Button>
             </Card>
           </>
         )}
