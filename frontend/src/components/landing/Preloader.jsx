@@ -141,7 +141,7 @@ export default function Preloader({ children }) {
 
           <div className="relative flex flex-col items-center px-6 text-center">
             <img
-              src="/pac-logo.jpg"
+              src="/pac-logo.png"
               alt=""
               className="pac-pre-logo h-20 w-20 rounded-full border border-white/20 bg-white object-cover shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
             />

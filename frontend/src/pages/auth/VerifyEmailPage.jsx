@@ -73,7 +73,7 @@ export default function VerifyEmailPage() {
       <div className="relative z-10 w-full max-w-[420px] px-5 flex flex-col items-center">
         {/* ── Logo ── */}
         <img
-          src="/pac-logo.jpg"
+          src="/pac-logo.png"
           alt="Philippine Advent College Seal"
           className="w-[84px] h-[84px] rounded-full object-cover border-[3px] border-blue-500 shadow-[0_0_0_4px_rgba(37,99,235,0.35),0_6px_20px_rgba(0,0,0,0.3)] bg-white mb-[-18px] relative z-20"
         />

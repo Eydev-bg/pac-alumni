@@ -100,7 +100,7 @@ function AlumniLayoutInner() {
       {/* ── Brand ── */}
       <div className="flex items-center gap-3 px-4 py-5">
         <img
-          src="/pac-logo.jpg"
+          src="/pac-logo.png"
           alt="PAC"
           className="flex-shrink-0 w-9 h-9 rounded-full object-cover shadow-sm ring-1 ring-slate-200"
         />

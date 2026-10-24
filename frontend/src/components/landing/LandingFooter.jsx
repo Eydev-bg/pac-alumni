@@ -30,7 +30,7 @@ export default function LandingFooter() {
           <div>
             <div className="mb-3 flex items-center gap-2.5">
               <img
-                src="/pac-logo.jpg"
+                src="/pac-logo.png"
                 alt="Philippine Advent College seal"
                 className="h-[34px] w-[34px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-navy-900 object-cover"
               />

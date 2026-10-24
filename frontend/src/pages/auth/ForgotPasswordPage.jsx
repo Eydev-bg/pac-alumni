@@ -201,7 +201,7 @@ export default function ForgotPasswordPage() {
           {/* ── Brand ── */}
           <div className="flex items-center gap-4">
             <img
-              src="/pac-logo.jpg"
+              src="/pac-logo.png"
               alt="Philippine Advent College Seal"
               className="h-[72px] w-[72px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-[var(--color-navy-900)] object-cover"
             />

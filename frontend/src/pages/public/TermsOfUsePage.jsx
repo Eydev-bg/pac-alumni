@@ -128,7 +128,7 @@ export default function TermsOfUsePage() {
 
           <div className="mt-7 flex items-center gap-3.5">
             <img
-              src="/pac-logo.jpg"
+              src="/pac-logo.png"
               alt="Philippine Advent College seal"
               className="h-[52px] w-[52px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-navy-900 object-cover"
             />

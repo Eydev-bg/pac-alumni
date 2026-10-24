@@ -112,7 +112,7 @@ export default function Sidebar({ open, mobileOpen, onMobileClose }) {
       {/* Logo Area */}
       <div className="flex items-center gap-3 px-5 py-5">
         <img
-          src="/pac-logo.jpg"
+          src="/pac-logo.png"
           alt="PAC"
           className="flex-shrink-0 w-10 h-10 rounded-full object-cover shadow-lg shadow-gold-500/20 ring-1 ring-white/10"
         />

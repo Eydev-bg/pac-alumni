@@ -247,7 +247,7 @@ function StatusScreen({ children }) {
       />
       <div className="relative z-10 w-full max-w-[440px] rounded-2xl bg-white px-8 py-9 text-center shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
         <img
-          src="/pac-logo.jpg"
+          src="/pac-logo.png"
           alt="Philippine Advent College Seal"
           className="mx-auto mb-5 h-[68px] w-[68px] rounded-full border-2 border-[var(--color-gold-500)] bg-[var(--color-navy-900)] object-cover"
         />
@@ -506,7 +506,7 @@ export default function AlumniRegisterPage() {
           {/* ── Brand ── */}
           <div className="flex items-center gap-4">
             <img
-              src="/pac-logo.jpg"
+              src="/pac-logo.png"
               alt="Philippine Advent College Seal"
               className="h-[72px] w-[72px] flex-none rounded-full border-2 border-[var(--color-gold-500)] bg-[var(--color-navy-900)] object-cover"
             />
