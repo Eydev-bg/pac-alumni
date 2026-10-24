@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 //  FILE: frontend/src/pages/admin/graduates/GraduatesListPage.jsx
-//  Card-based layout grouped by course with profile pictures.
+//  Card-based layout with profile pictures. "All Departments" shows a
+//  10-graduate preview per department; a selected department is paginated
+//  and grouped by course; department + batch year shows the full list.
 //  Cards are flat/borderless by default — card box appears on hover.
 // ═══════════════════════════════════════════════════════════
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import adminApi from "../../../api/adminApi";
 import { storageUrl } from "../../../utils/formatters";
@@ -22,6 +24,10 @@ import {
 
 // Grid page size for the card layout (named so it is not a magic number).
 const GRADUATES_PER_PAGE = 60;
+// Graduates previewed per department in the "All Departments" view.
+const DEPT_PREVIEW_LIMIT = 10;
+// Backend caps per_page at 100; batch view walks every page at this size.
+const BATCH_PAGE_SIZE = 100;
 
 const BOARD_LABELS = {
   passed: "Passed",
@@ -87,10 +93,10 @@ function GraduateCard({ graduate }) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //  CourseSection
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function CourseSection({ courseName, graduates }) {
+function CourseSection({ courseName, graduates, onViewAll }) {
   return (
     <div className="mb-8">
-      <div className="flex items-start mb-4">
+      <div className="flex items-end justify-between gap-4 mb-4">
         <div>
           <h2 className="text-lg font-bold text-slate-800 dark:text-white leading-tight">
             {courseName}
@@ -100,6 +106,15 @@ function CourseSection({ courseName, graduates }) {
             <div className="w-1.5 h-1.5 bg-gold-500 rounded-full" />
           </div>
         </div>
+        {onViewAll && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="flex-shrink-0 cursor-pointer text-sm font-medium text-blue-600 dark:text-gold-500 hover:text-blue-700 dark:hover:text-gold-300 transition-colors"
+          >
+            View all
+          </button>
+        )}
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1">
         {graduates.map((g) => (
@@ -120,6 +135,11 @@ export default function GraduatesListPage() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [departments, setDepartments] = useState([]);
+  const [departmentsLoaded, setDepartmentsLoaded] = useState(false);
+  // Per-department previews for the "All Departments" view: [{ dept, graduates, total }]
+  const [deptPreviews, setDeptPreviews] = useState([]);
+  // Guards against out-of-order responses when filters change mid-fetch.
+  const requestIdRef = useRef(0);
   const [courses, setCourses] = useState([]);
   const [years, setYears] = useState([]);
 
@@ -135,7 +155,8 @@ export default function GraduatesListPage() {
     adminApi
       .getAllDepartments()
       .then((res) => setDepartments(res.data.data))
-      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments filter:", err); });
+      .catch((err) => { if (import.meta.env.DEV) console.error("Failed to load departments filter:", err); })
+      .finally(() => setDepartmentsLoaded(true));
     adminApi
       .getAllCourses()
       .then((res) => setCourses(res.data.data))
@@ -161,6 +182,8 @@ export default function GraduatesListPage() {
       ? selectedCourse?.is_board_program
       : filteredCourses.some((c) => c.is_board_program));
   const showEmpFilter = isCollegeDept;
+  // College: Department → Course → Year. Non-college has no courses: Department → Year.
+  const showYearFilter = hasDeptSelected && (isCollegeDept ? !!courseFilter : true);
 
   // Year options are dependent on the selected department/course so the
   // dropdown only offers years that actually have graduates in that scope.
@@ -198,12 +221,26 @@ export default function GraduatesListPage() {
       setBoardFilter("");
   }, [courseFilter, selectedCourse]);
 
+  // "batch": department + year — every graduate in that batch, no pagination.
+  // "department": one department, paginated. "search": flat search results.
+  // "overview": All Departments — a short preview per department.
+  // Year is only selectable once a department is chosen.
+  const viewMode = deptFilter
+    ? yearFilter
+      ? "batch"
+      : "department"
+    : search
+      ? "search"
+      : "overview";
+
   const fetchGraduates = useCallback(async () => {
+    // Overview needs the department list before it can fan out.
+    if (viewMode === "overview" && !departmentsLoaded) return;
+
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     try {
       const params = {
-        page,
-        per_page: GRADUATES_PER_PAGE,
         sort_by: "last_name",
         sort_dir: "asc",
         ...(search && { search }),
@@ -213,15 +250,69 @@ export default function GraduatesListPage() {
         ...(boardFilter && showBoardFilter && { board_status: boardFilter }),
         ...(empFilter && showEmpFilter && { employment_status: empFilter }),
       };
-      const res = await adminApi.getGraduates(params);
-      setGraduates(res.data.data);
-      setMeta(res.data.meta);
+
+      if (viewMode === "overview") {
+        const results = await Promise.all(
+          departments.map((dept) =>
+            adminApi
+              .getGraduates({
+                ...params,
+                department_id: dept.id,
+                per_page: DEPT_PREVIEW_LIMIT,
+                page: 1,
+              })
+              .then((res) => ({
+                dept,
+                graduates: res.data.data,
+                total: res.data.meta?.total ?? res.data.data.length,
+              })),
+          ),
+        );
+        if (requestId !== requestIdRef.current) return;
+        setDeptPreviews(results.filter((r) => r.total > 0));
+        setGraduates([]);
+        setMeta(null);
+      } else if (viewMode === "batch") {
+        const first = await adminApi.getGraduates({
+          ...params,
+          per_page: BATCH_PAGE_SIZE,
+          page: 1,
+        });
+        const lastPage = first.data.meta?.last_page ?? 1;
+        const rest = await Promise.all(
+          Array.from({ length: lastPage - 1 }, (_, i) =>
+            adminApi.getGraduates({
+              ...params,
+              per_page: BATCH_PAGE_SIZE,
+              page: i + 2,
+            }),
+          ),
+        );
+        if (requestId !== requestIdRef.current) return;
+        setGraduates([first, ...rest].flatMap((res) => res.data.data));
+        setMeta(null);
+        setDeptPreviews([]);
+      } else {
+        const res = await adminApi.getGraduates({
+          ...params,
+          page,
+          per_page: GRADUATES_PER_PAGE,
+        });
+        if (requestId !== requestIdRef.current) return;
+        setGraduates(res.data.data);
+        setMeta(res.data.meta);
+        setDeptPreviews([]);
+      }
     } catch (err) {
+      if (requestId !== requestIdRef.current) return;
       toast.error(err.response?.data?.message || "Failed to load graduates.");
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [
+    viewMode,
+    departments,
+    departmentsLoaded,
     page,
     search,
     yearFilter,
@@ -242,7 +333,8 @@ export default function GraduatesListPage() {
     setPage(1);
   }, [search, yearFilter, deptFilter, courseFilter, boardFilter, empFilter]);
 
-  const groupedByCourse = graduates.reduce((groups, g) => {
+  // Inside one department (paginated or batch), sub-group by course.
+  const grouped = graduates.reduce((groups, g) => {
     const key = g.course?.code || g.department?.code || "Other";
     const name =
       g.course?.name ||
@@ -255,9 +347,22 @@ export default function GraduatesListPage() {
     groups[key].graduates.push(g);
     return groups;
   }, {});
-  const courseGroups = Object.values(groupedByCourse).sort((a, b) =>
+  const courseGroups = Object.values(grouped).sort((a, b) =>
     a.courseName.localeCompare(b.courseName),
   );
+
+  const selectDepartment = (id) => {
+    setDeptFilter(id);
+    setCourseFilter("");
+    setBoardFilter("");
+    setEmpFilter("");
+    setYearFilter("");
+  };
+
+  const isEmpty =
+    viewMode === "overview"
+      ? deptPreviews.length === 0
+      : graduates.length === 0;
 
   const headerSubtitle = (() => {
     if (loading) return "Loading...";
@@ -336,13 +441,7 @@ export default function GraduatesListPage() {
                 tone="dark"
                 className="min-w-[180px]"
                 value={deptFilter}
-                onChange={(e) => {
-                  setDeptFilter(e.target.value);
-                  setCourseFilter("");
-                  setBoardFilter("");
-                  setEmpFilter("");
-                  setYearFilter("");
-                }}
+                onChange={(e) => selectDepartment(e.target.value)}
                 placeholder="All Departments"
                 options={departments.map((d) => ({ value: d.id, label: d.name }))}
               />
@@ -350,13 +449,6 @@ export default function GraduatesListPage() {
 
             {hasDeptSelected && (
               <div className="flex flex-wrap items-center gap-3">
-                <Select
-                  tone="dark"
-                  value={yearFilter}
-                  onChange={(e) => setYearFilter(e.target.value)}
-                  placeholder="All Years"
-                  options={years.map((y) => ({ value: y, label: String(y) }))}
-                />
                 {isCollegeDept && filteredCourses.length > 0 && (
                   <Select
                     tone="dark"
@@ -365,12 +457,22 @@ export default function GraduatesListPage() {
                     onChange={(e) => {
                       setCourseFilter(e.target.value);
                       setBoardFilter("");
+                      setYearFilter("");
                     }}
                     placeholder="All Courses"
                     options={filteredCourses.map((c) => ({
                       value: c.id,
                       label: c.name,
                     }))}
+                  />
+                )}
+                {showYearFilter && (
+                  <Select
+                    tone="dark"
+                    value={yearFilter}
+                    onChange={(e) => setYearFilter(e.target.value)}
+                    placeholder="All Years"
+                    options={years.map((y) => ({ value: y, label: String(y) }))}
                   />
                 )}
                 {showBoardFilter && (
@@ -404,7 +506,7 @@ export default function GraduatesListPage() {
               <p className="text-sm text-slate-500">Loading graduates...</p>
             </div>
           </Card>
-        ) : graduates.length === 0 ? (
+        ) : isEmpty ? (
           <Card className="p-16">
             <div className="flex flex-col items-center justify-center text-center">
               <HiOutlineAcademicCap className="w-12 h-12 text-slate-600 mb-4" />
@@ -426,13 +528,26 @@ export default function GraduatesListPage() {
           </Card>
         ) : (
           <div>
-            {courseGroups.map((group) => (
-              <CourseSection
-                key={group.courseCode}
-                courseName={group.courseName}
-                graduates={group.graduates}
-              />
-            ))}
+            {viewMode === "overview"
+              ? deptPreviews.map(({ dept, graduates: preview, total }) => (
+                  <CourseSection
+                    key={dept.id}
+                    courseName={dept.name}
+                    graduates={preview}
+                    onViewAll={
+                      total > DEPT_PREVIEW_LIMIT
+                        ? () => selectDepartment(String(dept.id))
+                        : undefined
+                    }
+                  />
+                ))
+              : courseGroups.map((group) => (
+                  <CourseSection
+                    key={group.courseCode}
+                    courseName={group.courseName}
+                    graduates={group.graduates}
+                  />
+                ))}
             {meta && (
               <Card padding={false} className="px-4 py-3 mt-4">
                 <Pagination meta={meta} onPageChange={setPage} />

@@ -1,3 +1,4 @@
+import { HiChevronDown } from "react-icons/hi2";
 import { cn } from "../utils/formatters";
 
 /**
@@ -43,8 +44,10 @@ export default function Select({
   const selectId = id || rest.name;
   // Native option lists don't inherit the select's colors on every browser, so
   // filter-bar options carry their own per-theme background/text.
+  // The dark tone uses appearance-none (no native arrow), so it draws its own chevron.
+  const isDark = tone === "dark";
   const optionClass =
-    tone === "dark"
+    isDark
       ? "bg-white text-slate-800 dark:bg-navy-800 dark:text-slate-300"
       : undefined;
 
@@ -58,31 +61,40 @@ export default function Select({
           {label} {required && "*"}
         </label>
       )}
-      <select
-        id={selectId}
-        required={required}
-        aria-invalid={message ? true : undefined}
-        className={cn(
-          "w-full px-3 py-2",
-          t.base,
-          message ? t.error : t.idle,
-          className,
+      <div className="relative">
+        <select
+          id={selectId}
+          required={required}
+          aria-invalid={message ? true : undefined}
+          className={cn(
+            "w-full px-3 py-2",
+            t.base,
+            isDark && "pr-9",
+            message ? t.error : t.idle,
+            className,
+          )}
+          {...rest}
+        >
+          {placeholder !== undefined && (
+            <option value="" className={optionClass}>
+              {placeholder}
+            </option>
+          )}
+          {options
+            ? options.map((opt) => (
+                <option key={opt.value} value={opt.value} className={optionClass}>
+                  {opt.label}
+                </option>
+              ))
+            : children}
+        </select>
+        {isDark && (
+          <HiChevronDown
+            aria-hidden="true"
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400"
+          />
         )}
-        {...rest}
-      >
-        {placeholder !== undefined && (
-          <option value="" className={optionClass}>
-            {placeholder}
-          </option>
-        )}
-        {options
-          ? options.map((opt) => (
-              <option key={opt.value} value={opt.value} className={optionClass}>
-                {opt.label}
-              </option>
-            ))
-          : children}
-      </select>
+      </div>
       {hint && !message && (
         <p className="text-xs text-slate-400 mt-1">{hint}</p>
       )}
