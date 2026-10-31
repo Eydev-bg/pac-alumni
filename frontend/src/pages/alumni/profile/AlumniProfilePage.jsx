@@ -18,7 +18,7 @@ import alumniApi from "../../../api/alumniApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { useToast } from "../../../hooks/useToast";
 import { storageUrl } from "../../../utils/formatters";
-import { prepareImageForUpload } from "../../../utils/imageCompression";
+import { convertHeicIfNeeded } from "../../../utils/imageCompression";
 import SkeletonCard from "../../../components/common/SkeletonCard";
 import {
   AlumniCard,
@@ -47,6 +47,7 @@ import {
   HiOutlineShieldCheck,
 } from "react-icons/hi2";
 import InfoRow from "./components/InfoRow";
+import ProfilePictureCropModal from "./components/ProfilePictureCropModal";
 import DirectoryVisibilitySection from "./sections/DirectoryVisibilitySection";
 import EmploymentSection from "./sections/EmploymentSection";
 import BoardExamSection from "./sections/BoardExamSection";
@@ -89,7 +90,15 @@ export default function AlumniProfilePage() {
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [showPhotoSheet, setShowPhotoSheet] = useState(false);
+  // { src: objectURL, name } while the crop modal is open.
+  const [cropSource, setCropSource] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Free the previous object URL when the crop source changes or on unmount.
+  useEffect(() => {
+    if (!cropSource) return undefined;
+    return () => URL.revokeObjectURL(cropSource.src);
+  }, [cropSource]);
 
   const [isDesktop, setIsDesktop] = useState(
     () =>
@@ -200,8 +209,12 @@ export default function AlumniProfilePage() {
     });
   };
 
+  // Stage A: validate → convert HEIC → open the crop modal. Nothing is
+  // uploaded until the user saves the crop (handleCroppedSave).
   const handlePictureSelect = async (e) => {
     const file = e.target.files?.[0];
+    // Reset so picking the same file again still fires onChange.
+    if (fileInputRef.current) fileInputRef.current.value = "";
     if (!file) return;
     const validTypes = [
       "image/jpeg",
@@ -219,26 +232,34 @@ export default function AlumniProfilePage() {
       return;
     }
     setUploadingPicture(true);
+    let source;
     try {
-      // Pipeline: convert HEIC (iPhone photos) to JPEG first, since almost
-      // no browser besides Safari can preview/decode HEIC — then downscale
-      // + re-encode if the result is still over 2MB. Modern phone cameras
-      // (iPhone, Honor, Samsung, etc.) easily exceed 2MB straight out of
-      // the camera, so only actually-oversized images get compressed.
-      const uploadFile = await prepareImageForUpload(file, 2 * 1024 * 1024, {
-        maxWidth: 1600,
-        maxHeight: 1600,
-        quality: 0.8,
-        mimeType: file.type === "image/png" ? "image/png" : "image/jpeg",
-      });
-      if (uploadFile.size > 2 * 1024 * 1024) {
-        toast.error("Image must not exceed 2MB, even after compression.");
-        return;
-      }
-      await alumniApi.uploadProfilePicture(uploadFile);
+      // Almost no browser besides Safari can decode HEIC, so iPhone photos
+      // become JPEG before the cropper tries to display them.
+      source = await convertHeicIfNeeded(file);
+    } catch {
+      toast.error("Could not read this image. Please try a JPEG or PNG.");
+      return;
+    } finally {
+      setUploadingPicture(false);
+    }
+    setCropSource({ src: URL.createObjectURL(source), name: source.name });
+  };
+
+  // Stage B: upload the cropped 800×800 JPEG from the modal. On failure the
+  // modal stays open so the user can retry.
+  const handleCroppedSave = async (file) => {
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must not exceed 2MB.");
+      return;
+    }
+    setUploadingPicture(true);
+    try {
+      await alumniApi.uploadProfilePicture(file);
       await loadProfile();
       bump();
       toast.success("Profile picture updated!");
+      setCropSource(null);
     } catch (err) {
       const msg =
         err.response?.data?.errors?.profile_picture?.[0] ||
@@ -247,9 +268,11 @@ export default function AlumniProfilePage() {
       toast.error(msg);
     } finally {
       setUploadingPicture(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  const handleCropCancel = useCallback(() => setCropSource(null), []);
+  const handleCropError = useCallback((msg) => toast.error(msg), [toast]);
 
   // On mobile, tapping the picture opens an action sheet (View / Remove)
   // because there is no hover overlay on touch devices. With no picture there
@@ -384,7 +407,7 @@ export default function AlumniProfilePage() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
               className="hidden"
               aria-label="Upload profile picture"
               onChange={handlePictureSelect}
@@ -717,6 +740,18 @@ export default function AlumniProfilePage() {
           </div>,
           document.body,
         )}
+
+      {/* Crop step between file selection and upload */}
+      {cropSource && (
+        <ProfilePictureCropModal
+          imageSrc={cropSource.src}
+          fileName={cropSource.name}
+          onCancel={handleCropCancel}
+          onSave={handleCroppedSave}
+          onError={handleCropError}
+          saving={uploadingPicture}
+        />
+      )}
 
       {/* Full-size profile picture viewer */}
       {lightboxSrc && (
