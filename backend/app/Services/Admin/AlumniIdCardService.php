@@ -11,7 +11,9 @@ use Dompdf\Options;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Renders a single printable Alumni ID card (CR80, landscape) as a PDF.
+ * Renders a printable Alumni ID card (CR80, landscape) as a 2-page PDF:
+ * page 1 is the front, page 2 the back, so duplex printing lines up.
+ * Back-side contact/signatory text comes from config/id_card.php.
  *
  * Images are always embedded as base64 data URIs so dompdf never has to
  * resolve a relative "/storage/..." URL or make a remote request — that
@@ -88,6 +90,16 @@ class AlumniIdCardService
             'initials' => $this->initials($graduate),
             'photo' => $this->resolvePhoto($graduate),
             'logo' => $this->resolveLogo(),
+
+            // Back side
+            'dateIssued' => now()->timezone('Asia/Manila')->format('M d, Y'),
+            'office' => (string) config('id_card.office'),
+            'institution' => (string) config('id_card.institution'),
+            'address' => (string) config('id_card.address'),
+            'email' => (string) config('id_card.email'),
+            'phone' => (string) config('id_card.phone'),
+            'signatoryName' => trim((string) config('id_card.signatory_name')),
+            'signatoryTitle' => (string) config('id_card.signatory_title'),
         ];
     }
 
