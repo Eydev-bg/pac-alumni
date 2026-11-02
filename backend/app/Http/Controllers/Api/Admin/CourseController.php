@@ -128,7 +128,7 @@ class CourseController extends Controller
         if (!$course) return $this->notFound('Course not found.');
 
         if ($course->graduates_count > 0) {
-            return $this->error('Cannot delete course with graduates. Deactivate instead.', 422);
+            return $this->error('This course cannot be deleted because it has graduate records.', 422);
         }
 
         $course->delete();

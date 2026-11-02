@@ -103,7 +103,7 @@ class DepartmentService
     {
         if ($department->hasGraduates()) {
             throw \App\Exceptions\DomainException::unprocessable(
-                'Cannot delete department with existing graduate records. Deactivate it instead.'
+                'This department cannot be deleted because it has graduate records.'
             );
         }
 
