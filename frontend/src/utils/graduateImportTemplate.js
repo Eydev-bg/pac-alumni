@@ -66,7 +66,8 @@ export function downloadGraduateImportTemplate(educationLevel) {
   const sampleRow = buildSampleRow(columns, educationLevel);
 
   const csv = [toCsvRow(columns), toCsvRow(sampleRow)].join("\r\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  // UTF-8 BOM so Excel opens the file as UTF-8 (not ANSI) and keeps ñ/é intact.
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
 
   const link = document.createElement("a");
