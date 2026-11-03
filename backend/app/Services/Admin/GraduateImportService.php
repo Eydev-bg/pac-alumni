@@ -15,6 +15,9 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Csv as CsvReader;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class GraduateImportService
 {
@@ -81,7 +84,7 @@ class GraduateImportService
         file_put_contents($localTempPath, Storage::disk($disk)->get($storedPath));
 
         try {
-            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($localTempPath);
+            $spreadsheet = $this->loadSpreadsheet($localTempPath);
             $sheet = $spreadsheet->getActiveSheet();
             $rows = $sheet->toArray(null, true, true, true);
 
@@ -286,6 +289,32 @@ class GraduateImportService
             @unlink($localTempPath);
             Storage::disk($disk)->delete($storedPath);
         }
+    }
+
+    /**
+     * Load an import file into a Spreadsheet, detecting CSV text encoding.
+     *
+     * Excel on Windows saves "CSV (Comma delimited)" as Windows-1252 (ANSI),
+     * where e.g. "ñ" is the single byte 0xF1. The CSV reader assumes UTF-8 by
+     * default, so that byte is invalid and ends up stored as "�". For CSV we
+     * let PhpSpreadsheet guess the encoding (BOM, then a UTF-8 validity check)
+     * and fall back to CP1252 when the bytes are not valid UTF-8. XLSX/XLS are
+     * always Unicode and load as before.
+     */
+    private function loadSpreadsheet(string $path): Spreadsheet
+    {
+        // The temp file has no extension, so identify the format by content.
+        $type = IOFactory::identify($path);
+
+        if ($type === 'Csv') {
+            $reader = IOFactory::createReader('Csv');
+            $reader->setInputEncoding(CsvReader::GUESS_ENCODING);
+            $reader->setFallbackEncoding('CP1252'); // Excel "CSV (Comma delimited)" on Windows
+
+            return $reader->load($path);
+        }
+
+        return IOFactory::load($path);
     }
 
     /**
