@@ -38,10 +38,21 @@ class ImportGraduatesRequest extends FormRequest
         return $this->user()->isAdmin();
     }
 
+    /**
+     * Two-layer file check:
+     *  - 'extensions' validates the client-supplied file NAME (.xlsx/.xls/.csv).
+     *  - withValidator() then sniffs the file CONTENT and requires it to match
+     *    an allowed type for that extension.
+     *
+     * 'mimes' is deliberately not used: it derives the extension from the
+     * sniffed MIME type, and libmagic reports small CSVs (header + 1–2 rows,
+     * e.g. the downloaded template) as text/plain -> "txt", which wrongly
+     * rejected valid CSV uploads.
+     */
     public function rules(): array
     {
         return [
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'], // Max 10MB
+            'file' => ['required', 'file', 'extensions:xlsx,xls,csv', 'max:10240'], // Max 10MB
             'education_level' => ['required', 'string', Rule::in(EducationLevel::values())],
         ];
     }
@@ -49,7 +60,10 @@ class ImportGraduatesRequest extends FormRequest
     /**
      * Content-level hardening: after the extension/size rules pass, verify the
      * file's actual sniffed MIME type matches an allowed spreadsheet/CSV type
-     * for its extension.
+     * for its extension. This is the security check — the 'extensions' rule
+     * only looks at the file name, so a renamed file (e.g. a PNG saved as
+     * .csv) is caught here. text/plain is allowed for .csv because libmagic
+     * reports small CSVs that way.
      */
     public function withValidator(Validator $validator): void
     {
@@ -68,7 +82,7 @@ class ImportGraduatesRequest extends FormRequest
             $extension = strtolower($file->getClientOriginalExtension());
             $allowed = self::CONTENT_TYPES_BY_EXTENSION[$extension] ?? null;
 
-            // Unknown extensions are already rejected by the 'mimes' rule.
+            // Unknown extensions are already rejected by the 'extensions' rule.
             if ($allowed === null) {
                 return;
             }
@@ -88,7 +102,7 @@ class ImportGraduatesRequest extends FormRequest
     {
         return [
             'file.required' => 'Please select a file to upload.',
-            'file.mimes' => 'File must be an Excel (.xlsx, .xls) or CSV file.',
+            'file.extensions' => 'File must be an Excel (.xlsx, .xls) or CSV file.',
             'file.max' => 'File size must not exceed 10MB.',
             'education_level.required' => 'Education level is required.',
             'education_level.in' => 'Invalid education level.',
